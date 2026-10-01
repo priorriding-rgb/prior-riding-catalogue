@@ -3,13 +3,109 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prior Riding — International Buyer CRM</title>
+  <title>PRIOR RIDING — International Buyer CRM</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <div id="app">
-    <h1>PRIOR RIDING</h1>
-    <p>International Buyer CRM</p>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">PR</div>
+      <div>
+        <h1>PRIOR RIDING</h1>
+        <p>International Buyer CRM</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div>
+        <h2>International Buyer CRM</h2>
+        <p>Manage your international buyers, contacts and follow-ups in one place.</p>
+      </div>
+      <button class="primary-btn" onclick="openBuyerForm()">+ Add Buyer</button>
+    </section>
+
+    <section class="stats">
+      <div class="stat-card">
+        <span>Total Buyers</span>
+        <strong id="totalBuyers">0</strong>
+      </div>
+      <div class="stat-card">
+        <span>Active Buyers</span>
+        <strong id="activeBuyers">0</strong>
+      </div>
+      <div class="stat-card">
+        <span>Follow-ups</span>
+        <strong id="followUps">0</strong>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h3>Buyer Database</h3>
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Search buyers..."
+          oninput="renderBuyers()"
+        >
+      </div>
+
+      <div id="buyerList" class="buyer-list"></div>
+    </section>
+  </main>
+
+  <div id="buyerModal" class="modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Add International Buyer</h3>
+        <button onclick="closeBuyerForm()">×</button>
+      </div>
+
+      <form id="buyerForm" onsubmit="saveBuyer(event)">
+        <label>
+          Buyer / Company Name
+          <input id="buyerName" required>
+        </label>
+
+        <label>
+          Country
+          <input id="buyerCountry" required>
+        </label>
+
+        <label>
+          Email
+          <input id="buyerEmail" type="email">
+        </label>
+
+        <label>
+          WhatsApp / Phone
+          <input id="buyerPhone">
+        </label>
+
+        <label>
+          Status
+          <select id="buyerStatus">
+            <option value="Active">Active</option>
+            <option value="New">New</option>
+            <option value="Follow-up">Follow-up</option>
+            <option value="Closed">Closed</option>
+          </select>
+        </label>
+
+        <label>
+          Notes
+          <textarea id="buyerNotes" rows="4"></textarea>
+        </label>
+
+        <div class="form-actions">
+          <button type="button" class="secondary-btn" onclick="closeBuyerForm()">Cancel</button>
+          <button type="submit" class="primary-btn">Save Buyer</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <script src="app.js"></script>
