@@ -8,5 +8,6 @@
   "short_name": "PRIOR RIDING CRM",
   "start_url": "/",
   "theme_color": "#ffffff",
-  "description": "Prior Riding International Buyer CRM and Product Catalogue"
+  "description": "Prior Riding International Buyer CRM and Product Catalogue",
+  "id": "prior-riding-crm"
 }
