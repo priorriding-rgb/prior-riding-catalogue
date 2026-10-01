@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,106 +9,352 @@
 </head>
 
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-mark">PR</div>
-      <div>
-        <h1>PRIOR RIDING</h1>
-        <p>International Buyer CRM</p>
-      </div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo-box">PR</div>
+    <div>
+      <h1>PRIOR RIDING</h1>
+      <p>International Buyer CRM & Product Catalogue</p>
     </div>
-  </header>
+  </div>
+</header>
 
-  <main class="container">
-    <section class="hero">
+<nav class="nav">
+  <button class="nav-btn active" onclick="showSection('dashboard')">Dashboard</button>
+  <button class="nav-btn" onclick="showSection('products')">Product Catalogue</button>
+  <button class="nav-btn" onclick="showSection('buyers')">Buyer CRM</button>
+</nav>
+
+<main class="container">
+
+  <!-- DASHBOARD -->
+  <section id="dashboard" class="section active">
+
+    <div class="hero">
       <div>
-        <h2>International Buyer CRM</h2>
-        <p>Manage your international buyers, contacts and follow-ups in one place.</p>
+        <h2>International Business Dashboard</h2>
+        <p>Manage your products and international buyers in one place.</p>
       </div>
-      <button class="primary-btn" onclick="openBuyerForm()">+ Add Buyer</button>
-    </section>
+      <button class="primary-btn" onclick="showSection('products'); openProductModal()">
+        + Add Product
+      </button>
+    </div>
 
-    <section class="stats">
+    <div class="stats">
+      <div class="stat-card">
+        <span>Products</span>
+        <strong id="productCount">0</strong>
+      </div>
+
       <div class="stat-card">
         <span>Total Buyers</span>
-        <strong id="totalBuyers">0</strong>
+        <strong id="buyerCount">0</strong>
       </div>
+
       <div class="stat-card">
         <span>Active Buyers</span>
-        <strong id="activeBuyers">0</strong>
+        <strong id="activeBuyerCount">0</strong>
       </div>
+
       <div class="stat-card">
         <span>Follow-ups</span>
-        <strong id="followUps">0</strong>
+        <strong id="followupCount">0</strong>
       </div>
-    </section>
+    </div>
 
-    <section class="panel">
-      <div class="panel-header">
-        <h3>Buyer Database</h3>
-        <input
-          id="searchInput"
-          type="search"
-          placeholder="Search buyers..."
-          oninput="renderBuyers()"
-        >
-      </div>
+    <div class="dashboard-grid">
 
-      <div id="buyerList" class="buyer-list"></div>
-    </section>
-  </main>
-
-  <div id="buyerModal" class="modal">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h3>Add International Buyer</h3>
-        <button onclick="closeBuyerForm()">×</button>
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Recent Products</h3>
+          <button onclick="showSection('products')">View All</button>
+        </div>
+        <div id="recentProducts"></div>
       </div>
 
-      <form id="buyerForm" onsubmit="saveBuyer(event)">
-        <label>
-          Buyer / Company Name
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Recent Buyers</h3>
+          <button onclick="showSection('buyers')">View All</button>
+        </div>
+        <div id="recentBuyers"></div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- PRODUCTS -->
+  <section id="products" class="section">
+
+    <div class="section-head">
+      <div>
+        <h2>Product Catalogue</h2>
+        <p>Add and manage your Prior Riding products.</p>
+      </div>
+
+      <button class="primary-btn" onclick="openProductModal()">
+        + Add Product
+      </button>
+    </div>
+
+    <div class="search-box">
+      <input
+        type="text"
+        id="productSearch"
+        placeholder="Search product, article number or category..."
+        oninput="renderProducts()"
+      >
+    </div>
+
+    <div id="productList" class="product-grid"></div>
+
+  </section>
+
+
+  <!-- BUYERS -->
+  <section id="buyers" class="section">
+
+    <div class="section-head">
+      <div>
+        <h2>International Buyer CRM</h2>
+        <p>Manage buyers, contacts and follow-ups.</p>
+      </div>
+
+      <button class="primary-btn" onclick="openBuyerModal()">
+        + Add Buyer
+      </button>
+    </div>
+
+    <div class="search-box">
+      <input
+        type="text"
+        id="buyerSearch"
+        placeholder="Search buyer, company or country..."
+        oninput="renderBuyers()"
+      >
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Buyer / Company</th>
+            <th>Country</th>
+            <th>Contact</th>
+            <th>WhatsApp / Phone</th>
+            <th>Interested Product</th>
+            <th>Status</th>
+            <th>Follow-up</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody id="buyerTable"></tbody>
+      </table>
+    </div>
+
+  </section>
+
+</main>
+
+
+<!-- PRODUCT MODAL -->
+<div id="productModal" class="modal">
+
+  <div class="modal-content">
+
+    <div class="modal-head">
+      <h2 id="productModalTitle">Add Product</h2>
+      <button onclick="closeProductModal()">×</button>
+    </div>
+
+    <form id="productForm">
+
+      <input type="hidden" id="productId">
+
+      <div class="form-grid">
+
+        <div class="field">
+          <label>Product Name *</label>
+          <input id="productName" required>
+        </div>
+
+        <div class="field">
+          <label>Article / Product No. *</label>
+          <input id="articleNo" required>
+        </div>
+
+        <div class="field">
+          <label>Category</label>
+          <input id="category" placeholder="Boxing Gloves">
+        </div>
+
+        <div class="field">
+          <label>Material</label>
+          <input id="material" placeholder="Leather / Synthetic">
+        </div>
+
+        <div class="field">
+          <label>Size</label>
+          <input id="size" placeholder="10oz / 12oz / 14oz / 16oz">
+        </div>
+
+        <div class="field">
+          <label>Weight</label>
+          <input id="weight" placeholder="Example: 500g">
+        </div>
+
+        <div class="field">
+          <label>Color</label>
+          <input id="color" placeholder="Red / Black">
+        </div>
+
+        <div class="field">
+          <label>Available Sizes</label>
+          <input id="availableSizes" placeholder="S, M, L, XL">
+        </div>
+
+        <div class="field">
+          <label>MOQ</label>
+          <input id="moq" placeholder="Example: 100 Pairs">
+        </div>
+
+        <div class="field">
+          <label>Price / Quotation</label>
+          <input id="price" placeholder="Contact for quotation">
+        </div>
+
+        <div class="field full">
+          <label>Product Image URL</label>
+          <input id="imageUrl" placeholder="Paste product image link">
+        </div>
+
+        <div class="field full">
+          <label>Product Specification</label>
+          <textarea id="specification" rows="4"></textarea>
+        </div>
+
+        <div class="field full">
+          <label>Product Description</label>
+          <textarea id="description" rows="4"></textarea>
+        </div>
+
+        <div class="field">
+          <label>Status</label>
+          <select id="productStatus">
+            <option value="Available">Available</option>
+            <option value="Coming Soon">Coming Soon</option>
+            <option value="Out of Stock">Out of Stock</option>
+          </select>
+        </div>
+
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="secondary-btn" onclick="closeProductModal()">
+          Cancel
+        </button>
+
+        <button type="submit" class="primary-btn">
+          Save Product
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+
+<!-- BUYER MODAL -->
+<div id="buyerModal" class="modal">
+
+  <div class="modal-content">
+
+    <div class="modal-head">
+      <h2 id="buyerModalTitle">Add Buyer</h2>
+      <button onclick="closeBuyerModal()">×</button>
+    </div>
+
+    <form id="buyerForm">
+
+      <input type="hidden" id="buyerId">
+
+      <div class="form-grid">
+
+        <div class="field">
+          <label>Buyer / Company Name *</label>
           <input id="buyerName" required>
-        </label>
+        </div>
 
-        <label>
-          Country
+        <div class="field">
+          <label>Country *</label>
           <input id="buyerCountry" required>
-        </label>
+        </div>
 
-        <label>
-          Email
-          <input id="buyerEmail" type="email">
-        </label>
+        <div class="field">
+          <label>Contact Person</label>
+          <input id="contactPerson">
+        </div>
 
-        <label>
-          WhatsApp / Phone
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="buyerEmail">
+        </div>
+
+        <div class="field">
+          <label>WhatsApp / Phone</label>
           <input id="buyerPhone">
-        </label>
+        </div>
 
-        <label>
-          Status
+        <div class="field">
+          <label>Interested Product</label>
+          <select id="interestedProduct">
+            <option value="">Select Product</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Status</label>
           <select id="buyerStatus">
             <option value="Active">Active</option>
-            <option value="New">New</option>
+            <option value="Potential">Potential</option>
             <option value="Follow-up">Follow-up</option>
             <option value="Closed">Closed</option>
           </select>
-        </label>
-
-        <label>
-          Notes
-          <textarea id="buyerNotes" rows="4"></textarea>
-        </label>
-
-        <div class="form-actions">
-          <button type="button" class="secondary-btn" onclick="closeBuyerForm()">Cancel</button>
-          <button type="submit" class="primary-btn">Save Buyer</button>
         </div>
-      </form>
-    </div>
-  </div>
 
-  <script src="app.js"></script>
+        <div class="field">
+          <label>Follow-up Date</label>
+          <input type="date" id="followupDate">
+        </div>
+
+        <div class="field full">
+          <label>Notes</label>
+          <textarea id="buyerNotes" rows="5"></textarea>
+        </div>
+
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="secondary-btn" onclick="closeBuyerModal()">
+          Cancel
+        </button>
+
+        <button type="submit" class="primary-btn">
+          Save Buyer
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+
+<script src="app.js"></script>
+
 </body>
 </html>
