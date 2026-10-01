@@ -1,99 +1,220 @@
+let products = JSON.parse(localStorage.getItem("priorRidingProducts")) || [];
+let buyers = JSON.parse(localStorage.getItem("priorRidingBuyers")) || [];
 
-let buyers = JSON.parse(localStorage.getItem("priorRidingBuyers") || "[]");
-
-function saveToStorage() {
+function saveData() {
+  localStorage.setItem("priorRidingProducts", JSON.stringify(products));
   localStorage.setItem("priorRidingBuyers", JSON.stringify(buyers));
 }
 
-function openBuyerForm() {
-  document.getElementById("buyerModal").classList.add("show");
-  document.getElementById("buyerName").focus();
-}
+function showSection(sectionName) {
+  document.querySelectorAll(".section").forEach(section => {
+    section.classList.remove("active");
+  });
 
-function closeBuyerForm() {
-  document.getElementById("buyerModal").classList.remove("show");
-  document.getElementById("buyerForm").reset();
-}
+  document.getElementById(sectionName).classList.add("active");
 
-function saveBuyer(event) {
-  event.preventDefault();
+  document.querySelectorAll(".nav-btn").forEach(button => {
+    button.classList.remove("active");
+  });
 
-  const buyer = {
-    id: Date.now(),
-    name: document.getElementById("buyerName").value.trim(),
-    country: document.getElementById("buyerCountry").value.trim(),
-    email: document.getElementById("buyerEmail").value.trim(),
-    phone: document.getElementById("buyerPhone").value.trim(),
-    status: document.getElementById("buyerStatus").value,
-    notes: document.getElementById("buyerNotes").value.trim()
-  };
+  const buttons = document.querySelectorAll(".nav-btn");
 
-  buyers.unshift(buyer);
-  saveToStorage();
-  closeBuyerForm();
+  buttons.forEach(button => {
+    if (
+      (sectionName === "dashboard" && button.textContent.includes("Dashboard")) ||
+      (sectionName === "products" && button.textContent.includes("Product Catalogue")) ||
+      (sectionName === "buyers" && button.textContent.includes("Buyer CRM"))
+    ) {
+      button.classList.add("active");
+    }
+  });
+
+  updateDashboard();
+  renderProducts();
   renderBuyers();
-  updateStats();
+  updateProductSelect();
 }
 
-function renderBuyers() {
-  const list = document.getElementById("buyerList");
-  const search = document.getElementById("searchInput").value.toLowerCase().trim();
 
-  const filtered = buyers.filter(buyer =>
-    `${buyer.name} ${buyer.country} ${buyer.email} ${buyer.phone} ${buyer.status}`
-      .toLowerCase()
-      .includes(search)
-  );
+/* =========================
+   DASHBOARD
+========================= */
 
-  if (filtered.length === 0) {
-    list.innerHTML = `
-      <div class="empty">
-        <h4>No buyers found</h4>
-        <p>Click “+ Add Buyer” to add your first international buyer.</p>
-      </div>
-    `;
-    return;
-  }
+function updateDashboard() {
+  document.getElementById("productCount").textContent = products.length;
 
-  list.innerHTML = filtered.map(buyer => `
-    <div class="buyer-card">
-      <div>
-        <h4>${escapeHtml(buyer.name)}</h4>
-        <p><strong>Country:</strong> ${escapeHtml(buyer.country)}</p>
-        ${buyer.email ? `<p><strong>Email:</strong> ${escapeHtml(buyer.email)}</p>` : ""}
-        ${buyer.phone ? `<p><strong>Phone:</strong> ${escapeHtml(buyer.phone)}</p>` : ""}
-        ${buyer.notes ? `<p><strong>Notes:</strong> ${escapeHtml(buyer.notes)}</p>` : ""}
-      </div>
-      <span class="status">${escapeHtml(buyer.status)}</span>
-    </div>
-  `).join("");
-}
-
-function updateStats() {
-  document.getElementById("totalBuyers").textContent = buyers.length;
+  document.getElementById("buyerCount").textContent = buyers.length;
 
   const active = buyers.filter(
     buyer => buyer.status === "Active"
   ).length;
 
-  const followUps = buyers.filter(
-    buyer => buyer.status === "Follow-up"
+  document.getElementById("activeBuyerCount").textContent = active;
+
+  const followups = buyers.filter(
+    buyer => buyer.followupDate
   ).length;
 
-  document.getElementById("activeBuyers").textContent = active;
-  document.getElementById("followUps").textContent = followUps;
+  document.getElementById("followupCount").textContent = followups;
+
+  renderRecentProducts();
+  renderRecentBuyers();
 }
 
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+
+/* =========================
+   PRODUCTS
+========================= */
+
+function openProductModal(product = null) {
+  document.getElementById("productModal").classList.add("show");
+
+  if (product) {
+    document.getElementById("productModalTitle").textContent = "Edit Product";
+
+    document.getElementById("productId").value = product.id;
+    document.getElementById("productName").value = product.name || "";
+    document.getElementById("articleNo").value = product.articleNo || "";
+    document.getElementById("category").value = product.category || "";
+    document.getElementById("material").value = product.material || "";
+    document.getElementById("size").value = product.size || "";
+    document.getElementById("weight").value = product.weight || "";
+    document.getElementById("color").value = product.color || "";
+    document.getElementById("availableSizes").value = product.availableSizes || "";
+    document.getElementById("moq").value = product.moq || "";
+    document.getElementById("price").value = product.price || "";
+    document.getElementById("imageUrl").value = product.imageUrl || "";
+    document.getElementById("specification").value = product.specification || "";
+    document.getElementById("description").value = product.description || "";
+    document.getElementById("productStatus").value =
+      product.status || "Available";
+  } else {
+    document.getElementById("productModalTitle").textContent = "Add Product";
+    document.getElementById("productForm").reset();
+    document.getElementById("productId").value = "";
+  }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  renderBuyers();
-  updateStats();
+function closeProductModal() {
+  document.getElementById("productModal").classList.remove("show");
+}
+
+document.getElementById("productForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const id =
+    document.getElementById("productId").value ||
+    Date.now().toString();
+
+  const product = {
+    id: id,
+    name: document.getElementById("productName").value.trim(),
+    articleNo: document.getElementById("articleNo").value.trim(),
+    category: document.getElementById("category").value.trim(),
+    material: document.getElementById("material").value.trim(),
+    size: document.getElementById("size").value.trim(),
+    weight: document.getElementById("weight").value.trim(),
+    color: document.getElementById("color").value.trim(),
+    availableSizes:
+      document.getElementById("availableSizes").value.trim(),
+    moq: document.getElementById("moq").value.trim(),
+    price: document.getElementById("price").value.trim(),
+    imageUrl: document.getElementById("imageUrl").value.trim(),
+    specification:
+      document.getElementById("specification").value.trim(),
+    description:
+      document.getElementById("description").value.trim(),
+    status:
+      document.getElementById("productStatus").value
+  };
+
+  const existingIndex = products.findIndex(p => p.id === id);
+
+  if (existingIndex >= 0) {
+    products[existingIndex] = product;
+  } else {
+    products.unshift(product);
+  }
+
+  saveData();
+  closeProductModal();
+  renderProducts();
+  updateProductSelect();
+  updateDashboard();
+
+  alert("Product saved successfully.");
 });
+
+
+function renderProducts() {
+  const container = document.getElementById("productList");
+
+  const search =
+    (document.getElementById("productSearch")?.value || "")
+      .toLowerCase()
+      .trim();
+
+  const filtered = products.filter(product =>
+    [
+      product.name,
+      product.articleNo,
+      product.category,
+      product.material
+    ]
+      .join(" ")
+      .toLowerCase()
+      .includes(search)
+  );
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty">
+        No products found.<br><br>
+        Click <b>+ Add Product</b> to create your first catalogue item.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(product => {
+
+    const image = product.imageUrl
+      ? `<img class="product-image" src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.name)}">`
+      : `<div class="no-image">PRIOR RIDING</div>`;
+
+    return `
+      <div class="product-card">
+
+        ${image}
+
+        <div class="product-body">
+
+          <div class="article">
+            ARTICLE: ${escapeHtml(product.articleNo)}
+          </div>
+
+          <h3>${escapeHtml(product.name)}</h3>
+
+          <div class="product-meta">
+            ${product.category
+              ? `<div><b>Category:</b> ${escapeHtml(product.category)}</div>`
+              : ""}
+
+            ${product.material
+              ? `<div><b>Material:</b> ${escapeHtml(product.material)}</div>`
+              : ""}
+
+            ${product.size
+              ? `<div><b>Size:</b> ${escapeHtml(product.size)}</div>`
+              : ""}
+
+            ${product.weight
+              ? `<div><b>Weight:</b> ${escapeHtml(product.weight)}</div>`
+              : ""}
+
+            ${product.color
+              ? `<div><b>Color:</b> ${escapeHtml(product.color)}</div>`
+              : ""}
+
+            ${product.moq
+              ? `<div><
