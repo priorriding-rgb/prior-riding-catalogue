@@ -1,47 +1,56 @@
+
+function showSection(section) {
+  var sections = document.querySelectorAll(".section");
+
+  sections.forEach(function (item) {
+    item.style.display = "none";
+  });
+
+  var selected = document.getElementById(section);
+
+  if (selected) {
+    selected.style.display = "block";
+  }
+}
+
+function openProductModal() {
+  var modal = document.getElementById("productModal");
+
+  if (modal) {
+    modal.style.display = "flex";
+  }
+}
+
+function closeProductModal() {
+  var modal = document.getElementById("productModal");
+
+  if (modal) {
+    modal.style.display = "none";
+  }
+}
+
+function openBuyerModal() {
+  var modal = document.getElementById("buyerModal");
+
+  if (modal) {
+    modal.style.display = "flex";
+  }
+}
+
+function closeBuyerModal() {
+  var modal = document.getElementById("buyerModal");
+
+  if (modal) {
+    modal.style.display = "none";
+  }
+}
+
+window.showSection = showSection;
+window.openProductModal = openProductModal;
+window.closeProductModal = closeProductModal;
+window.openBuyerModal = openBuyerModal;
+window.closeBuyerModal = closeBuyerModal;
+
 document.addEventListener("DOMContentLoaded", function () {
-
-  let products = JSON.parse(localStorage.getItem("priorRidingProducts") || "[]");
-  let buyers = JSON.parse(localStorage.getItem("priorRidingBuyers") || "[]");
-
-  function saveData() {
-    localStorage.setItem("priorRidingProducts", JSON.stringify(products));
-    localStorage.setItem("priorRidingBuyers", JSON.stringify(buyers));
-  }
-
-  function showSection(section) {
-    document.querySelectorAll(".section").forEach(function (el) {
-      el.style.display = "none";
-    });
-
-    const target = document.getElementById(section);
-    if (target) target.style.display = "block";
-
-    document.querySelectorAll(".nav-btn").forEach(function (btn) {
-      btn.classList.remove("active");
-    });
-
-    const activeBtn = document.querySelector('[data-section="' + section + '"]');
-    if (activeBtn) activeBtn.classList.add("active");
-
-    updateDashboard();
-  }
-
-  window.showSection = showSection;
-
-  function updateDashboard() {
-    const productCount = document.getElementById("productCount");
-    const buyerCount = document.getElementById("buyerCount");
-    const activeBuyerCount = document.getElementById("activeBuyerCount");
-    const followupCount = document.getElementById("followupCount");
-
-    if (productCount) productCount.textContent = products.length;
-    if (buyerCount) buyerCount.textContent = buyers.length;
-
-    if (activeBuyerCount) {
-      activeBuyerCount.textContent =
-        buyers.filter(function (b) {
-          return b.status === "Active";
-        }).length;
-    }
-
-    if (followupCount)
+  showSection("dashboard");
+});
