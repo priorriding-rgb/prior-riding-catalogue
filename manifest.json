@@ -4,9 +4,9 @@
   "display": "standalone",
   "name": "PRIOR RIDING — International Buyer CRM",
   "orientation": "any",
-  "scope": "/",
+  "scope": "/prior-riding-catalogue/",
   "short_name": "PRIOR RIDING CRM",
-  "start_url": "/",
+  "start_url": "/prior-riding-catalogue/",
   "theme_color": "#ffffff",
   "description": "Prior Riding International Buyer CRM and Product Catalogue",
   "id": "prior-riding-crm"
