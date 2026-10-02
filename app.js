@@ -807,3 +807,62 @@ function prMakeLetter(e){
  });
  window.openDashboardTool=prTool;window.prOpenPayment=prOpenPayment;window.prClosePayment=prClosePayment;window.prOpenProforma=prOpenProforma;window.prCloseProforma=prCloseProforma;window.prOpenLetter=prOpenLetter;window.prCloseLetter=prCloseLetter;
 })();
+
+
+/* ===== PRIOR RIDING FINAL FUNCTIONAL FIXES ===== */
+function prRenderPaymentHistory(){
+  var box=document.getElementById("prPaymentHistory");
+  if(!box)return;
+  if(!prPayments.length){
+    box.innerHTML='<div class="empty">No payments recorded yet.</div>';
+    return;
+  }
+  box.innerHTML='<div class="payment-history">'+prPayments.slice().reverse().map(function(p){
+    return '<div class="payment-row"><div><b>'+escapeHtml(p.buyerName)+'</b><span>'+escapeHtml(p.date||"-")+' · '+escapeHtml(p.mode||"-")+'</span></div><strong>'+escapeHtml(p.currency||"USD")+' '+prMoney(p.amount)+'</strong><button class="small-btn delete-btn" onclick="prDeletePayment(\''+p.id+'\')">Delete</button></div>';
+  }).join("")+'</div>';
+}
+function prDeletePayment(id){
+  if(!confirm("Delete this payment record?"))return;
+  prPayments=prPayments.filter(function(p){return p.id!==id;});
+  prSavePayments();
+  prRenderPaymentHistory();
+  prTool("payment");
+  updateDashboard();
+}
+function prToolFinal(tool){
+  var p=document.getElementById("dashboardToolPanel"),t=document.getElementById("dashboardToolTitle"),b=document.getElementById("dashboardToolBody");
+  if(!p||!t||!b)return;
+  if(tool==="performance"){
+    var pc={};PR_PRODUCT_CATEGORIES.forEach(function(c){pc[c]=0;});
+    products.forEach(function(x){if(pc[x.category]!==undefined)pc[x.category]++;});
+    var bc={};buyers.forEach(function(x){if(x.interestedProduct)bc[x.interestedProduct]=(bc[x.interestedProduct]||0)+1;});
+    t.textContent="Performance Wise";
+    b.innerHTML='<p>Products and interested buyers by category.</p><div class="tool-grid">'+PR_PRODUCT_CATEGORIES.map(function(c){return '<div class="tool-stat"><b>'+escapeHtml(c)+'</b><strong>'+pc[c]+' products</strong><span>'+Number(bc[c]||0)+' buyers</span></div>';}).join("")+'</div>';
+  }else if(tool==="calc"){
+    var total=prPayments.reduce(function(s,x){return s+Number(x.amount||0);},0);
+    t.textContent="Calc Breakdown";
+    b.innerHTML='<div class="tool-grid"><div class="tool-stat"><b>Total Products</b><strong>'+products.length+'</strong></div><div class="tool-stat"><b>Total Buyers</b><strong>'+buyers.length+'</strong></div><div class="tool-stat"><b>Payments</b><strong>'+prPayments.length+'</strong></div><div class="tool-stat"><b>Recorded Payment Total</b><strong>'+prMoney(total)+'</strong></div></div>';
+  }else if(tool==="paymentMode"){
+    var modes={};PR_PAYMENT_MODES.forEach(function(m){modes[m]=0;});
+    prPayments.forEach(function(x){modes[x.mode]=(modes[x.mode]||0)+1;});
+    t.textContent="Payment Mode";
+    b.innerHTML='<p>Select a payment method when adding a payment. Current records:</p><div class="tool-grid">'+Object.keys(modes).map(function(m){return '<div class="tool-stat"><b>'+escapeHtml(m)+'</b><strong>'+modes[m]+'</strong></div>';}).join("")+'</div><button class="primary-btn" onclick="prOpenPayment()">+ Add Payment</button>';
+  }else if(tool==="payment"){
+    t.textContent="Add Payment";
+    b.innerHTML='<p>Record a buyer payment and keep its history in this device.</p><button class="primary-btn" onclick="prOpenPayment()">+ Add Payment</button><div id="prPaymentHistory"></div>';
+    prRenderPaymentHistory();
+  }else if(tool==="catalogue"){
+    t.textContent="Catalogue";
+    b.innerHTML='<p>Open the complete product catalogue.</p><button class="primary-btn" onclick="showSection("products");closeDashboardTool()">Open Product Catalogue</button>';
+  }else if(tool==="proforma"){
+    t.textContent="Add Proforma";
+    b.innerHTML='<p>Create a print-ready proforma invoice from saved buyer and product data.</p><button class="primary-btn" onclick="prOpenProforma()">Create Proforma</button>';
+  }else if(tool==="proformaLetter"){
+    t.textContent="Add Proforma Letter";
+    b.innerHTML='<p>Prepare a professional proforma covering letter.</p><button class="primary-btn" onclick="prOpenLetter()">Create Letter</button>';
+  }
+  p.style.display="block";
+  p.scrollIntoView({behavior:"smooth",block:"start"});
+}
+window.openDashboardTool=prToolFinal;
+window.prDeletePayment=prDeletePayment;
