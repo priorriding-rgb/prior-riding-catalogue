@@ -626,49 +626,106 @@ function escapeHtml(value) {
 
 // ---------------- DASHBOARD QUICK TOOLS ----------------
 
-function openDashboardTool(tool) {
-  var panel = document.getElementById("dashboardToolPanel");
-  var title = document.getElementById("dashboardToolTitle");
-  var body = document.getElementById("dashboardToolBody");
-  if (!panel || !title || !body) return;
+var prPayments = JSON.parse(localStorage.getItem("priorRidingPayments") || "[]");
 
-  var data = {
-    performance: ["Performance Wise", "Product and buyer performance tools are ready for the next reporting layer."],
-    calc: ["Calc Breakdown", "Calculation breakdown workspace for quotations, quantities, costs and totals."],
-    paymentMode: ["Payment Mode", "Payment mode workspace for recording and reviewing buyer payment methods."],
-    proforma: ["Add Proforma", "Create and manage proforma invoice details from this workspace."],
-    proformaLetter: ["Add Proforma Letter", "Prepare a professional proforma covering letter from this workspace."],
-    catalogue: ["Catalogue", "Open the product catalogue area and manage your catalogue products."],
-    payment: ["Add Payment", "Record buyer payment details and keep payment history organized."]
+function prSavePayments(){ localStorage.setItem("priorRidingPayments", JSON.stringify(prPayments)); }
+
+function prMoney(n){ return Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function prFillBuyerSelect(id){
+  var s=document.getElementById(id); if(!s) return;
+  var current=s.value;
+  s.innerHTML='<option value="">Select Buyer</option>';
+  buyers.forEach(function(x){
+    var o=document.createElement("option");
+    o.value=x.id; o.textContent=x.name+(x.country?" — "+x.country:"");
+    s.appendChild(o);
+  });
+  if(current) s.value=current;
+}
+
+function prOpenPayment(){
+  prFillBuyerSelect("paymentBuyer");
+  var m=document.getElementById("paymentModal"); if(m) m.style.display="flex";
+}
+function prClosePayment(){
+  var m=document.getElementById("paymentModal"); if(m) m.style.display="none";
+  var f=document.getElementById("paymentForm"); if(f) f.reset();
+}
+function prOpenProforma(){
+  prFillBuyerSelect("proformaBuyer");
+  var s=document.getElementById("proformaProduct");
+  if(s){s.innerHTML='<option value="">Select Product</option>';products.forEach(function(x){var o=document.createElement("option");o.value=x.id;o.textContent=x.name+" — "+x.articleNo;s.appendChild(o);});}
+  var m=document.getElementById("proformaModal"); if(m) m.style.display="flex";
+}
+function prCloseProforma(){var m=document.getElementById("proformaModal");if(m)m.style.display="none";}
+function prOpenLetter(){var m=document.getElementById("letterModal");if(m)m.style.display="flex";}
+function prCloseLetter(){var m=document.getElementById("letterModal");if(m)m.style.display="none";}
+
+function handlePaymentSubmit(e){
+  e.preventDefault();
+  var buyerId=document.getElementById("paymentBuyer").value;
+  if(!buyerId){alert("Please select a buyer.");return;}
+  var buyer=buyers.find(function(x){return x.id===buyerId;});
+  var rec={
+    id:generateId(),buyerId:buyerId,buyerName:buyer?buyer.name:"",
+    bankName:document.getElementById("paymentBankName").value,
+    proformaNo:document.getElementById("paymentProformaNo").value.trim(),
+    foreignAmount:Number(document.getElementById("paymentForeignAmount").value||0),
+    foreignCurrency:document.getElementById("paymentForeignCurrency").value,
+    mode:document.getElementById("paymentMode").value,
+    pkrAmount:Number(document.getElementById("paymentPkrAmount").value||0),
+    receivedDate:document.getElementById("paymentReceivedDate").value,
+    paymentDate:document.getElementById("paymentDate").value,
+    reference:document.getElementById("paymentReference").value.trim(),
+    notes:document.getElementById("paymentNotes").value.trim()
   };
-
-  var item = data[tool];
-  if (!item) return;
-
-  title.textContent = item[0];
-  body.innerHTML = "<p>" + escapeHtml(item[1]) + "</p>";
-
-  if (tool === "catalogue") {
-    body.innerHTML += '<button class="primary-btn" onclick="showSection(\'products\'); closeDashboardTool();">Open Product Catalogue</button>';
-  } else if (tool === "payment") {
-    body.innerHTML += '<button class="primary-btn" onclick="showSection(\'buyers\'); closeDashboardTool();">Open Buyer CRM</button>';
-  } else if (tool === "proforma" || tool === "proformaLetter") {
-    body.innerHTML += '<button class="primary-btn" onclick="showSection(\'buyers\'); closeDashboardTool();">Select Buyer</button>';
-  }
-
-  panel.style.display = "block";
-  panel.scrollIntoView({ behavior: "smooth", block: "start" });
+  if(!rec.foreignAmount && !rec.pkrAmount){alert("Please enter payment amount.");return;}
+  prPayments.push(rec);prSavePayments();prClosePayment();alert("Payment saved successfully.");
 }
 
-function closeDashboardTool() {
-  var panel = document.getElementById("dashboardToolPanel");
-  if (panel) panel.style.display = "none";
+function performanceReport(){
+  var total=prPayments.length, pkr=0, foreign={}, banks={}, modes={}, buyerMap={};
+  prPayments.forEach(function(x){
+    pkr+=Number(x.pkrAmount||0);
+    var cur=x.foreignCurrency||"USD",amt=Number(x.foreignAmount||0);
+    foreign[cur]=(foreign[cur]||0)+amt;
+    banks[x.bankName||"Not specified"]=(banks[x.bankName||"Not specified"]||0)+amt;
+    modes[x.mode||"Not specified"]=(modes[x.mode||"Not specified"]||0)+amt;
+    buyerMap[x.buyerName||"Unknown"]=(buyerMap[x.buyerName||"Unknown"]||0)+amt;
+  });
+  function rows(o){return Object.keys(o).sort(function(x,y){return o[y]-o[x];}).map(function(k){return '<div class="calc-row"><span>'+escapeHtml(k)+'</span><b>'+prMoney(o[k])+'</b></div>';}).join("")||'<div class="calc-empty">No data yet.</div>';}
+  return '<div class="calc-report"><p class="calc-intro">PRIOR RIDING business performance summary.</p>'+
+    '<div class="calc-kpis"><div class="calc-card"><span>Products</span><strong>'+products.length+'</strong></div><div class="calc-card"><span>Buyers</span><strong>'+buyers.length+'</strong></div><div class="calc-card"><span>Payments</span><strong>'+total+'</strong></div><div class="calc-card"><span>PKR Received</span><strong>PKR '+prMoney(pkr)+'</strong></div></div>'+
+    '<div class="calc-columns"><div class="calc-box"><h4>Buyer Performance</h4>'+rows(buyerMap)+'</div><div class="calc-box"><h4>Bank Performance</h4>'+rows(banks)+'</div></div>'+
+    '<div class="calc-columns"><div class="calc-box"><h4>Currency Received</h4>'+rows(foreign)+'</div><div class="calc-box"><h4>Payment Modes</h4>'+rows(modes)+'</div></div></div>';
 }
 
-function printToPdf() {
-  window.print();
+function openDashboardTool(tool){
+  var panel=document.getElementById("dashboardToolPanel"),title=document.getElementById("dashboardToolTitle"),body=document.getElementById("dashboardToolBody");
+  if(!panel||!title||!body)return;
+  var names={performance:"Performance Wise",calc:"Calc Breakdown",paymentMode:"Payment Mode",proforma:"Add Proforma",proformaLetter:"Add Proforma Letter",catalogue:"Catalogue",payment:"Add Payment"};
+  title.textContent=names[tool]||"Dashboard Tool";
+  if(tool==="performance"){body.innerHTML=performanceReport();}
+  else if(tool==="calc"){body.innerHTML=performanceReport();}
+  else if(tool==="paymentMode"){body.innerHTML='<div class="calc-report"><div class="calc-box"><h4>Payment Mode</h4>'+performanceReport().split('<div class="calc-columns">')[1].split('</div></div></div>')[0]+'</div>';}
+  else if(tool==="payment"){body.innerHTML='<p class="calc-intro">Buyer payment record محفوظ کرنے کے لیے Add Payment کھولیں۔</p><button class="primary-btn" onclick="prOpenPayment();closeDashboardTool()">Add Payment</button>';prFillBuyerSelect("paymentBuyer");}
+  else if(tool==="proforma"){body.innerHTML='<p class="calc-intro">Proforma Invoice بنانے کے لیے Buyer اور Product منتخب کریں۔</p><button class="primary-btn" onclick="prOpenProforma();closeDashboardTool()">Create Proforma</button>';}
+  else if(tool==="proformaLetter"){body.innerHTML='<p class="calc-intro">Professional Proforma Letter تیار کریں۔</p><button class="primary-btn" onclick="prOpenLetter();closeDashboardTool()">Create Letter</button>';}
+  else if(tool==="catalogue"){body.innerHTML='<p class="calc-intro">Product Catalogue میں اپنے تمام products manage کریں۔</p><button class="primary-btn" onclick="showSection("products");closeDashboardTool()">Open Catalogue</button>';}
+  panel.style.display="block";panel.scrollIntoView({behavior:"smooth",block:"start"});
 }
+function closeDashboardTool(){var p=document.getElementById("dashboardToolPanel");if(p)p.style.display="none";}
+function printToPdf(){window.print();}
 
+document.addEventListener("DOMContentLoaded",function(){
+  var pf=document.getElementById("paymentForm");if(pf)pf.addEventListener("submit",handlePaymentSubmit);
+  var pro=document.getElementById("proformaForm");if(pro)pro.addEventListener("submit",function(e){e.preventDefault();alert("Proforma Invoice تیار ہے۔ Print dialog سے PDF محفوظ کریں۔");window.print();});
+  var letf=document.getElementById("letterForm");if(letf)letf.addEventListener("submit",function(e){e.preventDefault();alert("Proforma Letter تیار ہے۔ Print dialog سے PDF محفوظ کریں۔");window.print();});
+  var productForm=document.getElementById("productForm");if(productForm)productForm.addEventListener("submit",handleProductSubmit);
+  var buyerForm=document.getElementById("buyerForm");if(buyerForm)buyerForm.addEventListener("submit",handleBuyerSubmit);
+  renderProducts();renderBuyers();populateInterestedProducts();updateDashboard();showSection("dashboard");
+});
 // ---------------- START APP ----------------
 
 document.addEventListener("DOMContentLoaded", function () {
