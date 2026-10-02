@@ -719,3 +719,91 @@ window.deleteProduct = deleteProduct;
 
 window.editBuyer = editBuyer;
 window.deleteBuyer = deleteBuyer;
+
+/* ===== PRIOR RIDING CRM ENHANCED TOOLS ===== */
+var PR_PRODUCT_CATEGORIES=[
+ "Goalkeeper Gloves","Riding Gloves","Cycling Gloves","Boxing Gloves","MMA Gloves",
+ "Horse Riding Gloves","Hard Riding Gloves","Football / Soccer Gloves",
+ "Chin Pads / Protective Pads","Sports Bags","Hand Wraps","Other Sports Goods / Other Varieties"
+];
+var PR_PAYMENT_MODES=["Bank Transfer / T.T.","Advance","Balance","Cash","Card","PayPal","Other"];
+var prPayments=JSON.parse(localStorage.getItem("priorRidingPayments")||"[]");
+
+function prSavePayments(){localStorage.setItem("priorRidingPayments",JSON.stringify(prPayments));}
+function prMoney(n){return Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
+
+function prFillCategories(){
+ var s=document.getElementById("category"); if(s){var v=s.value;s.innerHTML='<option value="">Select Product Category</option>'+PR_PRODUCT_CATEGORIES.map(function(c){return '<option>'+escapeHtml(c)+'</option>';}).join("");if(v)s.value=v;}
+ var i=document.getElementById("interestedProduct"); if(i){var iv=i.value;i.innerHTML='<option value="">Select Product / Category</option>'+PR_PRODUCT_CATEGORIES.map(function(c){return '<option>'+escapeHtml(c)+'</option>';}).join("");if(products.length){i.innerHTML+='<optgroup label="Added Products">'+products.map(function(p){return '<option value="'+escapeHtml(p.name)+'">'+escapeHtml(p.name)+(p.articleNo?" — "+escapeHtml(p.articleNo):"")+'</option>';}).join("")+'</optgroup>';}if(iv)i.value=iv;}
+}
+
+function prOpenPayment(){
+ closeDashboardTool();
+ var s=document.getElementById("paymentBuyer");
+ if(s)s.innerHTML='<option value="">Select Buyer</option>'+buyers.map(function(b){return '<option value="'+escapeHtml(b.id)+'">'+escapeHtml(b.name)+'</option>';}).join("");
+ var d=document.getElementById("paymentDate");if(d&&!d.value)d.value=new Date().toISOString().slice(0,10);
+ var m=document.getElementById("paymentModal");if(m)m.style.display="flex";
+}
+function prClosePayment(){var m=document.getElementById("paymentModal");if(m)m.style.display="none";var f=document.getElementById("paymentForm");if(f)f.reset();}
+function prSavePayment(e){
+ e.preventDefault();
+ var buyerId=document.getElementById("paymentBuyer").value,buyer=buyers.find(function(b){return b.id===buyerId;});
+ var amount=Number(document.getElementById("paymentAmount").value);
+ if(!buyer||!(amount>0)){alert("Please select a buyer and enter a valid amount.");return;}
+ prPayments.push({id:generateId(),buyerId:buyerId,buyerName:buyer.name,amount:amount,currency:document.getElementById("paymentCurrency").value,mode:document.getElementById("paymentMode").value,date:document.getElementById("paymentDate").value,reference:document.getElementById("paymentReference").value.trim(),notes:document.getElementById("paymentNotes").value.trim()});
+ prSavePayments();prClosePayment();updateDashboard();alert("Payment saved successfully.");
+}
+
+function prTool(tool){
+ var p=document.getElementById("dashboardToolPanel"),t=document.getElementById("dashboardToolTitle"),b=document.getElementById("dashboardToolBody");if(!p||!t||!b)return;
+ if(tool==="performance"){
+  var counts={};PR_PRODUCT_CATEGORIES.forEach(function(c){counts[c]=0;});products.forEach(function(x){if(counts[x.category]!=null)counts[x.category]++;});
+  t.textContent="Performance Wise";b.innerHTML='<p>Products by category.</p><div class="tool-grid">'+PR_PRODUCT_CATEGORIES.map(function(c){return '<div class="tool-stat"><b>'+escapeHtml(c)+'</b><strong>'+counts[c]+'</strong></div>';}).join("")+'</div>';
+ }else if(tool==="calc"){
+  var total=prPayments.reduce(function(s,x){return s+Number(x.amount||0);},0);
+  t.textContent="Calc Breakdown";b.innerHTML='<div class="tool-grid"><div class="tool-stat"><b>Products</b><strong>'+products.length+'</strong></div><div class="tool-stat"><b>Buyers</b><strong>'+buyers.length+'</strong></div><div class="tool-stat"><b>Payments</b><strong>'+prPayments.length+'</strong></div><div class="tool-stat"><b>Payment Total</b><strong>'+prMoney(total)+'</strong></div></div>';
+ }else if(tool==="paymentMode"){
+  var modes={};PR_PAYMENT_MODES.forEach(function(m){modes[m]=0;});prPayments.forEach(function(x){modes[x.mode]=(modes[x.mode]||0)+1;});
+  t.textContent="Payment Mode";b.innerHTML='<p>Payment methods recorded in the CRM.</p><div class="tool-grid">'+Object.keys(modes).map(function(m){return '<div class="tool-stat"><b>'+escapeHtml(m)+'</b><strong>'+modes[m]+'</strong></div>';}).join("")+'</div><button class="primary-btn" onclick="prOpenPayment()">+ Add Payment</button>';
+ }else if(tool==="catalogue"){
+  t.textContent="Catalogue";b.innerHTML='<p>Open the complete product catalogue.</p><button class="primary-btn" onclick="showSection(\'products\');closeDashboardTool()">Open Product Catalogue</button>';
+ }else if(tool==="payment"){
+  t.textContent="Add Payment";b.innerHTML='<p>Record buyer payment, amount and payment mode.</p><button class="primary-btn" onclick="prOpenPayment()">+ Add Payment</button>';
+ }else if(tool==="proforma"){
+  t.textContent="Add Proforma";b.innerHTML='<p>Create a print-ready proforma invoice using saved buyer and product data.</p><button class="primary-btn" onclick="prOpenProforma()">Create Proforma</button>';
+ }else if(tool==="proformaLetter"){
+  t.textContent="Add Proforma Letter";b.innerHTML='<p>Prepare a professional proforma covering letter.</p><button class="primary-btn" onclick="prOpenLetter()">Create Letter</button>';
+ }
+ p.style.display="block";p.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function prOpenProforma(){
+ var b=document.getElementById("proformaBuyer"),p=document.getElementById("proformaProduct");if(!b||!p)return;
+ b.innerHTML='<option value="">Select Buyer</option>'+buyers.map(function(x){return '<option value="'+escapeHtml(x.id)+'">'+escapeHtml(x.name)+' — '+escapeHtml(x.country)+'</option>';}).join("");
+ p.innerHTML='<option value="">Select Product</option>'+products.map(function(x){return '<option value="'+escapeHtml(x.id)+'">'+escapeHtml(x.name)+' — '+escapeHtml(x.articleNo)+'</option>';}).join("");
+ document.getElementById("proformaDate").value=new Date().toISOString().slice(0,10);
+ document.getElementById("proformaModal").style.display="flex";
+}
+function prCloseProforma(){document.getElementById("proformaModal").style.display="none";document.getElementById("proformaForm").reset();}
+function prMakeProforma(e){
+ e.preventDefault();var buyer=buyers.find(function(x){return x.id===document.getElementById("proformaBuyer").value;}),product=products.find(function(x){return x.id===document.getElementById("proformaProduct").value;});var q=Number(document.getElementById("proformaQty").value)||1,u=Number(document.getElementById("proformaUnitPrice").value)||0;
+ if(!buyer||!product){alert("Please select buyer and product.");return;}var total=q*u,w=window.open("","_blank","width=900,height=700");if(!w){alert("Please allow pop-ups.");return;}
+ w.document.write('<html><head><title>PRIOR RIDING Proforma</title><style>body{font-family:Arial;padding:40px}h1{color:#c62828}table{width:100%;border-collapse:collapse;margin-top:25px}th,td{border:1px solid #ddd;padding:10px}th{background:#16834b;color:#fff}</style></head><body><h1>PRIOR RIDING</h1><h2>PROFORMA INVOICE</h2><p><b>Buyer:</b> '+escapeHtml(buyer.name)+' — '+escapeHtml(buyer.country)+'</p><p><b>Date:</b> '+escapeHtml(document.getElementById("proformaDate").value)+'</p><table><tr><th>Product</th><th>Article</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr><tr><td>'+escapeHtml(product.name)+'</td><td>'+escapeHtml(product.articleNo)+'</td><td>'+q+'</td><td>'+prMoney(u)+'</td><td>'+prMoney(total)+'</td></tr></table><h3>Grand Total: '+prMoney(total)+'</h3><script>window.onload=function(){window.print()}<\/script></body></html>');w.document.close();prCloseProforma();
+}
+function prOpenLetter(){document.getElementById("letterDate").value=new Date().toISOString().slice(0,10);document.getElementById("letterModal").style.display="flex";}
+function prCloseLetter(){document.getElementById("letterModal").style.display="none";document.getElementById("letterForm").reset();}
+function prMakeLetter(e){
+ e.preventDefault();var buyer=document.getElementById("letterBuyer").value.trim(),subject=document.getElementById("letterSubject").value.trim(),msg=document.getElementById("letterMessage").value.trim();if(!buyer||!msg){alert("Please enter buyer/company and message.");return;}var w=window.open("","_blank","width=900,height=700");if(!w){alert("Please allow pop-ups.");return;}w.document.write('<html><head><title>PRIOR RIDING Letter</title><style>body{font-family:Arial;padding:40px;line-height:1.8}h1{color:#c62828}</style></head><body><h1>PRIOR RIDING</h1><h2>PROFORMA INVOICE COVERING LETTER</h2><p><b>Date:</b> '+escapeHtml(document.getElementById("letterDate").value)+'</p><p><b>To:</b> '+escapeHtml(buyer)+'</p><p><b>Subject:</b> '+escapeHtml(subject||"Proforma Invoice")+'</p><p>'+escapeHtml(msg).replace(/\n/g,"<br>")+'</p><p>Best regards,<br><b>PRIOR RIDING</b></p><script>window.onload=function(){window.print()}<\/script></body></html>');w.document.close();prCloseLetter();
+}
+
+(function(){
+ var oldUpdate=window.updateDashboard;window.updateDashboard=function(){if(typeof oldUpdate==="function")oldUpdate();var total=prPayments.reduce(function(s,x){return s+Number(x.amount||0);},0);var pc=document.getElementById("paymentCount"),pt=document.getElementById("paymentTotal");if(pc)pc.textContent=prPayments.length;if(pt)pt.textContent=prMoney(total);};
+ var oldPopulate=window.populateInterestedProducts;window.populateInterestedProducts=function(){if(typeof oldPopulate==="function")oldPopulate();prFillCategories();};
+ document.addEventListener("DOMContentLoaded",function(){
+  prFillCategories();
+  var f=document.getElementById("paymentForm");if(f)f.addEventListener("submit",prSavePayment);
+  var pf=document.getElementById("proformaForm");if(pf)pf.addEventListener("submit",prMakeProforma);
+  var lf=document.getElementById("letterForm");if(lf)lf.addEventListener("submit",prMakeLetter);
+ });
+ window.openDashboardTool=prTool;window.prOpenPayment=prOpenPayment;window.prClosePayment=prClosePayment;window.prOpenProforma=prOpenProforma;window.prCloseProforma=prCloseProforma;window.prOpenLetter=prOpenLetter;window.prCloseLetter=prCloseLetter;
+})();
