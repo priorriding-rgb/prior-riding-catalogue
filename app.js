@@ -755,7 +755,7 @@ function prOpenPayment(){
    if(buyers.length){
      buyers.forEach(function(b){
        var o=document.createElement("option");
-       o.value=b.id;
+       o.value=String(b.id);
        o.textContent=b.name+(b.country?" — "+b.country:"");
        s.appendChild(o);
      });
@@ -787,7 +787,7 @@ function prOpenPayment(){
 function prClosePayment(){var m=document.getElementById("paymentModal");if(m)m.style.display="none";var f=document.getElementById("paymentForm");if(f)f.reset();}
 function prSavePayment(e){
  e.preventDefault();
- var buyerId=document.getElementById("paymentBuyer").value,buyer=buyers.find(function(b){return b.id===buyerId;});
+ var buyerId=document.getElementById("paymentBuyer").value,buyer=buyers.find(function(b){return String(b.id)===String(buyerId);});
  var amount=Number(document.getElementById("paymentAmount").value);
  if(!buyer||!(amount>0)){alert("Please select a buyer and enter a valid amount.");return;}
  prPayments.push({id:generateId(),buyerId:buyerId,buyerName:buyer.name,amount:amount,currency:document.getElementById("paymentCurrency").value,mode:document.getElementById("paymentMode").value,date:document.getElementById("paymentDate").value,reference:document.getElementById("paymentReference").value.trim(),notes:document.getElementById("paymentNotes").value.trim()});
