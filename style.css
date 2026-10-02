@@ -515,3 +515,10 @@ td {
 @media(max-width:900px){.tool-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){.tool-grid{grid-template-columns:1fr 1fr}}
 @media print{.topbar,.nav,.quick-actions,.dashboard-tool-panel,.primary-btn,.secondary-btn,.modal{display:none!important}.section{display:block!important}.container{max-width:none;padding:0}.panel,.hero,.section-head{box-shadow:none}}
+
+.payment-history{margin-top:18px;display:flex;flex-direction:column;gap:8px}
+.payment-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:12px;background:#f5f7f6;border-radius:9px;border-left:3px solid #16834b}
+.payment-row span{display:block;color:#777;font-size:12px;margin-top:3px}
+.payment-row strong{color:#c62828;white-space:nowrap}
+.tool-stat span{display:block;color:#777;font-size:11px;margin-top:3px}
+@media(max-width:600px){.payment-row{grid-template-columns:1fr auto}.payment-row .delete-btn{grid-column:1/-1;width:max-content}}
