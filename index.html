@@ -408,10 +408,14 @@
   <form id="paymentForm">
    <div class="form-grid">
     <div class="field"><label>Buyer *</label><select id="paymentBuyer" required><option value="">Select Buyer</option></select></div>
-    <div class="field"><label>Amount *</label><input id="paymentAmount" type="number" min="0.01" step="0.01" required></div>
-    <div class="field"><label>Currency</label><select id="paymentCurrency"><option>USD</option><option>EUR</option><option>GBP</option><option>PKR</option><option>AED</option><option>Other</option></select></div>
+    <div class="field"><label>Bank Name</label><input id="paymentBankName" placeholder="Receiving Bank Name"></div>
+    <div class="field"><label>Proforma Invoice No.</label><input id="paymentProformaNo" placeholder="e.g. PI-001"></div>
+    <div class="field"><label>Foreign Currency Amount *</label><input id="paymentForeignAmount" type="number" min="0" step="0.01" required></div>
+    <div class="field"><label>Currency</label><select id="paymentForeignCurrency"><option>USD</option><option>EUR</option><option>GBP</option><option>AED</option><option>Other</option></select></div>
     <div class="field"><label>Payment Mode *</label><select id="paymentMode" required><option>Bank Transfer / T.T.</option><option>Advance</option><option>Balance</option><option>Cash</option><option>Card</option><option>PayPal</option><option>Other</option></select></div>
-    <div class="field"><label>Date</label><input id="paymentDate" type="date"></div>
+    <div class="field"><label>PKR Amount</label><input id="paymentPkrAmount" type="number" min="0" step="0.01" placeholder="Amount received in PKR"></div>
+    <div class="field"><label>Received Date</label><input id="paymentReceivedDate" type="date"></div>
+    <div class="field"><label>Payment Date</label><input id="paymentDate" type="date"></div>
     <div class="field"><label>Reference</label><input id="paymentReference" placeholder="Transaction / invoice reference"></div>
     <div class="field full"><label>Notes</label><textarea id="paymentNotes" rows="4"></textarea></div>
    </div>
