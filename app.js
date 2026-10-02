@@ -739,10 +739,42 @@ function prFillCategories(){
 
 function prOpenPayment(){
  closeDashboardTool();
+
+ // Refresh payment selections every time the form opens.
  var s=document.getElementById("paymentBuyer");
- if(s)s.innerHTML='<option value="">Select Buyer</option>'+buyers.map(function(b){return '<option value="'+escapeHtml(b.id)+'">'+escapeHtml(b.name)+'</option>';}).join("");
- var d=document.getElementById("paymentDate");if(d&&!d.value)d.value=new Date().toISOString().slice(0,10);
- var m=document.getElementById("paymentModal");if(m)m.style.display="flex";
+ if(s){
+   s.innerHTML='<option value="">Select Buyer</option>';
+   if(buyers.length){
+     buyers.forEach(function(b){
+       var o=document.createElement("option");
+       o.value=b.id;
+       o.textContent=b.name+(b.country?" — "+b.country:"");
+       s.appendChild(o);
+     });
+   }else{
+     var empty=document.createElement("option");
+     empty.value="";
+     empty.textContent="No buyers found — add a buyer first";
+     s.appendChild(empty);
+   }
+ }
+
+ var m=document.getElementById("paymentMode");
+ if(m){
+   m.innerHTML='<option value="">Select Payment Mode</option>';
+   PR_PAYMENT_MODES.forEach(function(mode){
+     var o=document.createElement("option");
+     o.value=mode;
+     o.textContent=mode;
+     m.appendChild(o);
+   });
+ }
+
+ var d=document.getElementById("paymentDate");
+ if(d&&!d.value)d.value=new Date().toISOString().slice(0,10);
+
+ var modal=document.getElementById("paymentModal");
+ if(modal)modal.style.display="flex";
 }
 function prClosePayment(){var m=document.getElementById("paymentModal");if(m)m.style.display="none";var f=document.getElementById("paymentForm");if(f)f.reset();}
 function prSavePayment(e){
