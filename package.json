@@ -1,1 +1,16 @@
-
+{
+  "name": "prior-riding-crm-apk",
+  "private": true,
+  "version": "1.0.0",
+  "description": "PRIOR RIDING International Buyer CRM and Product Catalogue",
+  "scripts": {
+    "build:android": "npx cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/core": "^7.4.3",
+    "@capacitor/android": "^7.4.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.3"
+  }
+}
