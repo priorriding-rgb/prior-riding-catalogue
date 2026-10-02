@@ -41,6 +41,27 @@
       </button>
     </div>
 
+    <div class="quick-actions">
+      <button class="quick-btn red" onclick="openDashboardTool('performance')"><span>📊</span> PERFORMANCE WISE</button>
+      <button class="quick-btn green" onclick="showSection('products')"><span>📦</span> PRODUCT</button>
+      <button class="quick-btn red" onclick="openDashboardTool('calc')"><span>🧮</span> CALC BREAKDOWN</button>
+      <button class="quick-btn green" onclick="openDashboardTool('paymentMode')"><span>💳</span> PAYMENT MODE</button>
+      <button class="quick-btn red" onclick="window.print()"><span>🖨️</span> PRINT</button>
+      <button class="quick-btn green" onclick="printToPdf()"><span>📄</span> PDF</button>
+      <button class="quick-btn red" onclick="openDashboardTool('proforma')"><span>🧾</span> ADD PROFORMA</button>
+      <button class="quick-btn green" onclick="openDashboardTool('proformaLetter')"><span>✉️</span> ADD PROFORMA LETTER</button>
+      <button class="quick-btn red" onclick="openDashboardTool('catalogue')"><span>📚</span> CATALOGUE</button>
+      <button class="quick-btn green" onclick="openDashboardTool('payment')"><span>💰</span> ADD PAYMENT</button>
+    </div>
+
+    <div id="dashboardToolPanel" class="dashboard-tool-panel" style="display:none;">
+      <div class="tool-panel-head">
+        <h3 id="dashboardToolTitle">Dashboard Tool</h3>
+        <button onclick="closeDashboardTool()">×</button>
+      </div>
+      <div id="dashboardToolBody"></div>
+    </div>
+
     <div class="stats">
       <div class="stat-card">
         <span>Products</span>
@@ -188,7 +209,21 @@
 
         <div class="field">
           <label>Category</label>
-          <input id="category" placeholder="Boxing Gloves">
+          <select id="category">
+            <option value="">Select Product Category</option>
+            <option>Goalkeeper Gloves</option>
+            <option>Riding Gloves</option>
+            <option>Cycling Gloves</option>
+            <option>Boxing Gloves</option>
+            <option>MMA Gloves</option>
+            <option>Horse Riding Gloves</option>
+            <option>Hard Riding Gloves</option>
+            <option>Chin Pads / Protective Pads</option>
+            <option>Football / Soccer Gloves</option>
+            <option>Sports Bags</option>
+            <option>Hand Wraps</option>
+            <option>Other Sports Goods</option>
+          </select>
         </div>
 
         <div class="field">
@@ -312,7 +347,19 @@
         <div class="field">
           <label>Interested Product</label>
           <select id="interestedProduct">
-            <option value="">Select Product</option>
+            <option value="">Select Product / Category</option>
+            <option>Goalkeeper Gloves</option>
+            <option>Riding Gloves</option>
+            <option>Cycling Gloves</option>
+            <option>Boxing Gloves</option>
+            <option>MMA Gloves</option>
+            <option>Horse Riding Gloves</option>
+            <option>Hard Riding Gloves</option>
+            <option>Chin Pads / Protective Pads</option>
+            <option>Football / Soccer Gloves</option>
+            <option>Sports Bags</option>
+            <option>Hand Wraps</option>
+            <option>Other Sports Goods</option>
           </select>
         </div>
 
