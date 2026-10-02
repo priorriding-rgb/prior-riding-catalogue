@@ -818,15 +818,17 @@ function prTool(tool){
 }
 
 function prOpenProforma(){
+ try{ buyers=JSON.parse(localStorage.getItem("priorRidingBuyers")||"[]"); }catch(e){ buyers=[]; }
+ try{ products=JSON.parse(localStorage.getItem("priorRidingProducts")||"[]"); }catch(e){ products=[]; }
  var b=document.getElementById("proformaBuyer"),p=document.getElementById("proformaProduct");if(!b||!p)return;
- b.innerHTML='<option value="">Select Buyer</option>'+buyers.map(function(x){return '<option value="'+escapeHtml(x.id)+'">'+escapeHtml(x.name)+' — '+escapeHtml(x.country)+'</option>';}).join("");
+ b.innerHTML='<option value="">Select Buyer</option>'+buyers.map(function(x){return '<option value="'+escapeHtml(String(x.id))+'">'+escapeHtml(x.name)+(x.country?' — '+escapeHtml(x.country):'')+'</option>';}).join("");
  p.innerHTML='<option value="">Select Product</option>'+products.map(function(x){return '<option value="'+escapeHtml(x.id)+'">'+escapeHtml(x.name)+' — '+escapeHtml(x.articleNo)+'</option>';}).join("");
  document.getElementById("proformaDate").value=new Date().toISOString().slice(0,10);
  document.getElementById("proformaModal").style.display="flex";
 }
 function prCloseProforma(){document.getElementById("proformaModal").style.display="none";document.getElementById("proformaForm").reset();}
 function prMakeProforma(e){
- e.preventDefault();var buyer=buyers.find(function(x){return x.id===document.getElementById("proformaBuyer").value;}),product=products.find(function(x){return x.id===document.getElementById("proformaProduct").value;});var q=Number(document.getElementById("proformaQty").value)||1,u=Number(document.getElementById("proformaUnitPrice").value)||0;
+ e.preventDefault();var buyer=buyers.find(function(x){return String(x.id)===String(document.getElementById("proformaBuyer").value);}),product=products.find(function(x){return String(x.id)===String(document.getElementById("proformaProduct").value);});var q=Number(document.getElementById("proformaQty").value)||1,u=Number(document.getElementById("proformaUnitPrice").value)||0;
  if(!buyer||!product){alert("Please select buyer and product.");return;}var total=q*u,w=window.open("","_blank","width=900,height=700");if(!w){alert("Please allow pop-ups.");return;}
  w.document.write('<html><head><title>PRIOR RIDING Proforma</title><style>body{font-family:Arial;padding:40px}h1{color:#c62828}table{width:100%;border-collapse:collapse;margin-top:25px}th,td{border:1px solid #ddd;padding:10px}th{background:#16834b;color:#fff}</style></head><body><h1>PRIOR RIDING</h1><h2>PROFORMA INVOICE</h2><p><b>Buyer:</b> '+escapeHtml(buyer.name)+' — '+escapeHtml(buyer.country)+'</p><p><b>Date:</b> '+escapeHtml(document.getElementById("proformaDate").value)+'</p><table><tr><th>Product</th><th>Article</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr><tr><td>'+escapeHtml(product.name)+'</td><td>'+escapeHtml(product.articleNo)+'</td><td>'+q+'</td><td>'+prMoney(u)+'</td><td>'+prMoney(total)+'</td></tr></table><h3>Grand Total: '+prMoney(total)+'</h3><script>window.onload=function(){window.print()}<\/script></body></html>');w.document.close();prCloseProforma();
 }
