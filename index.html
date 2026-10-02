@@ -401,6 +401,57 @@
 </div>
 
 
+<!-- Enhanced CRM tools -->
+<div id="paymentModal" class="modal">
+ <div class="modal-content">
+  <div class="modal-head"><h2>Add Payment</h2><button onclick="prClosePayment()">×</button></div>
+  <form id="paymentForm">
+   <div class="form-grid">
+    <div class="field"><label>Buyer *</label><select id="paymentBuyer" required><option value="">Select Buyer</option></select></div>
+    <div class="field"><label>Amount *</label><input id="paymentAmount" type="number" min="0.01" step="0.01" required></div>
+    <div class="field"><label>Currency</label><select id="paymentCurrency"><option>USD</option><option>EUR</option><option>GBP</option><option>PKR</option><option>AED</option><option>Other</option></select></div>
+    <div class="field"><label>Payment Mode *</label><select id="paymentMode" required><option>Bank Transfer / T.T.</option><option>Advance</option><option>Balance</option><option>Cash</option><option>Card</option><option>PayPal</option><option>Other</option></select></div>
+    <div class="field"><label>Date</label><input id="paymentDate" type="date"></div>
+    <div class="field"><label>Reference</label><input id="paymentReference" placeholder="Transaction / invoice reference"></div>
+    <div class="field full"><label>Notes</label><textarea id="paymentNotes" rows="4"></textarea></div>
+   </div>
+   <div class="modal-actions"><button type="button" class="secondary-btn" onclick="prClosePayment()">Cancel</button><button class="primary-btn" type="submit">Save Payment</button></div>
+  </form>
+ </div>
+</div>
+
+<div id="proformaModal" class="modal">
+ <div class="modal-content">
+  <div class="modal-head"><h2>Add Proforma</h2><button onclick="prCloseProforma()">×</button></div>
+  <form id="proformaForm">
+   <div class="form-grid">
+    <div class="field"><label>Buyer *</label><select id="proformaBuyer" required></select></div>
+    <div class="field"><label>Product *</label><select id="proformaProduct" required></select></div>
+    <div class="field"><label>Quantity *</label><input id="proformaQty" type="number" min="1" value="1" required></div>
+    <div class="field"><label>Unit Price</label><input id="proformaUnitPrice" type="number" min="0" step="0.01" value="0"></div>
+    <div class="field"><label>Date</label><input id="proformaDate" type="date"></div>
+   </div>
+   <p class="muted">The invoice opens in a print-ready window. Use the Android/Chrome print dialog to save it as PDF.</p>
+   <div class="modal-actions"><button type="button" class="secondary-btn" onclick="prCloseProforma()">Cancel</button><button class="primary-btn" type="submit">Create & Print</button></div>
+  </form>
+ </div>
+</div>
+
+<div id="letterModal" class="modal">
+ <div class="modal-content">
+  <div class="modal-head"><h2>Add Proforma Letter</h2><button onclick="prCloseLetter()">×</button></div>
+  <form id="letterForm">
+   <div class="form-grid">
+    <div class="field"><label>Buyer / Company *</label><input id="letterBuyer" required></div>
+    <div class="field"><label>Date</label><input id="letterDate" type="date"></div>
+    <div class="field full"><label>Subject</label><input id="letterSubject" value="Proforma Invoice"></div>
+    <div class="field full"><label>Message *</label><textarea id="letterMessage" rows="8" required placeholder="Dear Sir/Madam,&#10;&#10;Please find attached our proforma invoice..."></textarea></div>
+   </div>
+   <div class="modal-actions"><button type="button" class="secondary-btn" onclick="prCloseLetter()">Cancel</button><button class="primary-btn" type="submit">Create & Print</button></div>
+  </form>
+ </div>
+</div>
+
 <script src="app.js"></script>
 
 </body>
