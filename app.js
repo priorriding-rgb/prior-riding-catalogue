@@ -1060,3 +1060,17 @@ function prToolFinal(tool){
 }
 window.openDashboardTool=prToolFinal;
 window.prDeletePayment=prDeletePayment;
+
+/* ===== DASHBOARD TOOL CLICK FIX ===== */
+function closeDashboardTool(){
+  var p=document.getElementById("dashboardToolPanel");
+  if(p) p.style.display="none";
+}
+window.closeDashboardTool=closeDashboardTool;
+window.openDashboardTool=prToolFinal;
+
+/* Keep dashboard tool buttons responsive after app load. */
+document.addEventListener("DOMContentLoaded",function(){
+  window.closeDashboardTool=closeDashboardTool;
+  window.openDashboardTool=prToolFinal;
+});
