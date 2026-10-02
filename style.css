@@ -477,3 +477,53 @@ td {
 @media(max-width:600px){.perf-summary-grid{grid-template-columns:1fr 1fr}.perf-card strong{font-size:22px}.perf-mini-grid{grid-template-columns:1fr 1fr}.perf-chip{min-width:120px}}
 
 .calc-report{padding:4px 0}.calc-intro{margin:0 0 14px;color:#666;font-size:13px}.calc-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}.calc-card{background:#fff;border:1px solid #e4e8e6;border-radius:10px;padding:13px;border-left:3px solid #16834b}.calc-card:nth-child(odd){border-left-color:#c62828}.calc-card span{display:block;color:#777;font-size:11px}.calc-card strong{display:block;margin-top:5px;font-size:19px}.calc-title{margin:10px 0 9px}.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:14px}.calc-columns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}.calc-box{background:#fff;border:1px solid #e4e8e6;border-radius:10px;padding:13px}.calc-box h4{margin:0 0 8px;font-size:13px;color:#16834b}.calc-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;font-size:12px}.calc-row:last-child{border-bottom:0}.calc-row b{color:#c62828}.calc-empty{padding:12px;text-align:center;color:#888;font-size:12px}.calc-note{margin-top:12px;padding:10px;background:#f7f8f8;border-radius:8px;color:#777;font-size:11px}@media(max-width:800px){.calc-kpis{grid-template-columns:1fr 1fr}.calc-grid{grid-template-columns:1fr 1fr}.calc-columns{grid-template-columns:1fr}}
+
+/* ===== PRIOR RIDING DASHBOARD — ORIGINAL RED/GREEN TILE STYLE ===== */
+.quick-actions{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:14px;
+  margin:0 0 22px;
+}
+.quick-btn{
+  min-height:92px;
+  border:0;
+  border-radius:14px;
+  padding:12px 10px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  cursor:pointer;
+  color:#fff;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.35px;
+  text-align:center;
+  box-shadow:0 5px 14px rgba(0,0,0,.12);
+  transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;
+}
+.quick-btn:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0,.16);filter:brightness(1.03)}
+.quick-btn:active{transform:translateY(0);box-shadow:0 4px 10px rgba(0,0,0,.12)}
+.quick-btn.red{background:linear-gradient(145deg,#d73333,#b51f27)}
+.quick-btn.green{background:linear-gradient(145deg,#1b9b5a,#137642)}
+.quick-btn span{
+  width:42px;height:42px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.28);
+  font-size:22px;line-height:1;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18);
+}
+.dashboard-tool-panel{
+  background:#fff;border:1px solid #e5e9e7;border-radius:15px;
+  box-shadow:0 6px 22px rgba(0,0,0,.08);margin-bottom:20px;overflow:hidden;
+}
+.tool-panel-head{
+  background:linear-gradient(90deg,#c62828,#16834b);color:#fff;
+  padding:13px 16px;display:flex;align-items:center;justify-content:space-between;
+}
+.tool-panel-head h3{font-size:17px}.tool-panel-head button{background:transparent;border:0;color:#fff;font-size:25px;cursor:pointer}
+@media(max-width:900px){.quick-actions{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){.quick-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.quick-btn{min-height:88px;font-size:11px}.quick-btn span{width:38px;height:38px;font-size:20px}}
