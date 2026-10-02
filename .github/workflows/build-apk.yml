@@ -31,13 +31,14 @@ jobs:
         run: |
           rm -rf www
           mkdir -p www
-          cp index.html app.js style.css manifest.json app-config.json pwabuilder-sw.js prior-riding-logo.jpg icon-192.png icon-512.png icon.svg www/
+          cp index.html app.js style.css manifest.json app-config.json pwabuilder-sw.js pwabuilder-sw-v4.js prior-riding-logo.jpg icon-192.png icon-512.png icon.svg www/
 
       - name: Create Android project
         run: |
           npx cap init "PRIOR RIDING CRM" "com.priorriding.crm" --web-dir=www
           npx cap add android
           npx cap copy android
+          sed -i -E 's/versionCode [0-9]+/versionCode 28/; s/versionName "[^"]+"/versionName "2.8.0"/' android/app/build.gradle
 
       - name: Build debug APK
         working-directory: android
