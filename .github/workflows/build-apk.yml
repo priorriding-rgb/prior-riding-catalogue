@@ -38,11 +38,22 @@ jobs:
           npx cap init "PRIOR RIDING CRM" "com.priorriding.crm" --web-dir=www
           npx cap add android
           npx cap copy android
-          sed -i -E 's/versionCode [0-9]+/versionCode 28/; s/versionName "[^"]+"/versionName "2.8.0"/' android/app/build.gradle
+          sed -i -E 's/versionCode [0-9]+/versionCode 29/; s/versionName "[^"]+"/versionName "2.9.0"/' android/app/build.gradle
+
+      - name: Restore stable Android debug signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android
+          key: prior-riding-debug-keystore-v1
 
       - name: Build debug APK
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
+
+      - name: Verify APK
+        run: |
+          test -s android/app/build/outputs/apk/debug/app-debug.apk
+          $ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)/apkanalyzer manifest application-id android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
