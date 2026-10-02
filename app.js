@@ -811,8 +811,29 @@ function prTool(tool){
   var counts={};PR_PRODUCT_CATEGORIES.forEach(function(c){counts[c]=0;});products.forEach(function(x){if(counts[x.category]!=null)counts[x.category]++;});
   t.textContent="Performance Wise";b.innerHTML='<p>Products by category.</p><div class="tool-grid">'+PR_PRODUCT_CATEGORIES.map(function(c){return '<div class="tool-stat"><b>'+escapeHtml(c)+'</b><strong>'+counts[c]+'</strong></div>';}).join("")+'</div>';
  }else if(tool==="calc"){
-  var total=prPayments.reduce(function(s,x){return s+Number(x.amount||0);},0);
-  t.textContent="Calc Breakdown";b.innerHTML='<div class="tool-grid"><div class="tool-stat"><b>Products</b><strong>'+products.length+'</strong></div><div class="tool-stat"><b>Buyers</b><strong>'+buyers.length+'</strong></div><div class="tool-stat"><b>Payments</b><strong>'+prPayments.length+'</strong></div><div class="tool-stat"><b>Payment Total</b><strong>'+prMoney(total)+'</strong></div></div>';
+  var foreignTotals={},pkrTotal=0,modeTotals={},bankTotals={},buyerTotals={};
+  prPayments.forEach(function(x){
+    var cur=x.foreignCurrency||x.currency||"USD",amt=Number(x.foreignAmount!=null?x.foreignAmount:x.amount||0);
+    foreignTotals[cur]=(foreignTotals[cur]||0)+amt;
+    pkrTotal+=Number(x.pkrAmount||0);
+    var mode=x.mode||"Not specified";modeTotals[mode]=(modeTotals[mode]||0)+amt;
+    var bank=x.bankName||"Not specified";bankTotals[bank]=(bankTotals[bank]||0)+amt;
+    var bn=x.buyerName||"Unknown";buyerTotals[bn]=(buyerTotals[bn]||0)+amt;
+  });
+  var currencyHtml=Object.keys(foreignTotals).map(function(k){return '<div class="calc-card"><span>'+escapeHtml(k)+' Received</span><strong>'+prMoney(foreignTotals[k])+'</strong></div>';}).join("");
+  if(!currencyHtml)currencyHtml='<div class="calc-empty">No payment received yet.</div>';
+  var buyerHtml=Object.keys(buyerTotals).sort(function(a,b){return buyerTotals[b]-buyerTotals[a];}).slice(0,8).map(function(k){return '<div class="calc-row"><span>'+escapeHtml(k)+'</span><b>'+prMoney(buyerTotals[k])+'</b></div>';}).join("")||'<div class="calc-empty">No buyer payment data.</div>';
+  var bankHtml=Object.keys(bankTotals).sort(function(a,b){return bankTotals[b]-bankTotals[a];}).slice(0,8).map(function(k){return '<div class="calc-row"><span>'+escapeHtml(k)+'</span><b>'+prMoney(bankTotals[k])+'</b></div>';}).join("")||'<div class="calc-empty">No bank payment data.</div>';
+  var modeHtml=Object.keys(modeTotals).sort(function(a,b){return modeTotals[b]-modeTotals[a];}).map(function(k){return '<div class="calc-row"><span>'+escapeHtml(k)+'</span><b>'+prMoney(modeTotals[k])+'</b></div>';}).join("")||'<div class="calc-empty">No payment mode data.</div>';
+  t.textContent="Calc Breakdown";
+  b.innerHTML='<div class="calc-report">'+
+   '<p class="calc-intro">یہ سیکشن آپ کے محفوظ شدہ کاروباری ریکارڈ کا حسابی خلاصہ دکھاتا ہے۔</p>'+
+   '<div class="calc-kpis"><div class="calc-card"><span>Total Products</span><strong>'+products.length+'</strong></div><div class="calc-card"><span>Total Buyers</span><strong>'+buyers.length+'</strong></div><div class="calc-card"><span>Total Payments</span><strong>'+prPayments.length+'</strong></div><div class="calc-card"><span>PKR Received</span><strong>PKR '+prMoney(pkrTotal)+'</strong></div></div>'+
+   '<h4 class="calc-title">Currency-wise Received</h4><div class="calc-grid">'+currencyHtml+'</div>'+
+   '<div class="calc-columns"><div class="calc-box"><h4>Buyer-wise Payment</h4>'+buyerHtml+'</div><div class="calc-box"><h4>Bank-wise Payment</h4>'+bankHtml+'</div></div>'+
+   '<div class="calc-box"><h4>Payment Mode Breakdown</h4>'+modeHtml+'</div>'+
+   '<div class="calc-note">تمام حسابات اسی ایپ میں محفوظ Payment records سے خودکار طور پر calculate ہوتے ہیں۔</div>'+
+   '</div>';
  }else if(tool==="paymentMode"){
   var modes={};PR_PAYMENT_MODES.forEach(function(m){modes[m]=0;});prPayments.forEach(function(x){modes[x.mode]=(modes[x.mode]||0)+1;});
   t.textContent="Payment Mode";b.innerHTML='<p>Payment methods recorded in the CRM.</p><div class="tool-grid">'+Object.keys(modes).map(function(m){return '<div class="tool-stat"><b>'+escapeHtml(m)+'</b><strong>'+modes[m]+'</strong></div>';}).join("")+'</div><button class="primary-btn" onclick="prOpenPayment()">+ Add Payment</button>';
