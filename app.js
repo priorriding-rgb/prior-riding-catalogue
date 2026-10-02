@@ -374,25 +374,49 @@ function renderBuyers() {
 
 function populateInterestedProducts() {
   var select = document.getElementById("interestedProduct");
-
   if (!select) return;
 
-  select.innerHTML =
-    '<option value="">Select Product</option>';
+  var current = select.value;
 
-  products.forEach(function (product) {
+  var categories = [
+    "Goalkeeper Gloves",
+    "Riding Gloves",
+    "Cycling Gloves",
+    "Boxing Gloves",
+    "MMA Gloves",
+    "Horse Riding Gloves",
+    "Hard Riding Gloves",
+    "Chin Pads / Protective Pads",
+    "Football / Soccer Gloves",
+    "Sports Bags",
+    "Hand Wraps",
+    "Other Sports Goods"
+  ];
+
+  select.innerHTML = '<option value="">Select Product / Category</option>';
+
+  categories.forEach(function (category) {
     var option = document.createElement("option");
-
-    option.value = product.name;
-
-    option.textContent =
-      product.name +
-      (product.articleNo
-        ? " — " + product.articleNo
-        : "");
-
+    option.value = category;
+    option.textContent = category;
     select.appendChild(option);
   });
+
+  if (products.length) {
+    var group = document.createElement("optgroup");
+    group.label = "Added Products";
+
+    products.forEach(function (product) {
+      var option = document.createElement("option");
+      option.value = product.name;
+      option.textContent = product.name + (product.articleNo ? " — " + product.articleNo : "");
+      group.appendChild(option);
+    });
+
+    select.appendChild(group);
+  }
+
+  if (current) select.value = current;
 }
 
 
@@ -600,6 +624,51 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
+
+// ---------------- DASHBOARD QUICK TOOLS ----------------
+
+function openDashboardTool(tool) {
+  var panel = document.getElementById("dashboardToolPanel");
+  var title = document.getElementById("dashboardToolTitle");
+  var body = document.getElementById("dashboardToolBody");
+  if (!panel || !title || !body) return;
+
+  var data = {
+    performance: ["Performance Wise", "Product and buyer performance tools are ready for the next reporting layer."],
+    calc: ["Calc Breakdown", "Calculation breakdown workspace for quotations, quantities, costs and totals."],
+    paymentMode: ["Payment Mode", "Payment mode workspace for recording and reviewing buyer payment methods."],
+    proforma: ["Add Proforma", "Create and manage proforma invoice details from this workspace."],
+    proformaLetter: ["Add Proforma Letter", "Prepare a professional proforma covering letter from this workspace."],
+    catalogue: ["Catalogue", "Open the product catalogue area and manage your catalogue products."],
+    payment: ["Add Payment", "Record buyer payment details and keep payment history organized."]
+  };
+
+  var item = data[tool];
+  if (!item) return;
+
+  title.textContent = item[0];
+  body.innerHTML = "<p>" + escapeHtml(item[1]) + "</p>";
+
+  if (tool === "catalogue") {
+    body.innerHTML += '<button class="primary-btn" onclick="showSection(\'products\'); closeDashboardTool();">Open Product Catalogue</button>';
+  } else if (tool === "payment") {
+    body.innerHTML += '<button class="primary-btn" onclick="showSection(\'buyers\'); closeDashboardTool();">Open Buyer CRM</button>';
+  } else if (tool === "proforma" || tool === "proformaLetter") {
+    body.innerHTML += '<button class="primary-btn" onclick="showSection(\'buyers\'); closeDashboardTool();">Select Buyer</button>';
+  }
+
+  panel.style.display = "block";
+  panel.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function closeDashboardTool() {
+  var panel = document.getElementById("dashboardToolPanel");
+  if (panel) panel.style.display = "none";
+}
+
+function printToPdf() {
+  window.print();
+}
 
 // ---------------- START APP ----------------
 
