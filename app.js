@@ -737,8 +737,16 @@ function prFillCategories(){
  var i=document.getElementById("interestedProduct"); if(i){var iv=i.value;i.innerHTML='<option value="">Select Product / Category</option>'+PR_PRODUCT_CATEGORIES.map(function(c){return '<option>'+escapeHtml(c)+'</option>';}).join("");if(products.length){i.innerHTML+='<optgroup label="Added Products">'+products.map(function(p){return '<option value="'+escapeHtml(p.name)+'">'+escapeHtml(p.name)+(p.articleNo?" — "+escapeHtml(p.articleNo):"")+'</option>';}).join("")+'</optgroup>';}if(iv)i.value=iv;}
 }
 
+function prAddBuyerFromPayment(){
+ closeDashboardTool();
+ if(typeof openBuyerModal==="function") openBuyerModal();
+}
+
 function prOpenPayment(){
  closeDashboardTool();
+
+ // Always reload buyers so newly added buyers appear immediately in Add Payment.
+ try{ buyers=JSON.parse(localStorage.getItem("priorRidingBuyers")||"[]"); }catch(e){ buyers=[]; }
 
  // Refresh payment selections every time the form opens.
  var s=document.getElementById("paymentBuyer");
