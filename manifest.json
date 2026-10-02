@@ -10,5 +10,17 @@
   "theme_color": "#ffffff",
   "description": "Prior Riding International Buyer CRM and Product Catalogue",
   "id": "prior-riding-crm",
-  "lang": "en"
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/prior-riding-catalogue/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/prior-riding-catalogue/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
