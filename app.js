@@ -348,7 +348,6 @@ function renderBuyers() {
           <td>${escapeHtml(buyer.phone || "-")}</td>
 
           <td>${escapeHtml(buyer.interestedProduct || "-")}</td>
-
           <td>${escapeHtml(buyer.status || "-")}</td>
 
           <td>${escapeHtml(buyer.followupDate || "-")}</td>
@@ -697,8 +696,7 @@ document.addEventListener("DOMContentLoaded", function () {
   populateInterestedProducts();
   updateDashboard();
 
-  showSection("dashboard");
-});
+  showSection("dashboard");});
 
 
 // ---------------- GLOBAL FUNCTIONS ----------------
@@ -787,13 +785,26 @@ function prOpenPayment(){
 function prClosePayment(){var m=document.getElementById("paymentModal");if(m)m.style.display="none";var f=document.getElementById("paymentForm");if(f)f.reset();}
 function prSavePayment(e){
  e.preventDefault();
- var buyerId=document.getElementById("paymentBuyer").value,buyer=buyers.find(function(b){return String(b.id)===String(buyerId);});
- var amount=Number(document.getElementById("paymentAmount").value);
- if(!buyer||!(amount>0)){alert("Please select a buyer and enter a valid amount.");return;}
- prPayments.push({id:generateId(),buyerId:buyerId,buyerName:buyer.name,amount:amount,currency:document.getElementById("paymentCurrency").value,mode:document.getElementById("paymentMode").value,date:document.getElementById("paymentDate").value,reference:document.getElementById("paymentReference").value.trim(),notes:document.getElementById("paymentNotes").value.trim(),bankName:document.getElementById("paymentBankName")?document.getElementById("paymentBankName").value.trim():"",proformaInvoiceNo:document.getElementById("paymentProformaNo")?document.getElementById("paymentProformaNo").value.trim():"",foreignAmount:document.getElementById("paymentForeignAmount")?Number(document.getElementById("paymentForeignAmount").value||0):amount,foreignCurrency:document.getElementById("paymentForeignCurrency")?document.getElementById("paymentForeignCurrency").value:"USD",pkrAmount:document.getElementById("paymentPkrAmount")?Number(document.getElementById("paymentPkrAmount").value||0):0,receivedDate:document.getElementById("paymentReceivedDate")?document.getElementById("paymentReceivedDate").value:""});
+ var buyerId=document.getElementById("paymentBuyer").value;
+ var buyer=buyers.find(function(b){return String(b.id)===String(buyerId);});
+ var foreignAmount=Number(document.getElementById("paymentForeignAmount")?document.getElementById("paymentForeignAmount").value:0);
+ if(!buyer||!(foreignAmount>0)){alert("Please select a buyer and enter a valid foreign currency amount.");return;}
+ var foreignCurrency=document.getElementById("paymentForeignCurrency")?document.getElementById("paymentForeignCurrency").value:"USD";
+ var pkrAmount=Number(document.getElementById("paymentPkrAmount")?document.getElementById("paymentPkrAmount").value:0);
+ prPayments.push({
+  id:generateId(),buyerId:buyerId,buyerName:buyer.name,
+  amount:foreignAmount,currency:foreignCurrency,
+  mode:document.getElementById("paymentMode").value,
+  date:document.getElementById("paymentDate").value,
+  reference:document.getElementById("paymentReference").value.trim(),
+  notes:document.getElementById("paymentNotes").value.trim(),
+  bankName:document.getElementById("paymentBankName")?document.getElementById("paymentBankName").value.trim():"",
+  proformaInvoiceNo:document.getElementById("paymentProformaNo")?document.getElementById("paymentProformaNo").value.trim():"",
+  foreignAmount:foreignAmount,foreignCurrency:foreignCurrency,pkrAmount:pkrAmount,
+  receivedDate:document.getElementById("paymentReceivedDate")?document.getElementById("paymentReceivedDate").value:""
+ });
  prSavePayments();prClosePayment();updateDashboard();alert("Payment saved successfully.");
 }
-
 function prTool(tool){
  var p=document.getElementById("dashboardToolPanel"),t=document.getElementById("dashboardToolTitle"),b=document.getElementById("dashboardToolBody");if(!p||!t||!b)return;
  if(tool==="performance"){
@@ -855,47 +866,99 @@ function prMakeLetter(e){
 function prRenderPaymentHistory(){
   var box=document.getElementById("prPaymentHistory");
   if(!box)return;
-  if(!prPayments.length){
-    box.innerHTML='<div class="empty">No payments recorded yet.</div>';
-    return;
-  }
+  if(!prPayments.length){box.innerHTML='<div class="empty">No payments recorded yet.</div>';return;}
   box.innerHTML='<div class="payment-history">'+prPayments.slice().reverse().map(function(p){
-    return '<div class="payment-row"><div><b>'+escapeHtml(p.buyerName)+'</b><span>'+escapeHtml(p.date||"-")+' · '+escapeHtml(p.mode||"-")+'</span></div><strong>'+escapeHtml(p.currency||"USD")+' '+prMoney(p.amount)+'</strong><button class="small-btn delete-btn" onclick="prDeletePayment(\''+p.id+'\')">Delete</button></div>';
+    var amt=Number(p.foreignAmount!=null?p.foreignAmount:p.amount||0);
+    var cur=p.foreignCurrency||p.currency||"USD";
+    return '<div class="payment-row"><div><b>'+escapeHtml(p.buyerName)+'</b><span>'+escapeHtml(p.date||"-")+' · '+escapeHtml(p.mode||"-")+(p.bankName?' · '+escapeHtml(p.bankName):'')+'</span></div><strong>'+escapeHtml(cur)+' '+prMoney(amt)+'</strong><button class="small-btn delete-btn" onclick="prDeletePayment(\''+p.id+'\')">Delete</button></div>';
   }).join("")+'</div>';
 }
 function prDeletePayment(id){
   if(!confirm("Delete this payment record?"))return;
   prPayments=prPayments.filter(function(p){return p.id!==id;});
-  prSavePayments();
-  prRenderPaymentHistory();
-  prTool("payment");
-  updateDashboard();
+  prSavePayments();prRenderPaymentHistory();prToolFinal("payment");updateDashboard();
+}
+function prPerformanceCurrencyTotals(){
+  var totals={};
+  prPayments.forEach(function(p){
+    var cur=p.foreignCurrency||p.currency||"USD";
+    var amt=Number(p.foreignAmount!=null?p.foreignAmount:p.amount||0);
+    totals[cur]=(totals[cur]||0)+amt;
+  });
+  return totals;
+}
+function prPerformancePaymentStats(){
+  var mode={},bank={},buyer={};
+  prPayments.forEach(function(p){
+    var m=p.mode||"Other"; mode[m]=(mode[m]||0)+1;
+    var bk=p.bankName||"Not specified"; bank[bk]=(bank[bk]||0)+1;
+    var bn=p.buyerName||"Unknown"; buyer[bn]=(buyer[bn]||0)+Number(p.foreignAmount!=null?p.foreignAmount:p.amount||0);
+  });
+  return {mode:mode,bank:bank,buyer:buyer};
+}
+function prSortedEntries(obj,limit){
+  return Object.keys(obj).sort(function(a,b){return Number(obj[b])-Number(obj[a]);}).slice(0,limit||8);
 }
 function prToolFinal(tool){
   var p=document.getElementById("dashboardToolPanel"),t=document.getElementById("dashboardToolTitle"),b=document.getElementById("dashboardToolBody");
   if(!p||!t||!b)return;
   if(tool==="performance"){
-    var pc={};PR_PRODUCT_CATEGORIES.forEach(function(c){pc[c]=0;});
+    var pc={},bc={};
+    PR_PRODUCT_CATEGORIES.forEach(function(c){pc[c]=0;});
     products.forEach(function(x){if(pc[x.category]!==undefined)pc[x.category]++;});
-    var bc={};buyers.forEach(function(x){if(x.interestedProduct)bc[x.interestedProduct]=(bc[x.interestedProduct]||0)+1;});
-    t.textContent="Performance Wise";
-    b.innerHTML='<p>Products and interested buyers by category.</p><div class="tool-grid">'+PR_PRODUCT_CATEGORIES.map(function(c){return '<div class="tool-stat"><b>'+escapeHtml(c)+'</b><strong>'+pc[c]+' products</strong><span>'+Number(bc[c]||0)+' buyers</span></div>';}).join("")+'</div>';
+    buyers.forEach(function(x){var c=x.interestedProduct||"Unspecified";bc[c]=(bc[c]||0)+1;});
+    var active=buyers.filter(function(x){return x.status==="Active";}).length;
+    var potential=buyers.filter(function(x){return x.status==="Potential";}).length;
+    var followups=buyers.filter(function(x){return !!x.followupDate;}).length;
+    var payStats=prPerformancePaymentStats(),curr=prPerformanceCurrencyTotals();
+    var currencyCards=Object.keys(curr).length?Object.keys(curr).map(function(c){return '<div class="perf-mini-card"><span>Received in '+escapeHtml(c)+'</span><strong>'+prMoney(curr[c])+'</strong><small>Foreign currency</small></div>';}).join(""):'<div class="perf-empty">No payment records yet.</div>';
+    var productRows=PR_PRODUCT_CATEGORIES.map(function(c){
+      var buyersFor=Number(bc[c]||0),prodFor=Number(pc[c]||0);
+      if(!prodFor&&!buyersFor)return "";
+      return '<tr><td><b>'+escapeHtml(c)+'</b></td><td>'+prodFor+'</td><td>'+buyersFor+'</td></tr>';
+    }).join("");
+    if(!productRows)productRows='<tr><td colspan="3" class="perf-empty">No product or buyer category data yet.</td></tr>';
+    var topBuyers=prSortedEntries(payStats.buyer,5).map(function(n){return '<div class="perf-list-row"><span>'+escapeHtml(n)+'</span><b>'+prMoney(payStats.buyer[n])+'</b></div>';}).join("");
+    if(!topBuyers)topBuyers='<div class="perf-empty">No payment data yet.</div>';
+    var modes=prSortedEntries(payStats.mode,6).map(function(n){return '<div class="perf-chip"><b>'+escapeHtml(n)+'</b><span>'+payStats.mode[n]+' payments</span></div>';}).join("");
+    if(!modes)modes='<div class="perf-empty">No payment modes recorded.</div>';
+    var banks=prSortedEntries(payStats.bank,6).map(function(n){return '<div class="perf-chip"><b>'+escapeHtml(n)+'</b><span>'+payStats.bank[n]+' payment(s)</span></div>';}).join("");
+    if(!banks)banks='<div class="perf-empty">No bank information recorded.</div>';
+    t.textContent="Performance Wise — Business Overview";
+    b.innerHTML='<div class="performance-dashboard">'+
+      '<div class="perf-summary-grid">'+
+      '<div class="perf-card red"><span>Total Products</span><strong>'+products.length+'</strong><small>Catalogue</small></div>'+
+      '<div class="perf-card green"><span>Total Buyers</span><strong>'+buyers.length+'</strong><small>International CRM</small></div>'+
+      '<div class="perf-card red"><span>Active Buyers</span><strong>'+active+'</strong><small>Currently active</small></div>'+
+      '<div class="perf-card green"><span>Follow-ups</span><strong>'+followups+'</strong><small>Scheduled / recorded</small></div>'+
+      '<div class="perf-card red"><span>Payments</span><strong>'+prPayments.length+'</strong><small>Recorded transactions</small></div>'+
+      '<div class="perf-card green"><span>Potential Buyers</span><strong>'+potential+'</strong><small>Sales pipeline</small></div>'+
+      '</div>'+
+      '<h4 class="perf-section-title">Payment Received</h4><div class="perf-mini-grid">'+currencyCards+'</div>'+
+      '<div class="perf-two-col">'+
+      '<div class="perf-box"><h4>Product & Buyer Interest</h4><table class="perf-table"><thead><tr><th>Category</th><th>Products</th><th>Interested Buyers</th></tr></thead><tbody>'+productRows+'</tbody></table></div>'+
+      '<div class="perf-box"><h4>Payment by Buyer</h4><div class="perf-list">'+topBuyers+'</div></div>'+
+      '</div>'+
+      '<div class="perf-two-col">'+
+      '<div class="perf-box"><h4>Payment Modes</h4><div class="perf-chip-grid">'+modes+'</div></div>'+
+      '<div class="perf-box"><h4>Receiving Banks</h4><div class="perf-chip-grid">'+banks+'</div></div>'+
+      '</div>'+
+      '</div>';
   }else if(tool==="calc"){
-    var total=prPayments.reduce(function(s,x){return s+Number(x.amount||0);},0);
+    var curr=prPerformanceCurrencyTotals(),currHtml=Object.keys(curr).map(function(c){return '<div class="tool-stat"><b>'+escapeHtml(c)+' Received</b><strong>'+prMoney(curr[c])+'</strong></div>';}).join("");
     t.textContent="Calc Breakdown";
-    b.innerHTML='<div class="tool-grid"><div class="tool-stat"><b>Total Products</b><strong>'+products.length+'</strong></div><div class="tool-stat"><b>Total Buyers</b><strong>'+buyers.length+'</strong></div><div class="tool-stat"><b>Payments</b><strong>'+prPayments.length+'</strong></div><div class="tool-stat"><b>Recorded Payment Total</b><strong>'+prMoney(total)+'</strong></div></div>';
+    b.innerHTML='<p>Business figures calculated from the records currently saved in this device.</p><div class="tool-grid"><div class="tool-stat"><b>Total Products</b><strong>'+products.length+'</strong></div><div class="tool-stat"><b>Total Buyers</b><strong>'+buyers.length+'</strong></div><div class="tool-stat"><b>Payment Records</b><strong>'+prPayments.length+'</strong></div>'+currHtml+'</div>';
   }else if(tool==="paymentMode"){
-    var modes={};PR_PAYMENT_MODES.forEach(function(m){modes[m]=0;});
-    prPayments.forEach(function(x){modes[x.mode]=(modes[x.mode]||0)+1;});
+    var modes={};PR_PAYMENT_MODES.forEach(function(m){modes[m]=0;});prPayments.forEach(function(x){modes[x.mode]=(modes[x.mode]||0)+1;});
     t.textContent="Payment Mode";
-    b.innerHTML='<p>Select a payment method when adding a payment. Current records:</p><div class="tool-grid">'+Object.keys(modes).map(function(m){return '<div class="tool-stat"><b>'+escapeHtml(m)+'</b><strong>'+modes[m]+'</strong></div>';}).join("")+'</div><button class="primary-btn" onclick="prOpenPayment()">+ Add Payment</button>';
+    b.innerHTML='<p>Payment methods recorded in the CRM.</p><div class="tool-grid">'+Object.keys(modes).map(function(m){return '<div class="tool-stat"><b>'+escapeHtml(m)+'</b><strong>'+modes[m]+'</strong></div>';}).join("")+'</div><button class="primary-btn" onclick="prOpenPayment()">+ Add Payment</button>';
   }else if(tool==="payment"){
     t.textContent="Add Payment";
-    b.innerHTML='<p>Record a buyer payment and keep its history in this device.</p><button class="primary-btn" onclick="prOpenPayment()">+ Add Payment</button><div id="prPaymentHistory"></div>';
+    b.innerHTML='<p>Record buyer payment and keep its complete history in this device.</p><button class="primary-btn" onclick="prOpenPayment()">+ Add Payment</button><div id="prPaymentHistory"></div>';
     prRenderPaymentHistory();
   }else if(tool==="catalogue"){
     t.textContent="Catalogue";
-    b.innerHTML='<p>Open the complete product catalogue.</p><button class="primary-btn" onclick="showSection("products");closeDashboardTool()">Open Product Catalogue</button>';
+    b.innerHTML='<p>Open the complete product catalogue.</p><button class="primary-btn" onclick="showSection(\'products\');closeDashboardTool()">Open Product Catalogue</button>';
   }else if(tool==="proforma"){
     t.textContent="Add Proforma";
     b.innerHTML='<p>Create a print-ready proforma invoice from saved buyer and product data.</p><button class="primary-btn" onclick="prOpenProforma()">Create Proforma</button>';
@@ -903,8 +966,7 @@ function prToolFinal(tool){
     t.textContent="Add Proforma Letter";
     b.innerHTML='<p>Prepare a professional proforma covering letter.</p><button class="primary-btn" onclick="prOpenLetter()">Create Letter</button>';
   }
-  p.style.display="block";
-  p.scrollIntoView({behavior:"smooth",block:"start"});
+  p.style.display="block";p.scrollIntoView({behavior:"smooth",block:"start"});
 }
 window.openDashboardTool=prToolFinal;
 window.prDeletePayment=prDeletePayment;
