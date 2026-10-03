@@ -1,8 +1,42 @@
+
+// ============================================================
 // PRIOR RIDING CRM
-// Buyer + Product Storage System
+// Buyer + Product + Payment + Proforma Storage System
+// ============================================================
 
 var products = JSON.parse(localStorage.getItem("priorRidingProducts") || "[]");
 var buyers = JSON.parse(localStorage.getItem("priorRidingBuyers") || "[]");
+var prPayments = JSON.parse(localStorage.getItem("priorRidingPayments") || "[]");
+
+var PR_PRODUCT_CATEGORIES = [
+  "Goalkeeper Gloves",
+  "Riding Gloves",
+  "Cycling Gloves",
+  "Boxing Gloves",
+  "MMA Gloves",
+  "Horse Riding Gloves",
+  "Hard Riding Gloves",
+  "Football / Soccer Gloves",
+  "Chin Pads / Protective Pads",
+  "Sports Bags",
+  "Hand Wraps",
+  "Other Sports Goods / Other Varieties"
+];
+
+var PR_PAYMENT_MODES = [
+  "Bank Transfer / T.T.",
+  "Advance",
+  "Balance",
+  "Cash",
+  "Card",
+  "PayPal",
+  "Other"
+];
+
+
+// ============================================================
+// STORAGE
+// ============================================================
 
 function saveProducts() {
   localStorage.setItem("priorRidingProducts", JSON.stringify(products));
@@ -12,10 +46,37 @@ function saveBuyers() {
   localStorage.setItem("priorRidingBuyers", JSON.stringify(buyers));
 }
 
-function showSection(section) {
-  var sections = document.querySelectorAll(".section");
+function prSavePayments() {
+  localStorage.setItem("priorRidingPayments", JSON.stringify(prPayments));
+}
 
-  sections.forEach(function (item) {
+function generateId() {
+  return Date.now().toString() + Math.random().toString(36).substring(2, 8);
+}
+
+function prMoney(n) {
+  return Number(n || 0).toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+// ============================================================
+// SECTION NAVIGATION
+// ============================================================
+
+function showSection(section) {
+  document.querySelectorAll(".section").forEach(function(item) {
     item.style.display = "none";
   });
 
@@ -25,13 +86,9 @@ function showSection(section) {
     selected.style.display = "block";
   }
 
-  document.querySelectorAll(".nav-btn").forEach(function (btn) {
+  document.querySelectorAll(".nav-btn").forEach(function(btn) {
     btn.classList.remove("active");
-  });
 
-  var buttons = document.querySelectorAll(".nav-btn");
-
-  buttons.forEach(function (btn) {
     var text = btn.textContent.toLowerCase();
 
     if (
@@ -46,6 +103,11 @@ function showSection(section) {
   updateDashboard();
 }
 
+
+// ============================================================
+// PRODUCT MODAL
+// ============================================================
+
 function openProductModal() {
   var modal = document.getElementById("productModal");
 
@@ -53,7 +115,11 @@ function openProductModal() {
     modal.style.display = "flex";
   }
 
-  document.getElementById("productModalTitle").textContent = "Add Product";
+  var title = document.getElementById("productModalTitle");
+
+  if (title) {
+    title.textContent = "Add Product";
+  }
 }
 
 function closeProductModal() {
@@ -69,9 +135,23 @@ function closeProductModal() {
     form.reset();
   }
 
-  document.getElementById("productId").value = "";
-  document.getElementById("productModalTitle").textContent = "Add Product";
+  var id = document.getElementById("productId");
+
+  if (id) {
+    id.value = "";
+  }
+
+  var title = document.getElementById("productModalTitle");
+
+  if (title) {
+    title.textContent = "Add Product";
+  }
 }
+
+
+// ============================================================
+// BUYER MODAL
+// ============================================================
 
 function openBuyerModal() {
   var modal = document.getElementById("buyerModal");
@@ -80,7 +160,12 @@ function openBuyerModal() {
     modal.style.display = "flex";
   }
 
-  document.getElementById("buyerModalTitle").textContent = "Add Buyer";
+  var title = document.getElementById("buyerModalTitle");
+
+  if (title) {
+    title.textContent = "Add Buyer";
+  }
+
   populateInterestedProducts();
 }
 
@@ -97,16 +182,23 @@ function closeBuyerModal() {
     form.reset();
   }
 
-  document.getElementById("buyerId").value = "";
-  document.getElementById("buyerModalTitle").textContent = "Add Buyer";
+  var id = document.getElementById("buyerId");
+
+  if (id) {
+    id.value = "";
+  }
+
+  var title = document.getElementById("buyerModalTitle");
+
+  if (title) {
+    title.textContent = "Add Buyer";
+  }
 }
 
-function generateId() {
-  return Date.now().toString() + Math.random().toString(36).substring(2, 8);
-}
 
-
-// ---------------- PRODUCT SAVE ----------------
+// ============================================================
+// PRODUCT SAVE
+// ============================================================
 
 function handleProductSubmit(event) {
   event.preventDefault();
@@ -137,7 +229,7 @@ function handleProductSubmit(event) {
   }
 
   if (id) {
-    var index = products.findIndex(function (p) {
+    var index = products.findIndex(function(p) {
       return p.id === id;
     });
 
@@ -152,14 +244,15 @@ function handleProductSubmit(event) {
   renderProducts();
   populateInterestedProducts();
   updateDashboard();
-
   closeProductModal();
 
   alert("Product saved successfully.");
 }
 
 
-// ---------------- BUYER SAVE ----------------
+// ============================================================
+// BUYER SAVE
+// ============================================================
 
 function handleBuyerSubmit(event) {
   event.preventDefault();
@@ -185,7 +278,7 @@ function handleBuyerSubmit(event) {
   }
 
   if (id) {
-    var index = buyers.findIndex(function (b) {
+    var index = buyers.findIndex(function(b) {
       return b.id === id;
     });
 
@@ -199,14 +292,15 @@ function handleBuyerSubmit(event) {
   saveBuyers();
   renderBuyers();
   updateDashboard();
-
   closeBuyerModal();
 
   alert("Buyer saved successfully.");
 }
 
 
-// ---------------- PRODUCT LIST ----------------
+// ============================================================
+// PRODUCT LIST
+// ============================================================
 
 function renderProducts() {
   var container = document.getElementById("productList");
@@ -219,11 +313,11 @@ function renderProducts() {
     ? searchInput.value.toLowerCase().trim()
     : "";
 
-  var filtered = products.filter(function (product) {
+  var filtered = products.filter(function(product) {
     return (
-      product.name.toLowerCase().includes(search) ||
-      product.articleNo.toLowerCase().includes(search) ||
-      product.category.toLowerCase().includes(search)
+      String(product.name || "").toLowerCase().includes(search) ||
+      String(product.articleNo || "").toLowerCase().includes(search) ||
+      String(product.category || "").toLowerCase().includes(search)
     );
   });
 
@@ -233,69 +327,63 @@ function renderProducts() {
     return;
   }
 
-  container.innerHTML = filtered
-    .map(function (product) {
-      return `
-        <div class="panel product-card">
+  container.innerHTML = filtered.map(function(product) {
+    return `
+      <div class="panel product-card">
 
-          ${
-            product.imageUrl
-              ? `<img src="${escapeHtml(product.imageUrl)}"
-                   alt="${escapeHtml(product.name)}"
-                   style="width:100%;max-height:220px;object-fit:contain;">`
-              : ""
-          }
+        ${
+          product.imageUrl
+            ? `<img src="${escapeHtml(product.imageUrl)}"
+                 alt="${escapeHtml(product.name)}"
+                 style="width:100%;max-height:220px;object-fit:contain;">`
+            : ""
+        }
 
-          <h3>${escapeHtml(product.name)}</h3>
+        <h3>${escapeHtml(product.name)}</h3>
 
-          <p><strong>Article:</strong> ${escapeHtml(product.articleNo)}</p>
+        <p><strong>Article:</strong>
+          ${escapeHtml(product.articleNo)}</p>
 
-          <p><strong>Category:</strong>
-            ${escapeHtml(product.category || "-")}
-          </p>
+        <p><strong>Category:</strong>
+          ${escapeHtml(product.category || "-")}</p>
 
-          <p><strong>Material:</strong>
-            ${escapeHtml(product.material || "-")}
-          </p>
+        <p><strong>Material:</strong>
+          ${escapeHtml(product.material || "-")}</p>
 
-          <p><strong>Size:</strong>
-            ${escapeHtml(product.size || "-")}
-          </p>
+        <p><strong>Size:</strong>
+          ${escapeHtml(product.size || "-")}</p>
 
-          <p><strong>Color:</strong>
-            ${escapeHtml(product.color || "-")}
-          </p>
+        <p><strong>Color:</strong>
+          ${escapeHtml(product.color || "-")}</p>
 
-          <p><strong>MOQ:</strong>
-            ${escapeHtml(product.moq || "-")}
-          </p>
+        <p><strong>MOQ:</strong>
+          ${escapeHtml(product.moq || "-")}</p>
 
-          <p><strong>Price:</strong>
-            ${escapeHtml(product.price || "-")}
-          </p>
+        <p><strong>Price:</strong>
+          ${escapeHtml(product.price || "-")}</p>
 
-          <p><strong>Status:</strong>
-            ${escapeHtml(product.status || "-")}
-          </p>
+        <p><strong>Status:</strong>
+          ${escapeHtml(product.status || "-")}</p>
 
-          <div style="margin-top:12px;">
-            <button onclick="editProduct('${product.id}')">
-              Edit
-            </button>
+        <div style="margin-top:12px;">
+          <button onclick="editProduct('${product.id}')">
+            Edit
+          </button>
 
-            <button onclick="deleteProduct('${product.id}')">
-              Delete
-            </button>
-          </div>
-
+          <button onclick="deleteProduct('${product.id}')">
+            Delete
+          </button>
         </div>
-      `;
-    })
-    .join("");
+
+      </div>
+    `;
+  }).join("");
 }
 
 
-// ---------------- BUYER LIST ----------------
+// ============================================================
+// BUYER LIST
+// ============================================================
 
 function renderBuyers() {
   var table = document.getElementById("buyerTable");
@@ -308,11 +396,11 @@ function renderBuyers() {
     ? searchInput.value.toLowerCase().trim()
     : "";
 
-  var filtered = buyers.filter(function (buyer) {
+  var filtered = buyers.filter(function(buyer) {
     return (
-      buyer.name.toLowerCase().includes(search) ||
-      buyer.country.toLowerCase().includes(search) ||
-      buyer.phone.toLowerCase().includes(search)
+      String(buyer.name || "").toLowerCase().includes(search) ||
+      String(buyer.country || "").toLowerCase().includes(search) ||
+      String(buyer.phone || "").toLowerCase().includes(search)
     );
   });
 
@@ -327,102 +415,135 @@ function renderBuyers() {
     return;
   }
 
-  table.innerHTML = filtered
-    .map(function (buyer) {
-      return `
-        <tr>
+  table.innerHTML = filtered.map(function(buyer) {
+    return `
+      <tr>
 
-          <td>
-            <strong>${escapeHtml(buyer.name)}</strong>
-            ${
-              buyer.contactPerson
-                ? `<br>${escapeHtml(buyer.contactPerson)}`
-                : ""
-            }
-          </td>
+        <td>
+          <strong>${escapeHtml(buyer.name)}</strong>
+          ${
+            buyer.contactPerson
+              ? `<br>${escapeHtml(buyer.contactPerson)}`
+              : ""
+          }
+        </td>
 
-          <td>${escapeHtml(buyer.country)}</td>
+        <td>${escapeHtml(buyer.country)}</td>
 
-          <td>${escapeHtml(buyer.email || "-")}</td>
+        <td>${escapeHtml(buyer.email || "-")}</td>
 
-          <td>${escapeHtml(buyer.phone || "-")}</td>
+        <td>${escapeHtml(buyer.phone || "-")}</td>
 
-          <td>${escapeHtml(buyer.interestedProduct || "-")}</td>
-          <td>${escapeHtml(buyer.status || "-")}</td>
+        <td>${escapeHtml(buyer.interestedProduct || "-")}</td>
 
-          <td>${escapeHtml(buyer.followupDate || "-")}</td>
+        <td>${escapeHtml(buyer.status || "-")}</td>
 
-          <td>
-            <button onclick="editBuyer('${buyer.id}')">
-              Edit
-            </button>
+        <td>${escapeHtml(buyer.followupDate || "-")}</td>
 
-            <button onclick="deleteBuyer('${buyer.id}')">
-              Delete
-            </button>
-          </td>
+        <td>
+          <button onclick="editBuyer('${buyer.id}')">
+            Edit
+          </button>
 
-        </tr>
-      `;
-    })
-    .join("");
+          <button onclick="deleteBuyer('${buyer.id}')">
+            Delete
+          </button>
+        </td>
+
+      </tr>
+    `;
+  }).join("");
 }
 
 
-// ---------------- INTERESTED PRODUCT OPTIONS ----------------
+// ============================================================
+// CATEGORY OPTIONS
+// ============================================================
+
+function prFillCategories() {
+
+  var category = document.getElementById("category");
+
+  if (category) {
+    var current = category.value;
+
+    category.innerHTML =
+      '<option value="">Select Product Category</option>';
+
+    PR_PRODUCT_CATEGORIES.forEach(function(c) {
+      var option = document.createElement("option");
+      option.value = c;
+      option.textContent = c;
+      category.appendChild(option);
+    });
+
+    if (current) {
+      category.value = current;
+    }
+  }
+
+  populateInterestedProducts();
+}
+
 
 function populateInterestedProducts() {
+
   var select = document.getElementById("interestedProduct");
+
   if (!select) return;
 
   var current = select.value;
 
-  var categories = [
-    "Goalkeeper Gloves",
-    "Riding Gloves",
-    "Cycling Gloves",
-    "Boxing Gloves",
-    "MMA Gloves",
-    "Horse Riding Gloves",
-    "Hard Riding Gloves",
-    "Chin Pads / Protective Pads",
-    "Football / Soccer Gloves",
-    "Sports Bags",
-    "Hand Wraps",
-    "Other Sports Goods"
-  ];
+  select.innerHTML =
+    '<option value="">Select Product / Category</option>';
 
-  select.innerHTML = '<option value="">Select Product / Category</option>';
+  PR_PRODUCT_CATEGORIES.forEach(function(category) {
 
-  categories.forEach(function (category) {
     var option = document.createElement("option");
+
     option.value = category;
     option.textContent = category;
+
     select.appendChild(option);
   });
 
   if (products.length) {
+
     var group = document.createElement("optgroup");
+
     group.label = "Added Products";
 
-    products.forEach(function (product) {
+    products.forEach(function(product) {
+
       var option = document.createElement("option");
+
       option.value = product.name;
-      option.textContent = product.name + (product.articleNo ? " — " + product.articleNo : "");
+
+      option.textContent =
+        product.name +
+        (product.articleNo
+          ? " — " + product.articleNo
+          : "");
+
       group.appendChild(option);
     });
 
     select.appendChild(group);
   }
 
-  if (current) select.value = current;
+  if (current) {
+    select.value = current;
+  }
 }
 
 
-// ---------------- EDIT PRODUCT ----------------
+// ============================================================
+// EDIT PRODUCT
+// ============================================================
 
 function editProduct(id) {
-  var product = products.find(function (p) {
+
+  var product = products.find(function(p) {
     return p.id === id;
   });
 
@@ -455,10 +576,13 @@ function editProduct(id) {
 }
 
 
-// ---------------- EDIT BUYER ----------------
+// ============================================================
+// EDIT BUYER
+// ============================================================
 
 function editBuyer(id) {
-  var buyer = buyers.find(function (b) {
+
+  var buyer = buyers.find(function(b) {
     return b.id === id;
   });
 
@@ -468,14 +592,11 @@ function editBuyer(id) {
 
   document.getElementById("buyerId").value = buyer.id;
   document.getElementById("buyerName").value = buyer.name || "";
-  document.getElementById("buyerCountry").value =
-    buyer.country || "";
+  document.getElementById("buyerCountry").value = buyer.country || "";
   document.getElementById("contactPerson").value =
     buyer.contactPerson || "";
-  document.getElementById("buyerEmail").value =
-    buyer.email || "";
-  document.getElementById("buyerPhone").value =
-    buyer.phone || "";
+  document.getElementById("buyerEmail").value = buyer.email || "";
+  document.getElementById("buyerPhone").value = buyer.phone || "";
   document.getElementById("interestedProduct").value =
     buyer.interestedProduct || "";
   document.getElementById("buyerStatus").value =
@@ -492,12 +613,15 @@ function editBuyer(id) {
 }
 
 
-// ---------------- DELETE PRODUCT ----------------
+// ============================================================
+// DELETE
+// ============================================================
 
 function deleteProduct(id) {
+
   if (!confirm("Delete this product?")) return;
 
-  products = products.filter(function (product) {
+  products = products.filter(function(product) {
     return product.id !== id;
   });
 
@@ -509,12 +633,11 @@ function deleteProduct(id) {
 }
 
 
-// ---------------- DELETE BUYER ----------------
-
 function deleteBuyer(id) {
+
   if (!confirm("Delete this buyer?")) return;
 
-  buyers = buyers.filter(function (buyer) {
+  buyers = buyers.filter(function(buyer) {
     return buyer.id !== id;
   });
 
@@ -525,15 +648,29 @@ function deleteBuyer(id) {
 }
 
 
-// ---------------- DASHBOARD ----------------
+// ============================================================
+// DASHBOARD
+// ============================================================
 
 function updateDashboard() {
-  var productCount = document.getElementById("productCount");
-  var buyerCount = document.getElementById("buyerCount");
+
+  var productCount =
+    document.getElementById("productCount");
+
+  var buyerCount =
+    document.getElementById("buyerCount");
+
   var activeBuyerCount =
     document.getElementById("activeBuyerCount");
+
   var followupCount =
     document.getElementById("followupCount");
+
+  var paymentCount =
+    document.getElementById("paymentCount");
+
+  var paymentTotal =
+    document.getElementById("paymentTotal");
 
   if (productCount) {
     productCount.textContent = products.length;
@@ -544,15 +681,37 @@ function updateDashboard() {
   }
 
   if (activeBuyerCount) {
-    activeBuyerCount.textContent = buyers.filter(function (buyer) {
-      return buyer.status === "Active";
-    }).length;
+    activeBuyerCount.textContent =
+      buyers.filter(function(buyer) {
+        return buyer.status === "Active";
+      }).length;
   }
 
   if (followupCount) {
-    followupCount.textContent = buyers.filter(function (buyer) {
-      return buyer.followupDate;
-    }).length;
+    followupCount.textContent =
+      buyers.filter(function(buyer) {
+        return !!buyer.followupDate;
+      }).length;
+  }
+
+  if (paymentCount) {
+    paymentCount.textContent = prPayments.length;
+  }
+
+  if (paymentTotal) {
+
+    var total = prPayments.reduce(function(sum, payment) {
+
+      return sum +
+        Number(
+          payment.foreignAmount != null
+            ? payment.foreignAmount
+            : payment.amount || 0
+        );
+
+    }, 0);
+
+    paymentTotal.textContent = prMoney(total);
   }
 
   renderRecentProducts();
@@ -561,19 +720,24 @@ function updateDashboard() {
 
 
 function renderRecentProducts() {
-  var container = document.getElementById("recentProducts");
+
+  var container =
+    document.getElementById("recentProducts");
 
   if (!container) return;
 
-  var recent = products.slice(-5).reverse();
+  var recent =
+    products.slice(-5).reverse();
 
-  if (recent.length === 0) {
-    container.innerHTML = "<p>No products added yet.</p>";
+  if (!recent.length) {
+    container.innerHTML =
+      "<p>No products added yet.</p>";
     return;
   }
 
-  container.innerHTML = recent
-    .map(function (product) {
+  container.innerHTML =
+    recent.map(function(product) {
+
       return `
         <div style="padding:10px 0;border-bottom:1px solid #ddd;">
           <strong>${escapeHtml(product.name)}</strong>
@@ -581,25 +745,30 @@ function renderRecentProducts() {
           <small>${escapeHtml(product.articleNo)}</small>
         </div>
       `;
-    })
-    .join("");
+
+    }).join("");
 }
 
 
 function renderRecentBuyers() {
-  var container = document.getElementById("recentBuyers");
+
+  var container =
+    document.getElementById("recentBuyers");
 
   if (!container) return;
 
-  var recent = buyers.slice(-5).reverse();
+  var recent =
+    buyers.slice(-5).reverse();
 
-  if (recent.length === 0) {
-    container.innerHTML = "<p>No buyers added yet.</p>";
+  if (!recent.length) {
+    container.innerHTML =
+      "<p>No buyers added yet.</p>";
     return;
   }
 
-  container.innerHTML = recent
-    .map(function (buyer) {
+  container.innerHTML =
+    recent.map(function(buyer) {
+
       return `
         <div style="padding:10px 0;border-bottom:1px solid #ddd;">
           <strong>${escapeHtml(buyer.name)}</strong>
@@ -607,470 +776,483 @@ function renderRecentBuyers() {
           <small>${escapeHtml(buyer.country)}</small>
         </div>
       `;
-    })
-    .join("");
+
+    }).join("");
 }
 
 
-// ---------------- SAFETY ----------------
+// ============================================================
+// PAYMENT
+// ============================================================
 
-function escapeHtml(value) {
-  return String(value || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
+function prFillBuyerSelect(id) {
 
+  var select =
+    document.getElementById(id);
 
-// ---------------- DASHBOARD QUICK TOOLS ----------------
+  if (!select) return;
 
-var prPayments = JSON.parse(localStorage.getItem("priorRidingPayments") || "[]");
+  select.innerHTML =
+    '<option value="">Select Buyer</option>';
 
-function prSavePayments(){ localStorage.setItem("priorRidingPayments", JSON.stringify(prPayments)); }
+  buyers.forEach(function(buyer) {
 
-function prMoney(n){ return Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+    var option =
+      document.createElement("option");
 
-function prFillBuyerSelect(id){
-  var s=document.getElementById(id); if(!s) return;
-  var current=s.value;
-  s.innerHTML='<option value="">Select Buyer</option>';
-  buyers.forEach(function(x){
-    var o=document.createElement("option");
-    o.value=x.id; o.textContent=x.name+(x.country?" — "+x.country:"");
-    s.appendChild(o);
+    option.value = String(buyer.id);
+
+    option.textContent =
+      buyer.name +
+      (buyer.country
+        ? " — " + buyer.country
+        : "");
+
+    select.appendChild(option);
   });
-  if(current) s.value=current;
 }
 
-function prOpenPayment(){
+
+function prOpenPayment() {
+
+  closeDashboardTool();
+
+  buyers =
+    JSON.parse(
+      localStorage.getItem("priorRidingBuyers") || "[]"
+    );
+
   prFillBuyerSelect("paymentBuyer");
-  var m=document.getElementById("paymentModal"); if(m) m.style.display="flex";
-}
-function prClosePayment(){
-  var m=document.getElementById("paymentModal"); if(m) m.style.display="none";
-  var f=document.getElementById("paymentForm"); if(f) f.reset();
-}
-function prOpenProforma(){
-  prFillBuyerSelect("proformaBuyer");
-  var s=document.getElementById("proformaProduct");
-  if(s){s.innerHTML='<option value="">Select Product</option>';products.forEach(function(x){var o=document.createElement("option");o.value=x.id;o.textContent=x.name+" — "+x.articleNo;s.appendChild(o);});}
-  var m=document.getElementById("proformaModal"); if(m) m.style.display="flex";
-}
-function prCloseProforma(){var m=document.getElementById("proformaModal");if(m)m.style.display="none";}
-function prOpenLetter(){var m=document.getElementById("letterModal");if(m)m.style.display="flex";}
-function prCloseLetter(){var m=document.getElementById("letterModal");if(m)m.style.display="none";}
 
-function handlePaymentSubmit(e){
-  e.preventDefault();
-  var buyerId=document.getElementById("paymentBuyer").value;
-  if(!buyerId){alert("Please select a buyer.");return;}
-  var buyer=buyers.find(function(x){return x.id===buyerId;});
-  var rec={
-    id:generateId(),buyerId:buyerId,buyerName:buyer?buyer.name:"",
-    bankName:document.getElementById("paymentBankName").value,
-    proformaNo:document.getElementById("paymentProformaNo").value.trim(),
-    foreignAmount:Number(document.getElementById("paymentForeignAmount").value||0),
-    foreignCurrency:document.getElementById("paymentForeignCurrency").value,
-    mode:document.getElementById("paymentMode").value,
-    pkrAmount:Number(document.getElementById("paymentPkrAmount").value||0),
-    receivedDate:document.getElementById("paymentReceivedDate").value,
-    paymentDate:document.getElementById("paymentDate").value,
-    reference:document.getElementById("paymentReference").value.trim(),
-    notes:document.getElementById("paymentNotes").value.trim()
+  var mode =
+    document.getElementById("paymentMode");
+
+  if (mode) {
+
+    mode.innerHTML =
+      '<option value="">Select Payment Mode</option>';
+
+    PR_PAYMENT_MODES.forEach(function(item) {
+
+      var option =
+        document.createElement("option");
+
+      option.value = item;
+      option.textContent = item;
+
+      mode.appendChild(option);
+    });
+  }
+
+  var date =
+    document.getElementById("paymentDate");
+
+  if (date && !date.value) {
+    date.value =
+      new Date().toISOString().slice(0, 10);
+  }
+
+  var modal =
+    document.getElementById("paymentModal");
+
+  if (modal) {
+    modal.style.display = "flex";
+  }
+}
+
+
+function prClosePayment() {
+
+  var modal =
+    document.getElementById("paymentModal");
+
+  if (modal) {
+    modal.style.display = "none";
+  }
+
+  var form =
+    document.getElementById("paymentForm");
+
+  if (form) {
+    form.reset();
+  }
+}
+
+
+function prSavePayment(event) {
+
+  event.preventDefault();
+
+  var buyerId =
+    document.getElementById("paymentBuyer").value;
+
+  var buyer =
+    buyers.find(function(b) {
+      return String(b.id) === String(buyerId);
+    });
+
+  var foreignAmount =
+    Number(
+      document.getElementById("paymentForeignAmount").value || 0
+    );
+
+  var pkrAmount =
+    Number(
+      document.getElementById("paymentPkrAmount").value || 0
+    );
+
+  if (!buyer) {
+
+    alert("Please select a buyer.");
+    return;
+  }
+
+  if (!(foreignAmount > 0) && !(pkrAmount > 0)) {
+
+    alert("Please enter payment amount.");
+    return;
+  }
+
+  var currency =
+    document.getElementById("paymentForeignCurrency")
+      ? document.getElementById("paymentForeignCurrency").value
+      : "USD";
+
+  var payment = {
+
+    id: generateId(),
+
+    buyerId: buyerId,
+
+    buyerName: buyer.name,
+
+    foreignAmount: foreignAmount,
+
+    foreignCurrency: currency,
+
+    pkrAmount: pkrAmount,
+
+    mode:
+      document.getElementById("paymentMode").value,
+
+    bankName:
+      document.getElementById("paymentBankName")
+        ? document.getElementById("paymentBankName").value.trim()
+        : "",
+
+    proformaNo:
+      document.getElementById("paymentProformaNo")
+        ? document.getElementById("paymentProformaNo").value.trim()
+        : "",
+
+    receivedDate:
+      document.getElementById("paymentReceivedDate")
+        ? document.getElementById("paymentReceivedDate").value
+        : "",
+
+    paymentDate:
+      document.getElementById("paymentDate").value,
+
+    reference:
+      document.getElementById("paymentReference").value.trim(),
+
+    notes:
+      document.getElementById("paymentNotes").value.trim()
   };
-  if(!rec.foreignAmount && !rec.pkrAmount){alert("Please enter payment amount.");return;}
-  prPayments.push(rec);prSavePayments();prClosePayment();alert("Payment saved successfully.");
-}
 
-function performanceReport(){
-  var total=prPayments.length, pkr=0, foreign={}, banks={}, modes={}, buyerMap={};
-  prPayments.forEach(function(x){
-    pkr+=Number(x.pkrAmount||0);
-    var cur=x.foreignCurrency||"USD",amt=Number(x.foreignAmount||0);
-    foreign[cur]=(foreign[cur]||0)+amt;
-    banks[x.bankName||"Not specified"]=(banks[x.bankName||"Not specified"]||0)+amt;
-    modes[x.mode||"Not specified"]=(modes[x.mode||"Not specified"]||0)+amt;
-    buyerMap[x.buyerName||"Unknown"]=(buyerMap[x.buyerName||"Unknown"]||0)+amt;
-  });
-  function rows(o){return Object.keys(o).sort(function(x,y){return o[y]-o[x];}).map(function(k){return '<div class="calc-row"><span>'+escapeHtml(k)+'</span><b>'+prMoney(o[k])+'</b></div>';}).join("")||'<div class="calc-empty">No data yet.</div>';}
-  return '<div class="calc-report"><p class="calc-intro">PRIOR RIDING business performance summary.</p>'+
-    '<div class="calc-kpis"><div class="calc-card"><span>Products</span><strong>'+products.length+'</strong></div><div class="calc-card"><span>Buyers</span><strong>'+buyers.length+'</strong></div><div class="calc-card"><span>Payments</span><strong>'+total+'</strong></div><div class="calc-card"><span>PKR Received</span><strong>PKR '+prMoney(pkr)+'</strong></div></div>'+
-    '<div class="calc-columns"><div class="calc-box"><h4>Buyer Performance</h4>'+rows(buyerMap)+'</div><div class="calc-box"><h4>Bank Performance</h4>'+rows(banks)+'</div></div>'+
-    '<div class="calc-columns"><div class="calc-box"><h4>Currency Received</h4>'+rows(foreign)+'</div><div class="calc-box"><h4>Payment Modes</h4>'+rows(modes)+'</div></div></div>';
-}
+  prPayments.push(payment);
 
-function openDashboardTool(tool){
-  var panel=document.getElementById("dashboardToolPanel"),title=document.getElementById("dashboardToolTitle"),body=document.getElementById("dashboardToolBody");
-  if(!panel||!title||!body)return;
-  var names={performance:"Performance Wise",calc:"Calc Breakdown",paymentMode:"Payment Mode",proforma:"Add Proforma",proformaLetter:"Add Proforma Letter",catalogue:"Catalogue",payment:"Add Payment"};
-  title.textContent=names[tool]||"Dashboard Tool";
-  if(tool==="performance"){body.innerHTML=performanceReport();}
-  else if(tool==="calc"){body.innerHTML=performanceReport();}
-  else if(tool==="paymentMode"){body.innerHTML='<div class="calc-report"><div class="calc-box"><h4>Payment Mode</h4>'+performanceReport().split('<div class="calc-columns">')[1].split('</div></div></div>')[0]+'</div>';}
-  else if(tool==="payment"){body.innerHTML='<p class="calc-intro">Buyer payment record محفوظ کرنے کے لیے Add Payment کھولیں۔</p><button class="primary-btn" onclick="prOpenPayment();closeDashboardTool()">Add Payment</button>';prFillBuyerSelect("paymentBuyer");}
-  else if(tool==="proforma"){body.innerHTML='<p class="calc-intro">Proforma Invoice بنانے کے لیے Buyer اور Product منتخب کریں۔</p><button class="primary-btn" onclick="prOpenProforma();closeDashboardTool()">Create Proforma</button>';}
-  else if(tool==="proformaLetter"){body.innerHTML='<p class="calc-intro">Professional Proforma Letter تیار کریں۔</p><button class="primary-btn" onclick="prOpenLetter();closeDashboardTool()">Create Letter</button>';}
-  else if(tool==="catalogue"){body.innerHTML='<p class="calc-intro">Product Catalogue میں اپنے تمام products manage کریں۔</p><button class="primary-btn" onclick="showSection("products");closeDashboardTool()">Open Catalogue</button>';}
-  panel.style.display="block";panel.scrollIntoView({behavior:"smooth",block:"start"});
-}
-function closeDashboardTool(){var p=document.getElementById("dashboardToolPanel");if(p)p.style.display="none";}
-function printToPdf(){window.print();}
+  prSavePayments();
 
-document.addEventListener("DOMContentLoaded",function(){
-  var pf=document.getElementById("paymentForm");if(pf)pf.addEventListener("submit",handlePaymentSubmit);
-  var pro=document.getElementById("proformaForm");if(pro)pro.addEventListener("submit",function(e){e.preventDefault();alert("Proforma Invoice تیار ہے۔ Print dialog سے PDF محفوظ کریں۔");window.print();});
-  var letf=document.getElementById("letterForm");if(letf)letf.addEventListener("submit",function(e){e.preventDefault();alert("Proforma Letter تیار ہے۔ Print dialog سے PDF محفوظ کریں۔");window.print();});
-  var productForm=document.getElementById("productForm");if(productForm)productForm.addEventListener("submit",handleProductSubmit);
-  var buyerForm=document.getElementById("buyerForm");if(buyerForm)buyerForm.addEventListener("submit",handleBuyerSubmit);
-  renderProducts();renderBuyers();populateInterestedProducts();updateDashboard();showSection("dashboard");
-});
-// ---------------- START APP ----------------
+  prClosePayment();
 
-document.addEventListener("DOMContentLoaded", function () {
-
-  var productForm = document.getElementById("productForm");
-
-  if (productForm) {
-    productForm.addEventListener(
-      "submit",
-      handleProductSubmit
-    );
-  }
-
-  var buyerForm = document.getElementById("buyerForm");
-
-  if (buyerForm) {
-    buyerForm.addEventListener(
-      "submit",
-      handleBuyerSubmit
-    );
-  }
-
-  renderProducts();
-  renderBuyers();
-  populateInterestedProducts();
   updateDashboard();
 
-  showSection("dashboard");});
-
-
-// ---------------- GLOBAL FUNCTIONS ----------------
-
-window.showSection = showSection;
-
-window.openProductModal = openProductModal;
-window.closeProductModal = closeProductModal;
-
-window.openBuyerModal = openBuyerModal;
-window.closeBuyerModal = closeBuyerModal;
-
-window.renderProducts = renderProducts;
-window.renderBuyers = renderBuyers;
-
-window.editProduct = editProduct;
-window.deleteProduct = deleteProduct;
-
-window.editBuyer = editBuyer;
-window.deleteBuyer = deleteBuyer;
-
-/* ===== PRIOR RIDING CRM ENHANCED TOOLS ===== */
-var PR_PRODUCT_CATEGORIES=[
- "Goalkeeper Gloves","Riding Gloves","Cycling Gloves","Boxing Gloves","MMA Gloves",
- "Horse Riding Gloves","Hard Riding Gloves","Football / Soccer Gloves",
- "Chin Pads / Protective Pads","Sports Bags","Hand Wraps","Other Sports Goods / Other Varieties"
-];
-var PR_PAYMENT_MODES=["Bank Transfer / T.T.","Advance","Balance","Cash","Card","PayPal","Other"];
-var prPayments=JSON.parse(localStorage.getItem("priorRidingPayments")||"[]");
-
-function prSavePayments(){localStorage.setItem("priorRidingPayments",JSON.stringify(prPayments));}
-function prMoney(n){return Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
-
-function prFillCategories(){
- var s=document.getElementById("category"); if(s){var v=s.value;s.innerHTML='<option value="">Select Product Category</option>'+PR_PRODUCT_CATEGORIES.map(function(c){return '<option>'+escapeHtml(c)+'</option>';}).join("");if(v)s.value=v;}
- var i=document.getElementById("interestedProduct"); if(i){var iv=i.value;i.innerHTML='<option value="">Select Product / Category</option>'+PR_PRODUCT_CATEGORIES.map(function(c){return '<option>'+escapeHtml(c)+'</option>';}).join("");if(products.length){i.innerHTML+='<optgroup label="Added Products">'+products.map(function(p){return '<option value="'+escapeHtml(p.name)+'">'+escapeHtml(p.name)+(p.articleNo?" — "+escapeHtml(p.articleNo):"")+'</option>';}).join("")+'</optgroup>';}if(iv)i.value=iv;}
+  alert("Payment saved successfully.");
 }
 
-function prAddBuyerFromPayment(){
- closeDashboardTool();
- if(typeof openBuyerModal==="function") openBuyerModal();
-}
 
-function prOpenPayment(){
- closeDashboardTool();
+// ============================================================
+// PAYMENT HISTORY
+// ============================================================
 
- // Always reload buyers so newly added buyers appear immediately in Add Payment.
- try{ buyers=JSON.parse(localStorage.getItem("priorRidingBuyers")||"[]"); }catch(e){ buyers=[]; }
+function prRenderPaymentHistory() {
 
- // Refresh payment selections every time the form opens.
- var s=document.getElementById("paymentBuyer");
- if(s){
-   s.innerHTML='<option value="">Select Buyer</option>';
-   if(buyers.length){
-     buyers.forEach(function(b){
-       var o=document.createElement("option");
-       o.value=String(b.id);
-       o.textContent=b.name+(b.country?" — "+b.country:"");
-       s.appendChild(o);
-     });
-   }else{
-     var empty=document.createElement("option");
-     empty.value="";
-     empty.textContent="No buyers found — add a buyer first";
-     s.appendChild(empty);
-   }
- }
+  var box =
+    document.getElementById("prPaymentHistory");
 
- var m=document.getElementById("paymentMode");
- if(m){
-   m.innerHTML='<option value="">Select Payment Mode</option>';
-   PR_PAYMENT_MODES.forEach(function(mode){
-     var o=document.createElement("option");
-     o.value=mode;
-     o.textContent=mode;
-     m.appendChild(o);
-   });
- }
+  if (!box) return;
 
- var d=document.getElementById("paymentDate");
- if(d&&!d.value)d.value=new Date().toISOString().slice(0,10);
+  if (!prPayments.length) {
 
- var modal=document.getElementById("paymentModal");
- if(modal)modal.style.display="flex";
-}
-function prClosePayment(){var m=document.getElementById("paymentModal");if(m)m.style.display="none";var f=document.getElementById("paymentForm");if(f)f.reset();}
-function prSavePayment(e){
- e.preventDefault();
- var buyerId=document.getElementById("paymentBuyer").value;
- var buyer=buyers.find(function(b){return String(b.id)===String(buyerId);});
- var foreignAmount=Number(document.getElementById("paymentForeignAmount")?document.getElementById("paymentForeignAmount").value:0);
- if(!buyer||!(foreignAmount>0)){alert("Please select a buyer and enter a valid foreign currency amount.");return;}
- var foreignCurrency=document.getElementById("paymentForeignCurrency")?document.getElementById("paymentForeignCurrency").value:"USD";
- var pkrAmount=Number(document.getElementById("paymentPkrAmount")?document.getElementById("paymentPkrAmount").value:0);
- prPayments.push({
-  id:generateId(),buyerId:buyerId,buyerName:buyer.name,
-  amount:foreignAmount,currency:foreignCurrency,
-  mode:document.getElementById("paymentMode").value,
-  date:document.getElementById("paymentDate").value,
-  reference:document.getElementById("paymentReference").value.trim(),
-  notes:document.getElementById("paymentNotes").value.trim(),
-  bankName:document.getElementById("paymentBankName")?document.getElementById("paymentBankName").value.trim():"",
-  proformaInvoiceNo:document.getElementById("paymentProformaNo")?document.getElementById("paymentProformaNo").value.trim():"",
-  foreignAmount:foreignAmount,foreignCurrency:foreignCurrency,pkrAmount:pkrAmount,
-  receivedDate:document.getElementById("paymentReceivedDate")?document.getElementById("paymentReceivedDate").value:""
- });
- prSavePayments();prClosePayment();updateDashboard();alert("Payment saved successfully.");
-}
-function prTool(tool){
- var p=document.getElementById("dashboardToolPanel"),t=document.getElementById("dashboardToolTitle"),b=document.getElementById("dashboardToolBody");if(!p||!t||!b)return;
- if(tool==="performance"){
-  var counts={};PR_PRODUCT_CATEGORIES.forEach(function(c){counts[c]=0;});products.forEach(function(x){if(counts[x.category]!=null)counts[x.category]++;});
-  t.textContent="Performance Wise";b.innerHTML='<p>Products by category.</p><div class="tool-grid">'+PR_PRODUCT_CATEGORIES.map(function(c){return '<div class="tool-stat"><b>'+escapeHtml(c)+'</b><strong>'+counts[c]+'</strong></div>';}).join("")+'</div>';
- }else if(tool==="calc"){
-  var foreignTotals={},pkrTotal=0,modeTotals={},bankTotals={},buyerTotals={};
-  prPayments.forEach(function(x){
-    var cur=x.foreignCurrency||x.currency||"USD",amt=Number(x.foreignAmount!=null?x.foreignAmount:x.amount||0);
-    foreignTotals[cur]=(foreignTotals[cur]||0)+amt;
-    pkrTotal+=Number(x.pkrAmount||0);
-    var mode=x.mode||"Not specified";modeTotals[mode]=(modeTotals[mode]||0)+amt;
-    var bank=x.bankName||"Not specified";bankTotals[bank]=(bankTotals[bank]||0)+amt;
-    var bn=x.buyerName||"Unknown";buyerTotals[bn]=(buyerTotals[bn]||0)+amt;
-  });
-  var currencyHtml=Object.keys(foreignTotals).map(function(k){return '<div class="calc-card"><span>'+escapeHtml(k)+' Received</span><strong>'+prMoney(foreignTotals[k])+'</strong></div>';}).join("");
-  if(!currencyHtml)currencyHtml='<div class="calc-empty">No payment received yet.</div>';
-  var buyerHtml=Object.keys(buyerTotals).sort(function(a,b){return buyerTotals[b]-buyerTotals[a];}).slice(0,8).map(function(k){return '<div class="calc-row"><span>'+escapeHtml(k)+'</span><b>'+prMoney(buyerTotals[k])+'</b></div>';}).join("")||'<div class="calc-empty">No buyer payment data.</div>';
-  var bankHtml=Object.keys(bankTotals).sort(function(a,b){return bankTotals[b]-bankTotals[a];}).slice(0,8).map(function(k){return '<div class="calc-row"><span>'+escapeHtml(k)+'</span><b>'+prMoney(bankTotals[k])+'</b></div>';}).join("")||'<div class="calc-empty">No bank payment data.</div>';
-  var modeHtml=Object.keys(modeTotals).sort(function(a,b){return modeTotals[b]-modeTotals[a];}).map(function(k){return '<div class="calc-row"><span>'+escapeHtml(k)+'</span><b>'+prMoney(modeTotals[k])+'</b></div>';}).join("")||'<div class="calc-empty">No payment mode data.</div>';
-  t.textContent="Calc Breakdown";
-  b.innerHTML='<div class="calc-report">'+
-   '<p class="calc-intro">یہ سیکشن آپ کے محفوظ شدہ کاروباری ریکارڈ کا حسابی خلاصہ دکھاتا ہے۔</p>'+
-   '<div class="calc-kpis"><div class="calc-card"><span>Total Products</span><strong>'+products.length+'</strong></div><div class="calc-card"><span>Total Buyers</span><strong>'+buyers.length+'</strong></div><div class="calc-card"><span>Total Payments</span><strong>'+prPayments.length+'</strong></div><div class="calc-card"><span>PKR Received</span><strong>PKR '+prMoney(pkrTotal)+'</strong></div></div>'+
-   '<h4 class="calc-title">Currency-wise Received</h4><div class="calc-grid">'+currencyHtml+'</div>'+
-   '<div class="calc-columns"><div class="calc-box"><h4>Buyer-wise Payment</h4>'+buyerHtml+'</div><div class="calc-box"><h4>Bank-wise Payment</h4>'+bankHtml+'</div></div>'+
-   '<div class="calc-box"><h4>Payment Mode Breakdown</h4>'+modeHtml+'</div>'+
-   '<div class="calc-note">تمام حسابات اسی ایپ میں محفوظ Payment records سے خودکار طور پر calculate ہوتے ہیں۔</div>'+
-   '</div>';
- }else if(tool==="paymentMode"){
-  var modes={};PR_PAYMENT_MODES.forEach(function(m){modes[m]=0;});prPayments.forEach(function(x){modes[x.mode]=(modes[x.mode]||0)+1;});
-  t.textContent="Payment Mode";b.innerHTML='<p>Payment methods recorded in the CRM.</p><div class="tool-grid">'+Object.keys(modes).map(function(m){return '<div class="tool-stat"><b>'+escapeHtml(m)+'</b><strong>'+modes[m]+'</strong></div>';}).join("")+'</div><button class="primary-btn" onclick="prOpenPayment()">+ Add Payment</button>';
- }else if(tool==="catalogue"){
-  t.textContent="Catalogue";b.innerHTML='<p>Open the complete product catalogue.</p><button class="primary-btn" onclick="showSection(\'products\');closeDashboardTool()">Open Product Catalogue</button>';
- }else if(tool==="payment"){
-  t.textContent="Add Payment";b.innerHTML='<p>Record buyer payment, amount and payment mode.</p><button class="primary-btn" onclick="prOpenPayment()">+ Add Payment</button>';
- }else if(tool==="proforma"){
-  t.textContent="Add Proforma";b.innerHTML='<p>Create a print-ready proforma invoice using saved buyer and product data.</p><button class="primary-btn" onclick="prOpenProforma()">Create Proforma</button>';
- }else if(tool==="proformaLetter"){
-  t.textContent="Add Proforma Letter";b.innerHTML='<p>Prepare a professional proforma covering letter.</p><button class="primary-btn" onclick="prOpenLetter()">Create Letter</button>';
- }
- p.style.display="block";p.scrollIntoView({behavior:"smooth",block:"start"});
-}
+    box.innerHTML =
+      '<div class="empty">No payments recorded yet.</div>';
 
-function prOpenProforma(){
- try{ buyers=JSON.parse(localStorage.getItem("priorRidingBuyers")||"[]"); }catch(e){ buyers=[]; }
- try{ products=JSON.parse(localStorage.getItem("priorRidingProducts")||"[]"); }catch(e){ products=[]; }
- var b=document.getElementById("proformaBuyer"),p=document.getElementById("proformaProduct");if(!b||!p)return;
- b.innerHTML='<option value="">Select Buyer</option>'+buyers.map(function(x){return '<option value="'+escapeHtml(String(x.id))+'">'+escapeHtml(x.name)+(x.country?' — '+escapeHtml(x.country):'')+'</option>';}).join("");
- p.innerHTML='<option value="">Select Product</option>'+products.map(function(x){return '<option value="'+escapeHtml(x.id)+'">'+escapeHtml(x.name)+' — '+escapeHtml(x.articleNo)+'</option>';}).join("");
- document.getElementById("proformaDate").value=new Date().toISOString().slice(0,10);
- document.getElementById("proformaModal").style.display="flex";
-}
-function prCloseProforma(){document.getElementById("proformaModal").style.display="none";document.getElementById("proformaForm").reset();}
-function prMakeProforma(e){
- e.preventDefault();var buyer=buyers.find(function(x){return String(x.id)===String(document.getElementById("proformaBuyer").value);}),product=products.find(function(x){return String(x.id)===String(document.getElementById("proformaProduct").value);});var q=Number(document.getElementById("proformaQty").value)||1,u=Number(document.getElementById("proformaUnitPrice").value)||0;
- if(!buyer||!product){alert("Please select buyer and product.");return;}var total=q*u,w=window.open("","_blank","width=900,height=700");if(!w){alert("Please allow pop-ups.");return;}
- w.document.write('<html><head><title>PRIOR RIDING Proforma</title><style>body{font-family:Arial;padding:40px}h1{color:#c62828}table{width:100%;border-collapse:collapse;margin-top:25px}th,td{border:1px solid #ddd;padding:10px}th{background:#16834b;color:#fff}</style></head><body><h1>PRIOR RIDING</h1><h2>PROFORMA INVOICE</h2><p><b>Buyer:</b> '+escapeHtml(buyer.name)+' — '+escapeHtml(buyer.country)+'</p><p><b>Date:</b> '+escapeHtml(document.getElementById("proformaDate").value)+'</p><table><tr><th>Product</th><th>Article</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr><tr><td>'+escapeHtml(product.name)+'</td><td>'+escapeHtml(product.articleNo)+'</td><td>'+q+'</td><td>'+prMoney(u)+'</td><td>'+prMoney(total)+'</td></tr></table><h3>Grand Total: '+prMoney(total)+'</h3><script>window.onload=function(){window.print()}<\/script></body></html>');w.document.close();prCloseProforma();
-}
-function prOpenLetter(){document.getElementById("letterDate").value=new Date().toISOString().slice(0,10);document.getElementById("letterModal").style.display="flex";}
-function prCloseLetter(){document.getElementById("letterModal").style.display="none";document.getElementById("letterForm").reset();}
-function prMakeLetter(e){
- e.preventDefault();var buyer=document.getElementById("letterBuyer").value.trim(),subject=document.getElementById("letterSubject").value.trim(),msg=document.getElementById("letterMessage").value.trim();if(!buyer||!msg){alert("Please enter buyer/company and message.");return;}var w=window.open("","_blank","width=900,height=700");if(!w){alert("Please allow pop-ups.");return;}w.document.write('<html><head><title>PRIOR RIDING Letter</title><style>body{font-family:Arial;padding:40px;line-height:1.8}h1{color:#c62828}</style></head><body><h1>PRIOR RIDING</h1><h2>PROFORMA INVOICE COVERING LETTER</h2><p><b>Date:</b> '+escapeHtml(document.getElementById("letterDate").value)+'</p><p><b>To:</b> '+escapeHtml(buyer)+'</p><p><b>Subject:</b> '+escapeHtml(subject||"Proforma Invoice")+'</p><p>'+escapeHtml(msg).replace(/\n/g,"<br>")+'</p><p>Best regards,<br><b>PRIOR RIDING</b></p><script>window.onload=function(){window.print()}<\/script></body></html>');w.document.close();prCloseLetter();
-}
-
-(function(){
- var oldUpdate=window.updateDashboard;window.updateDashboard=function(){if(typeof oldUpdate==="function")oldUpdate();var total=prPayments.reduce(function(s,x){return s+Number(x.amount||0);},0);var pc=document.getElementById("paymentCount"),pt=document.getElementById("paymentTotal");if(pc)pc.textContent=prPayments.length;if(pt)pt.textContent=prMoney(total);};
- var oldPopulate=window.populateInterestedProducts;window.populateInterestedProducts=function(){if(typeof oldPopulate==="function")oldPopulate();prFillCategories();};
- document.addEventListener("DOMContentLoaded",function(){
-  prFillCategories();
-  var f=document.getElementById("paymentForm");if(f)f.addEventListener("submit",prSavePayment);
-  var pf=document.getElementById("proformaForm");if(pf)pf.addEventListener("submit",prMakeProforma);
-  var lf=document.getElementById("letterForm");if(lf)lf.addEventListener("submit",prMakeLetter);
- });
- window.openDashboardTool=prTool;window.prOpenPayment=prOpenPayment;window.prClosePayment=prClosePayment;window.prOpenProforma=prOpenProforma;window.prCloseProforma=prCloseProforma;window.prOpenLetter=prOpenLetter;window.prCloseLetter=prCloseLetter;
-})();
-
-
-/* ===== PRIOR RIDING FINAL FUNCTIONAL FIXES ===== */
-function prRenderPaymentHistory(){
-  var box=document.getElementById("prPaymentHistory");
-  if(!box)return;
-  if(!prPayments.length){box.innerHTML='<div class="empty">No payments recorded yet.</div>';return;}
-  box.innerHTML='<div class="payment-history">'+prPayments.slice().reverse().map(function(p){
-    var amt=Number(p.foreignAmount!=null?p.foreignAmount:p.amount||0);
-    var cur=p.foreignCurrency||p.currency||"USD";
-    return '<div class="payment-row"><div><b>'+escapeHtml(p.buyerName)+'</b><span>'+escapeHtml(p.date||"-")+' · '+escapeHtml(p.mode||"-")+(p.bankName?' · '+escapeHtml(p.bankName):'')+'</span></div><strong>'+escapeHtml(cur)+' '+prMoney(amt)+'</strong><button class="small-btn delete-btn" onclick="prDeletePayment(\''+p.id+'\')">Delete</button></div>';
-  }).join("")+'</div>';
-}
-function prDeletePayment(id){
-  if(!confirm("Delete this payment record?"))return;
-  prPayments=prPayments.filter(function(p){return p.id!==id;});
-  prSavePayments();prRenderPaymentHistory();prToolFinal("payment");updateDashboard();
-}
-function prPerformanceCurrencyTotals(){
-  var totals={};
-  prPayments.forEach(function(p){
-    var cur=p.foreignCurrency||p.currency||"USD";
-    var amt=Number(p.foreignAmount!=null?p.foreignAmount:p.amount||0);
-    totals[cur]=(totals[cur]||0)+amt;
-  });
-  return totals;
-}
-function prPerformancePaymentStats(){
-  var mode={},bank={},buyer={};
-  prPayments.forEach(function(p){
-    var m=p.mode||"Other"; mode[m]=(mode[m]||0)+1;
-    var bk=p.bankName||"Not specified"; bank[bk]=(bank[bk]||0)+1;
-    var bn=p.buyerName||"Unknown"; buyer[bn]=(buyer[bn]||0)+Number(p.foreignAmount!=null?p.foreignAmount:p.amount||0);
-  });
-  return {mode:mode,bank:bank,buyer:buyer};
-}
-function prSortedEntries(obj,limit){
-  return Object.keys(obj).sort(function(a,b){return Number(obj[b])-Number(obj[a]);}).slice(0,limit||8);
-}
-function prToolFinal(tool){
-  var p=document.getElementById("dashboardToolPanel"),t=document.getElementById("dashboardToolTitle"),b=document.getElementById("dashboardToolBody");
-  if(!p||!t||!b)return;
-  if(tool==="performance"){
-    var pc={},bc={};
-    PR_PRODUCT_CATEGORIES.forEach(function(c){pc[c]=0;});
-    products.forEach(function(x){if(pc[x.category]!==undefined)pc[x.category]++;});
-    buyers.forEach(function(x){var c=x.interestedProduct||"Unspecified";bc[c]=(bc[c]||0)+1;});
-    var active=buyers.filter(function(x){return x.status==="Active";}).length;
-    var potential=buyers.filter(function(x){return x.status==="Potential";}).length;
-    var followups=buyers.filter(function(x){return !!x.followupDate;}).length;
-    var payStats=prPerformancePaymentStats(),curr=prPerformanceCurrencyTotals();
-    var currencyCards=Object.keys(curr).length?Object.keys(curr).map(function(c){return '<div class="perf-mini-card"><span>Received in '+escapeHtml(c)+'</span><strong>'+prMoney(curr[c])+'</strong><small>Foreign currency</small></div>';}).join(""):'<div class="perf-empty">No payment records yet.</div>';
-    var productRows=PR_PRODUCT_CATEGORIES.map(function(c){
-      var buyersFor=Number(bc[c]||0),prodFor=Number(pc[c]||0);
-      if(!prodFor&&!buyersFor)return "";
-      return '<tr><td><b>'+escapeHtml(c)+'</b></td><td>'+prodFor+'</td><td>'+buyersFor+'</td></tr>';
-    }).join("");
-    if(!productRows)productRows='<tr><td colspan="3" class="perf-empty">No product or buyer category data yet.</td></tr>';
-    var topBuyers=prSortedEntries(payStats.buyer,5).map(function(n){return '<div class="perf-list-row"><span>'+escapeHtml(n)+'</span><b>'+prMoney(payStats.buyer[n])+'</b></div>';}).join("");
-    if(!topBuyers)topBuyers='<div class="perf-empty">No payment data yet.</div>';
-    var modes=prSortedEntries(payStats.mode,6).map(function(n){return '<div class="perf-chip"><b>'+escapeHtml(n)+'</b><span>'+payStats.mode[n]+' payments</span></div>';}).join("");
-    if(!modes)modes='<div class="perf-empty">No payment modes recorded.</div>';
-    var banks=prSortedEntries(payStats.bank,6).map(function(n){return '<div class="perf-chip"><b>'+escapeHtml(n)+'</b><span>'+payStats.bank[n]+' payment(s)</span></div>';}).join("");
-    if(!banks)banks='<div class="perf-empty">No bank information recorded.</div>';
-    t.textContent="Performance Wise — Business Overview";
-    b.innerHTML='<div class="performance-dashboard">'+
-      '<div class="perf-summary-grid">'+
-      '<div class="perf-card red"><span>Total Products</span><strong>'+products.length+'</strong><small>Catalogue</small></div>'+
-      '<div class="perf-card green"><span>Total Buyers</span><strong>'+buyers.length+'</strong><small>International CRM</small></div>'+
-      '<div class="perf-card red"><span>Active Buyers</span><strong>'+active+'</strong><small>Currently active</small></div>'+
-      '<div class="perf-card green"><span>Follow-ups</span><strong>'+followups+'</strong><small>Scheduled / recorded</small></div>'+
-      '<div class="perf-card red"><span>Payments</span><strong>'+prPayments.length+'</strong><small>Recorded transactions</small></div>'+
-      '<div class="perf-card green"><span>Potential Buyers</span><strong>'+potential+'</strong><small>Sales pipeline</small></div>'+
-      '</div>'+
-      '<h4 class="perf-section-title">Payment Received</h4><div class="perf-mini-grid">'+currencyCards+'</div>'+
-      '<div class="perf-two-col">'+
-      '<div class="perf-box"><h4>Product & Buyer Interest</h4><table class="perf-table"><thead><tr><th>Category</th><th>Products</th><th>Interested Buyers</th></tr></thead><tbody>'+productRows+'</tbody></table></div>'+
-      '<div class="perf-box"><h4>Payment by Buyer</h4><div class="perf-list">'+topBuyers+'</div></div>'+
-      '</div>'+
-      '<div class="perf-two-col">'+
-      '<div class="perf-box"><h4>Payment Modes</h4><div class="perf-chip-grid">'+modes+'</div></div>'+
-      '<div class="perf-box"><h4>Receiving Banks</h4><div class="perf-chip-grid">'+banks+'</div></div>'+
-      '</div>'+
-      '</div>';
-  }else if(tool==="calc"){
-    var foreignTotals={},pkrTotal=0,modeTotals={},bankTotals={},buyerTotals={};
-    prPayments.forEach(function(x){
-      var cur=x.foreignCurrency||x.currency||"USD",amt=Number(x.foreignAmount!=null?x.foreignAmount:x.amount||0);
-      foreignTotals[cur]=(foreignTotals[cur]||0)+amt;
-      pkrTotal+=Number(x.pkrAmount||0);
-      var mode=x.mode||"Not specified";modeTotals[mode]=(modeTotals[mode]||0)+amt;
-      var bank=x.bankName||"Not specified";bankTotals[bank]=(bankTotals[bank]||0)+amt;
-      var bn=x.buyerName||"Unknown";buyerTotals[bn]=(buyerTotals[bn]||0)+amt;
-    });
-    var currencyHtml=Object.keys(foreignTotals).map(function(k){return '<div class="calc-card"><span>'+escapeHtml(k)+' Received</span><strong>'+prMoney(foreignTotals[k])+'</strong></div>';}).join("")||'<div class="calc-empty">No payment received yet.</div>';
-    var buyerHtml=Object.keys(buyerTotals).sort(function(a,b){return buyerTotals[b]-buyerTotals[a];}).slice(0,8).map(function(k){return '<div class="calc-row"><span>'+escapeHtml(k)+'</span><b>'+prMoney(buyerTotals[k])+'</b></div>';}).join("")||'<div class="calc-empty">No buyer payment data.</div>';
-    var bankHtml=Object.keys(bankTotals).sort(function(a,b){return bankTotals[b]-bankTotals[a];}).slice(0,8).map(function(k){return '<div class="calc-row"><span>'+escapeHtml(k)+'</span><b>'+prMoney(bankTotals[k])+'</b></div>';}).join("")||'<div class="calc-empty">No bank payment data.</div>';
-    var modeHtml=Object.keys(modeTotals).sort(function(a,b){return modeTotals[b]-modeTotals[a];}).map(function(k){return '<div class="calc-row"><span>'+escapeHtml(k)+'</span><b>'+prMoney(modeTotals[k])+'</b></div>';}).join("")||'<div class="calc-empty">No payment mode data.</div>';
-    t.textContent="Calc Breakdown";
-    b.innerHTML='<div class="calc-report"><p class="calc-intro">یہ سیکشن محفوظ شدہ کاروباری ریکارڈ کا مکمل حسابی خلاصہ دکھاتا ہے۔</p><div class="calc-kpis"><div class="calc-card"><span>Total Products</span><strong>'+products.length+'</strong></div><div class="calc-card"><span>Total Buyers</span><strong>'+buyers.length+'</strong></div><div class="calc-card"><span>Total Payments</span><strong>'+prPayments.length+'</strong></div><div class="calc-card"><span>PKR Received</span><strong>PKR '+prMoney(pkrTotal)+'</strong></div></div><h4 class="calc-title">Currency-wise Received</h4><div class="calc-grid">'+currencyHtml+'</div><div class="calc-columns"><div class="calc-box"><h4>Buyer-wise Payment</h4>'+buyerHtml+'</div><div class="calc-box"><h4>Bank-wise Payment</h4>'+bankHtml+'</div></div><div class="calc-box"><h4>Payment Mode Breakdown</h4>'+modeHtml+'</div><div class="calc-note">تمام حسابات اسی ایپ میں محفوظ Payment records سے خودکار طور پر calculate ہوتے ہیں۔</div></div>';
-  }else if(tool==="paymentMode"){
-    var modes={};PR_PAYMENT_MODES.forEach(function(m){modes[m]=0;});prPayments.forEach(function(x){modes[x.mode]=(modes[x.mode]||0)+1;});
-    t.textContent="Payment Mode";
-    b.innerHTML='<p>Payment methods recorded in the CRM.</p><div class="tool-grid">'+Object.keys(modes).map(function(m){return '<div class="tool-stat"><b>'+escapeHtml(m)+'</b><strong>'+modes[m]+'</strong></div>';}).join("")+'</div><button class="primary-btn" onclick="prOpenPayment()">+ Add Payment</button>';
-  }else if(tool==="payment"){
-    t.textContent="Add Payment";
-    b.innerHTML='<p>Record buyer payment and keep its complete history in this device.</p><button class="primary-btn" onclick="prOpenPayment()">+ Add Payment</button><div id="prPaymentHistory"></div>';
-    prRenderPaymentHistory();
-  }else if(tool==="catalogue"){
-    t.textContent="Catalogue";
-    b.innerHTML='<p>Open the complete product catalogue.</p><button class="primary-btn" onclick="showSection(\'products\');closeDashboardTool()">Open Product Catalogue</button>';
-  }else if(tool==="proforma"){
-    t.textContent="Add Proforma";
-    b.innerHTML='<p>Create a print-ready proforma invoice from saved buyer and product data.</p><button class="primary-btn" onclick="prOpenProforma()">Create Proforma</button>';
-  }else if(tool==="proformaLetter"){
-    t.textContent="Add Proforma Letter";
-    b.innerHTML='<p>Prepare a professional proforma covering letter.</p><button class="primary-btn" onclick="prOpenLetter()">Create Letter</button>';
+    return;
   }
-  p.style.display="block";p.scrollIntoView({behavior:"smooth",block:"start"});
-}
-window.openDashboardTool=prToolFinal;
-window.prDeletePayment=prDeletePayment;
 
-/* ===== DASHBOARD TOOL CLICK FIX ===== */
-function closeDashboardTool(){
-  var p=document.getElementById("dashboardToolPanel");
-  if(p) p.style.display="none";
-}
-window.closeDashboardTool=closeDashboardTool;
-window.openDashboardTool=prToolFinal;
+  box.innerHTML =
+    '<div class="payment-history">' +
 
-/* Keep dashboard tool buttons responsive after app load. */
-document.addEventListener("DOMContentLoaded",function(){
-  window.closeDashboardTool=closeDashboardTool;
-  window.openDashboardTool=prToolFinal;
-});
+    prPayments.slice().reverse().map(function(payment) {
+
+      var amount =
+        Number(
+          payment.foreignAmount != null
+            ? payment.foreignAmount
+            : payment.amount || 0
+        );
+
+      var currency =
+        payment.foreignCurrency ||
+        payment.currency ||
+        "USD";
+
+      return `
+        <div class="payment-row">
+
+          <div>
+            <b>${escapeHtml(payment.buyerName)}</b>
+
+            <span>
+              ${escapeHtml(payment.paymentDate || "-")}
+              ·
+              ${escapeHtml(payment.mode || "-")}
+
+              ${
+                payment.bankName
+                  ? " · " + escapeHtml(payment.bankName)
+                  : ""
+              }
+            </span>
+          </div>
+
+          <strong>
+            ${escapeHtml(currency)}
+            ${prMoney(amount)}
+          </strong>
+
+          <button
+            class="small-btn delete-btn"
+            onclick="prDeletePayment('${payment.id}')">
+            Delete
+          </button>
+
+        </div>
+      `;
+
+    }).join("") +
+
+    "</div>";
+}
+
+
+function prDeletePayment(id) {
+
+  if (!confirm("Delete this payment record?")) {
+    return;
+  }
+
+  prPayments =
+    prPayments.filter(function(payment) {
+      return payment.id !== id;
+    });
+
+  prSavePayments();
+
+  prRenderPaymentHistory();
+
+  updateDashboard();
+}
+
+
+// ============================================================
+// DASHBOARD TOOLS
+// ============================================================
+
+function closeDashboardTool() {
+
+  var panel =
+    document.getElementById("dashboardToolPanel");
+
+  if (panel) {
+    panel.style.display = "none";
+  }
+}
+
+
+function performanceReport() {
+
+  var active =
+    buyers.filter(function(b) {
+      return b.status === "Active";
+    }).length;
+
+  var potential =
+    buyers.filter(function(b) {
+      return b.status === "Potential";
+    }).length;
+
+  var followups =
+    buyers.filter(function(b) {
+      return !!b.followupDate;
+    }).length;
+
+  var totalPkr =
+    prPayments.reduce(function(sum, p) {
+      return sum + Number(p.pkrAmount || 0);
+    }, 0);
+
+  var currencyTotals = {};
+
+  prPayments.forEach(function(p) {
+
+    var currency =
+      p.foreignCurrency ||
+      p.currency ||
+      "USD";
+
+    var amount =
+      Number(
+        p.foreignAmount != null
+          ? p.foreignAmount
+          : p.amount || 0
+      );
+
+    currencyTotals[currency] =
+      (currencyTotals[currency] || 0) +
+      amount;
+  });
+
+  var currencyHtml =
+    Object.keys(currencyTotals).map(function(currency) {
+
+      return `
+        <div class="calc-card">
+          <span>${escapeHtml(currency)} Received</span>
+          <strong>${prMoney(currencyTotals[currency])}</strong>
+        </div>
+      `;
+
+    }).join("");
+
+  if (!currencyHtml) {
+    currencyHtml =
+      '<div class="calc-empty">No payment received yet.</div>';
+  }
+
+  return `
+    <div class="calc-report">
+
+      <p class="calc-intro">
+        PRIOR RIDING business performance summary.
+      </p>
+
+      <div class="calc-kpis">
+
+        <div class="calc-card">
+          <span>Total Products</span>
+          <strong>${products.length}</strong>
+        </div>
+
+        <div class="calc-card">
+          <span>Total Buyers</span>
+          <strong>${buyers.length}</strong>
+        </div>
+
+        <div class="calc-card">
+          <span>Active Buyers</span>
+          <strong>${active}</strong>
+        </div>
+
+        <div class="calc-card">
+          <span>Potential Buyers</span>
+          <strong>${potential}</strong>
+        </div>
+
+        <div class="calc-card">
+          <span>Follow-ups</span>
+          <strong>${followups}</strong>
+        </div>
+
+        <div class="calc-card">
+          <span>Payments</span>
+          <strong>${prPayments.length}</strong>
+        </div>
+
+        <div class="calc-card">
+          <span>PKR Received</span>
+          <strong>PKR ${prMoney(totalPkr)}</strong>
+        </div>
+
+      </div>
+
+      <h4 class="calc-title">
+        Currency-wise Received
+      </h4>
+
+      <div class="calc-grid">
+        ${currencyHtml}
+      </div>
+
+    </div>
+  `;
+}
+
+
+// ============================================================
+// DASHBOARD TOOL OPEN
+// ============================================================
+
+function openDashboardTool(tool) {
+
+  var panel =
+    document.getElementById("dashboardToolPanel");
+
+  var title =
+    document.getElementById("dashboardToolTitle");
+
+  var body =
+    document.getElementById("dashboardToolBody");
+
+  if (!panel || !title || !body) {
+    return;
+  }
+
+  if (tool === "performance") {
+
+    title.textContent =
+      "Performance Wise";
+
+    body.innerHTML =
+      performanceReport();
+
+  } else if (tool === "calc") {
+
+    title.textContent =
+      "Calc Breakdown";
+
+    body.innerHTML =
+      performanceReport();
+
+  } else if (tool === "paymentMode") {
+
+    title.textContent =
+      "Payment Mode";
+
+    var modes = {};
+
+    PR_PAYMENT_MODES.forEach(function(mode) {
+      modes[mode] = 0;
+    });
+
+    prPayments.forEach(function(payment) {
+
+      var mode =
+        payment.mode || "Other";
+
+      modes[mode] =
+        (modes[mode] || 0) + 1;
+    });
+
+   
