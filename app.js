@@ -1,20 +1,96 @@
 /* ============================================================
    PRIOR RIDING — INTERNATIONAL BUYER CRM
-   COMPLETE APP.JS
+   COMPLETE FUNCTIONAL APP CONTROLLER
    ============================================================ */
 
 "use strict";
 
 /* ============================================================
-   DATA
+   STORAGE KEYS
    ============================================================ */
 
-var products = prLoad("priorRidingProducts", []);
-var buyers = prLoad("priorRidingBuyers", []);
-var prPayments = prLoad("priorRidingPayments", []);
-var proformas = prLoad("priorRidingProformas", []);
+const PR_KEYS = {
+  products: "prior_riding_products",
+  buyers: "prior_riding_buyers",
+  payments: "prior_riding_payments",
+  proformas: "prior_riding_proformas",
+  letters: "prior_riding_letters",
+  settings: "prior_riding_settings"
+};
 
-var PR_PRODUCT_CATEGORIES = [
+let products = loadData(PR_KEYS.products);
+let buyers = loadData(PR_KEYS.buyers);
+let payments = loadData(PR_KEYS.payments);
+let proformas = loadData(PR_KEYS.proformas);
+let letters = loadData(PR_KEYS.letters);
+
+
+/* ============================================================
+   BASIC HELPERS
+   ============================================================ */
+
+function loadData(key) {
+  try {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : [];
+  } catch (e) {
+    console.error("Storage read error:", e);
+    return [];
+  }
+}
+
+function saveData(key, data) {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+    return true;
+  } catch (e) {
+    console.error(e);
+    alert("Storage error: data could not be saved.");
+    return false;
+  }
+}
+
+function generateId() {
+  return Date.now().toString() + "_" +
+    Math.random().toString(36).substring(2, 9);
+}
+
+function getValue(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : "";
+}
+
+function setValue(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.value = value ?? "";
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function money(value) {
+  return Number(value || 0).toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+
+/* ============================================================
+   PRODUCT CATEGORIES
+   ============================================================ */
+
+const PR_PRODUCT_CATEGORIES = [
   "Goalkeeper Gloves",
   "Riding Gloves",
   "Cycling Gloves",
@@ -29,7 +105,7 @@ var PR_PRODUCT_CATEGORIES = [
   "Other Sports Goods / Other Varieties"
 ];
 
-var PR_PAYMENT_MODES = [
+const PR_PAYMENT_MODES = [
   "Bank Transfer / T.T.",
   "Advance",
   "Balance",
@@ -41,684 +117,166 @@ var PR_PAYMENT_MODES = [
 
 
 /* ============================================================
-   SAFE STORAGE
+   INITIALIZATION
    ============================================================ */
 
-function prLoad(key, fallback) {
-  try {
-    var value = localStorage.getItem(key);
-    return value ? JSON.parse(value) : fallback;
-  } catch (e) {
-    console.error("Storage load error:", key, e);
-    return fallback;
+document.addEventListener("DOMContentLoaded", function () {
+
+  setupForms();
+  setupOutsideClick();
+  setupKeyboard();
+
+  populateCategories();
+  populateInterestedProducts();
+
+  refreshAll();
+
+  console.log("PRIOR RIDING CRM loaded successfully.");
+
+});
+
+
+/* ============================================================
+   FORM SETUP
+   ============================================================ */
+
+function setupForms() {
+
+  const productForm = document.getElementById("productForm");
+
+  if (productForm) {
+    productForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      saveProduct();
+    });
   }
-}
 
-function prStore(key, value) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-    return true;
-  } catch (e) {
-    console.error("Storage save error:", key, e);
-    alert("Storage error. Please check your device storage.");
-    return false;
+  const buyerForm = document.getElementById("buyerForm");
+
+  if (buyerForm) {
+    buyerForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      saveBuyer();
+    });
   }
-}
 
-function saveProducts() {
-  prStore("priorRidingProducts", products);
-}
+  const paymentForm = document.getElementById("paymentForm");
 
-function saveBuyers() {
-  prStore("priorRidingBuyers", buyers);
-}
+  if (paymentForm) {
+    paymentForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      savePayment();
+    });
+  }
 
-function prSavePayments() {
-  prStore("priorRidingPayments", prPayments);
-}
+  const proformaForm = document.getElementById("proformaForm");
 
-function saveProformas() {
-  prStore("priorRidingProformas", proformas);
-}
+  if (proformaForm) {
+    proformaForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      createProforma();
+    });
+  }
 
-function generateId() {
-  return Date.now().toString(36) +
-    Math.random().toString(36).substring(2, 10);
-}
+  const letterForm = document.getElementById("letterForm");
 
-function prMoney(n) {
-  return Number(n || 0).toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
-}
-
-function escapeHtml(value) {
-  return String(value == null ? "" : value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  if (letterForm) {
+    letterForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      createProformaLetter();
+    });
+  }
 }
 
 
 /* ============================================================
-   SECTION NAVIGATION
+   NAVIGATION
    ============================================================ */
 
-function showSection(section) {
+function showSection(sectionId) {
 
-  document.querySelectorAll(".section").forEach(function(item) {
-    item.style.display = "none";
-    item.classList.remove("active");
+  document.querySelectorAll(".section").forEach(function (section) {
+    section.classList.remove("active");
+    section.style.display = "none";
   });
 
-  var selected = document.getElementById(section);
+  const section = document.getElementById(sectionId);
 
-  if (selected) {
-    selected.style.display = "block";
-    selected.classList.add("active");
+  if (section) {
+    section.classList.add("active");
+    section.style.display = "block";
   }
 
-  document.querySelectorAll(".nav-btn").forEach(function(btn) {
+  document.querySelectorAll(".nav-btn").forEach(function (btn) {
+
     btn.classList.remove("active");
 
-    var text = btn.textContent.toLowerCase();
+    const text = btn.textContent.toLowerCase();
 
     if (
-      (section === "dashboard" && text.indexOf("dashboard") !== -1) ||
-      (section === "products" && text.indexOf("product") !== -1) ||
-      (section === "buyers" && text.indexOf("buyer") !== -1)
+      (sectionId === "dashboard" && text.includes("dashboard")) ||
+      (sectionId === "products" && text.includes("product")) ||
+      (sectionId === "buyers" && text.includes("buyer"))
     ) {
       btn.classList.add("active");
     }
+
   });
 
-  updateDashboard();
+  refreshAll();
 
-  if (section === "products") renderProducts();
-  if (section === "buyers") renderBuyers();
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
 }
 
 
 /* ============================================================
-   PRODUCT MODAL
+   REFRESH EVERYTHING
    ============================================================ */
 
-function openProductModal() {
+function refreshAll() {
 
-  var modal = document.getElementById("productModal");
+  products = loadData(PR_KEYS.products);
+  buyers = loadData(PR_KEYS.buyers);
+  payments = loadData(PR_KEYS.payments);
+  proformas = loadData(PR_KEYS.proformas);
+  letters = loadData(PR_KEYS.letters);
 
-  if (modal) modal.style.display = "flex";
-
-  var form = document.getElementById("productForm");
-
-  if (form && !document.getElementById("productId").value) {
-    form.reset();
-  }
-
-  var title = document.getElementById("productModalTitle");
-
-  if (title) title.textContent = "Add Product";
-
-  prFillCategories();
-}
-
-function closeProductModal() {
-
-  var modal = document.getElementById("productModal");
-
-  if (modal) modal.style.display = "none";
-
-  var form = document.getElementById("productForm");
-
-  if (form) form.reset();
-
-  var id = document.getElementById("productId");
-
-  if (id) id.value = "";
-
-  var title = document.getElementById("productModalTitle");
-
-  if (title) title.textContent = "Add Product";
-}
-
-
-/* ============================================================
-   BUYER MODAL
-   ============================================================ */
-
-function openBuyerModal() {
-
-  var modal = document.getElementById("buyerModal");
-
-  if (modal) modal.style.display = "flex";
-
-  var form = document.getElementById("buyerForm");
-
-  if (form && !document.getElementById("buyerId").value) {
-    form.reset();
-  }
-
-  var title = document.getElementById("buyerModalTitle");
-
-  if (title) title.textContent = "Add Buyer";
-
+  populateCategories();
   populateInterestedProducts();
-}
 
-function closeBuyerModal() {
-
-  var modal = document.getElementById("buyerModal");
-
-  if (modal) modal.style.display = "none";
-
-  var form = document.getElementById("buyerForm");
-
-  if (form) form.reset();
-
-  var id = document.getElementById("buyerId");
-
-  if (id) id.value = "";
-
-  var title = document.getElementById("buyerModalTitle");
-
-  if (title) title.textContent = "Add Buyer";
-}
-
-
-/* ============================================================
-   PRODUCT SAVE
-   ============================================================ */
-
-function handleProductSubmit(event) {
-
-  event.preventDefault();
-
-  var id = document.getElementById("productId").value;
-
-  var product = {
-    id: id || generateId(),
-    name: document.getElementById("productName").value.trim(),
-    articleNo: document.getElementById("articleNo").value.trim(),
-    category: document.getElementById("category").value,
-    material: document.getElementById("material").value.trim(),
-    size: document.getElementById("size").value.trim(),
-    weight: document.getElementById("weight").value.trim(),
-    color: document.getElementById("color").value.trim(),
-    availableSizes: document.getElementById("availableSizes").value.trim(),
-    moq: document.getElementById("moq").value.trim(),
-    price: document.getElementById("price").value.trim(),
-    imageUrl: document.getElementById("imageUrl").value.trim(),
-    specification: document.getElementById("specification").value.trim(),
-    description: document.getElementById("description").value.trim(),
-    status: document.getElementById("productStatus").value
-  };
-
-  if (!product.name || !product.articleNo) {
-    alert("Please enter Product Name and Article / Product No.");
-    return;
-  }
-
-  if (id) {
-
-    var index = products.findIndex(function(p) {
-      return String(p.id) === String(id);
-    });
-
-    if (index >= 0) {
-      products[index] = product;
-    }
-
-  } else {
-    products.push(product);
-  }
-
-  saveProducts();
   renderProducts();
-  populateInterestedProducts();
-  updateDashboard();
-  closeProductModal();
-
-  alert("Product saved successfully.");
-}
-
-
-/* ============================================================
-   BUYER SAVE
-   ============================================================ */
-
-function handleBuyerSubmit(event) {
-
-  event.preventDefault();
-
-  var id = document.getElementById("buyerId").value;
-
-  var buyer = {
-    id: id || generateId(),
-    name: document.getElementById("buyerName").value.trim(),
-    country: document.getElementById("buyerCountry").value.trim(),
-    contactPerson: document.getElementById("contactPerson").value.trim(),
-    email: document.getElementById("buyerEmail").value.trim(),
-    phone: document.getElementById("buyerPhone").value.trim(),
-    interestedProduct: document.getElementById("interestedProduct").value,
-    status: document.getElementById("buyerStatus").value,
-    followupDate: document.getElementById("followupDate").value,
-    notes: document.getElementById("buyerNotes").value.trim()
-  };
-
-  if (!buyer.name || !buyer.country) {
-    alert("Please enter Buyer / Company Name and Country.");
-    return;
-  }
-
-  if (id) {
-
-    var index = buyers.findIndex(function(b) {
-      return String(b.id) === String(id);
-    });
-
-    if (index >= 0) {
-      buyers[index] = buyer;
-    }
-
-  } else {
-    buyers.push(buyer);
-  }
-
-  saveBuyers();
   renderBuyers();
-  updateDashboard();
-  closeBuyerModal();
 
-  alert("Buyer saved successfully.");
+  updateStats();
+
+  renderRecentProducts();
+  renderRecentBuyers();
+
+  populateBuyerSelects();
+  populateProductSelects();
+
 }
 
 
 /* ============================================================
-   PRODUCTS
+   DASHBOARD STATS
    ============================================================ */
 
-function renderProducts() {
+function updateStats() {
 
-  var container = document.getElementById("productList");
-
-  if (!container) return;
-
-  var searchInput = document.getElementById("productSearch");
-
-  var search = searchInput
-    ? searchInput.value.toLowerCase().trim()
-    : "";
-
-  var filtered = products.filter(function(product) {
-
-    return (
-      String(product.name || "").toLowerCase().includes(search) ||
-      String(product.articleNo || "").toLowerCase().includes(search) ||
-      String(product.category || "").toLowerCase().includes(search)
-    );
-
-  });
-
-  if (!filtered.length) {
-
-    container.innerHTML =
-      '<div class="panel">' +
-      '<p>No products found. Click "+ Add Product" to add one.</p>' +
-      '</div>';
-
-    return;
-  }
-
-  container.innerHTML = filtered.map(function(product) {
-
-    return `
-      <div class="panel product-card">
-
-        ${
-          product.imageUrl
-            ? `<img src="${escapeHtml(product.imageUrl)}"
-                 alt="${escapeHtml(product.name)}"
-                 style="width:100%;max-height:220px;object-fit:contain;">`
-            : ""
-        }
-
-        <h3>${escapeHtml(product.name)}</h3>
-
-        <p><strong>Article:</strong>
-        ${escapeHtml(product.articleNo)}</p>
-
-        <p><strong>Category:</strong>
-        ${escapeHtml(product.category || "-")}</p>
-
-        <p><strong>Material:</strong>
-        ${escapeHtml(product.material || "-")}</p>
-
-        <p><strong>Size:</strong>
-        ${escapeHtml(product.size || "-")}</p>
-
-        <p><strong>Color:</strong>
-        ${escapeHtml(product.color || "-")}</p>
-
-        <p><strong>MOQ:</strong>
-        ${escapeHtml(product.moq || "-")}</p>
-
-        <p><strong>Price:</strong>
-        ${escapeHtml(product.price || "-")}</p>
-
-        <p><strong>Status:</strong>
-        ${escapeHtml(product.status || "-")}</p>
-
-        <div style="margin-top:12px;">
-          <button onclick="editProduct('${product.id}')">
-            Edit
-          </button>
-
-          <button onclick="deleteProduct('${product.id}')">
-            Delete
-          </button>
-        </div>
-
-      </div>
-    `;
-
-  }).join("");
-}
-
-
-/* ============================================================
-   BUYERS
-   ============================================================ */
-
-function renderBuyers() {
-
-  var table = document.getElementById("buyerTable");
-
-  if (!table) return;
-
-  var searchInput = document.getElementById("buyerSearch");
-
-  var search = searchInput
-    ? searchInput.value.toLowerCase().trim()
-    : "";
-
-  var filtered = buyers.filter(function(buyer) {
-
-    return (
-      String(buyer.name || "").toLowerCase().includes(search) ||
-      String(buyer.country || "").toLowerCase().includes(search) ||
-      String(buyer.phone || "").toLowerCase().includes(search)
-    );
-
-  });
-
-  if (!filtered.length) {
-
-    table.innerHTML = `
-      <tr>
-        <td colspan="8">
-          No buyers found. Click "+ Add Buyer" to add one.
-        </td>
-      </tr>
-    `;
-
-    return;
-  }
-
-  table.innerHTML = filtered.map(function(buyer) {
-
-    return `
-      <tr>
-
-        <td>
-          <strong>${escapeHtml(buyer.name)}</strong>
-          ${
-            buyer.contactPerson
-              ? `<br>${escapeHtml(buyer.contactPerson)}`
-              : ""
-          }
-        </td>
-
-        <td>${escapeHtml(buyer.country)}</td>
-
-        <td>${escapeHtml(buyer.email || "-")}</td>
-
-        <td>${escapeHtml(buyer.phone || "-")}</td>
-
-        <td>${escapeHtml(buyer.interestedProduct || "-")}</td>
-
-        <td>${escapeHtml(buyer.status || "-")}</td>
-
-        <td>${escapeHtml(buyer.followupDate || "-")}</td>
-
-        <td>
-          <button onclick="editBuyer('${buyer.id}')">
-            Edit
-          </button>
-
-          <button onclick="deleteBuyer('${buyer.id}')">
-            Delete
-          </button>
-        </td>
-
-      </tr>
-    `;
-
-  }).join("");
-}
-
-
-/* ============================================================
-   CATEGORY
-   ============================================================ */
-
-function prFillCategories() {
-
-  var category = document.getElementById("category");
-
-  if (!category) return;
-
-  var current = category.value;
-
-  category.innerHTML =
-    '<option value="">Select Product Category</option>';
-
-  PR_PRODUCT_CATEGORIES.forEach(function(item) {
-
-    var option = document.createElement("option");
-
-    option.value = item;
-    option.textContent = item;
-
-    category.appendChild(option);
-  });
-
-  if (current) category.value = current;
-}
-
-
-function populateInterestedProducts() {
-
-  var select =
-    document.getElementById("interestedProduct");
-
-  if (!select) return;
-
-  var current = select.value;
-
-  select.innerHTML =
-    '<option value="">Select Product / Category</option>';
-
-  PR_PRODUCT_CATEGORIES.forEach(function(category) {
-
-    var option = document.createElement("option");
-
-    option.value = category;
-    option.textContent = category;
-
-    select.appendChild(option);
-  });
-
-  if (products.length) {
-
-    var group =
-      document.createElement("optgroup");
-
-    group.label = "Added Products";
-
-    products.forEach(function(product) {
-
-      var option =
-        document.createElement("option");
-
-      option.value = product.name;
-
-      option.textContent =
-        product.name +
-        (product.articleNo
-          ? " — " + product.articleNo
-          : "");
-
-      group.appendChild(option);
-    });
-
-    select.appendChild(group);
-  }
-
-  if (current) select.value = current;
-}
-
-
-/* ============================================================
-   EDIT
-   ============================================================ */
-
-function editProduct(id) {
-
-  var product = products.find(function(p) {
-    return String(p.id) === String(id);
-  });
-
-  if (!product) return;
-
-  prFillCategories();
-
-  document.getElementById("productId").value = product.id;
-  document.getElementById("productName").value = product.name || "";
-  document.getElementById("articleNo").value = product.articleNo || "";
-  document.getElementById("category").value = product.category || "";
-  document.getElementById("material").value = product.material || "";
-  document.getElementById("size").value = product.size || "";
-  document.getElementById("weight").value = product.weight || "";
-  document.getElementById("color").value = product.color || "";
-  document.getElementById("availableSizes").value =
-    product.availableSizes || "";
-  document.getElementById("moq").value = product.moq || "";
-  document.getElementById("price").value = product.price || "";
-  document.getElementById("imageUrl").value = product.imageUrl || "";
-  document.getElementById("specification").value =
-    product.specification || "";
-  document.getElementById("description").value =
-    product.description || "";
-  document.getElementById("productStatus").value =
-    product.status || "Available";
-
-  document.getElementById("productModalTitle").textContent =
-    "Edit Product";
-
-  document.getElementById("productModal").style.display =
-    "flex";
-}
-
-
-function editBuyer(id) {
-
-  var buyer = buyers.find(function(b) {
-    return String(b.id) === String(id);
-  });
-
-  if (!buyer) return;
-
-  populateInterestedProducts();
-
-  document.getElementById("buyerId").value = buyer.id;
-  document.getElementById("buyerName").value = buyer.name || "";
-  document.getElementById("buyerCountry").value =
-    buyer.country || "";
-  document.getElementById("contactPerson").value =
-    buyer.contactPerson || "";
-  document.getElementById("buyerEmail").value =
-    buyer.email || "";
-  document.getElementById("buyerPhone").value =
-    buyer.phone || "";
-  document.getElementById("interestedProduct").value =
-    buyer.interestedProduct || "";
-  document.getElementById("buyerStatus").value =
-    buyer.status || "Active";
-  document.getElementById("followupDate").value =
-    buyer.followupDate || "";
-  document.getElementById("buyerNotes").value =
-    buyer.notes || "";
-
-  document.getElementById("buyerModalTitle").textContent =
-    "Edit Buyer";
-
-  document.getElementById("buyerModal").style.display =
-    "flex";
-}
-
-
-/* ============================================================
-   DELETE
-   ============================================================ */
-
-function deleteProduct(id) {
-
-  if (!confirm("Delete this product?")) return;
-
-  products = products.filter(function(product) {
-    return String(product.id) !== String(id);
-  });
-
-  saveProducts();
-  renderProducts();
-  populateInterestedProducts();
-  updateDashboard();
-}
-
-
-function deleteBuyer(id) {
-
-  if (!confirm("Delete this buyer?")) return;
-
-  buyers = buyers.filter(function(buyer) {
-    return String(buyer.id) !== String(id);
-  });
-
-  saveBuyers();
-  renderBuyers();
-  updateDashboard();
-}
-
-
-/* ============================================================
-   DASHBOARD
-   ============================================================ */
-
-function updateDashboard() {
-
-  var productCount =
+  const productCount =
     document.getElementById("productCount");
 
-  var buyerCount =
+  const buyerCount =
     document.getElementById("buyerCount");
 
-  var activeBuyerCount =
+  const activeBuyerCount =
     document.getElementById("activeBuyerCount");
 
-  var followupCount =
+  const followupCount =
     document.getElementById("followupCount");
 
   if (productCount)
@@ -730,25 +288,427 @@ function updateDashboard() {
   if (activeBuyerCount) {
 
     activeBuyerCount.textContent =
-      buyers.filter(function(buyer) {
-        return buyer.status === "Active";
+      buyers.filter(function (b) {
+        return b.status === "Active";
       }).length;
+
   }
 
   if (followupCount) {
 
     followupCount.textContent =
-      buyers.filter(function(buyer) {
-        return !!buyer.followupDate;
+      buyers.filter(function (b) {
+        return !!b.followupDate;
       }).length;
-  }
 
-  renderRecentProducts();
-  renderRecentBuyers();
+  }
 }
 
 
-function renderRecentProducts() {
+/* ============================================================
+   PRODUCT CATEGORY
+   ============================================================ */
 
-  var container =
-   
+function populateCategories() {
+
+  const select =
+    document.getElementById("category");
+
+  if (!select) return;
+
+  const current = select.value;
+
+  select.innerHTML =
+    '<option value="">Select Product Category</option>';
+
+  PR_PRODUCT_CATEGORIES.forEach(function (category) {
+
+    const option =
+      document.createElement("option");
+
+    option.value = category;
+    option.textContent = category;
+
+    select.appendChild(option);
+
+  });
+
+  if (current)
+    select.value = current;
+}
+
+
+/* ============================================================
+   INTERESTED PRODUCTS
+   ============================================================ */
+
+function populateInterestedProducts() {
+
+  const select =
+    document.getElementById("interestedProduct");
+
+  if (!select) return;
+
+  const current = select.value;
+
+  select.innerHTML =
+    '<option value="">Select Product / Category</option>';
+
+  PR_PRODUCT_CATEGORIES.forEach(function (category) {
+
+    const option =
+      document.createElement("option");
+
+    option.value = category;
+    option.textContent = category;
+
+    select.appendChild(option);
+
+  });
+
+  if (products.length) {
+
+    const group =
+      document.createElement("optgroup");
+
+    group.label = "Added Products";
+
+    products.forEach(function (product) {
+
+      const option =
+        document.createElement("option");
+
+      option.value = product.name;
+
+      option.textContent =
+        product.name +
+        (product.articleNo
+          ? " — " + product.articleNo
+          : "");
+
+      group.appendChild(option);
+
+    });
+
+    select.appendChild(group);
+  }
+
+  if (current)
+    select.value = current;
+}
+
+
+/* ============================================================
+   PRODUCT MODAL
+   ============================================================ */
+
+function openProductModal(id) {
+
+  const modal =
+    document.getElementById("productModal");
+
+  const form =
+    document.getElementById("productForm");
+
+  if (!modal || !form) return;
+
+  form.reset();
+
+  setValue("productId", "");
+
+  if (id) {
+
+    const product =
+      products.find(function (p) {
+        return String(p.id) === String(id);
+      });
+
+    if (!product) return;
+
+    setValue("productId", product.id);
+    setValue("productName", product.name);
+    setValue("articleNo", product.articleNo);
+    setValue("category", product.category);
+    setValue("material", product.material);
+    setValue("size", product.size);
+    setValue("weight", product.weight);
+    setValue("color", product.color);
+    setValue("availableSizes", product.availableSizes);
+    setValue("moq", product.moq);
+    setValue("price", product.price);
+    setValue("imageUrl", product.imageUrl);
+    setValue("specification", product.specification);
+    setValue("description", product.description);
+    setValue("productStatus", product.status);
+
+    const title =
+      document.getElementById("productModalTitle");
+
+    if (title)
+      title.textContent = "Edit Product";
+
+  } else {
+
+    const title =
+      document.getElementById("productModalTitle");
+
+    if (title)
+      title.textContent = "Add Product";
+  }
+
+  modal.style.display = "flex";
+  modal.classList.add("show");
+}
+
+
+function closeProductModal() {
+
+  const modal =
+    document.getElementById("productModal");
+
+  if (modal) {
+    modal.style.display = "none";
+    modal.classList.remove("show");
+  }
+
+}
+
+
+/* ============================================================
+   SAVE PRODUCT
+   ============================================================ */
+
+function saveProduct() {
+
+  const id =
+    getValue("productId");
+
+  const product = {
+
+    id: id || generateId(),
+
+    name:
+      getValue("productName"),
+
+    articleNo:
+      getValue("articleNo"),
+
+    category:
+      getValue("category"),
+
+    material:
+      getValue("material"),
+
+    size:
+      getValue("size"),
+
+    weight:
+      getValue("weight"),
+
+    color:
+      getValue("color"),
+
+    availableSizes:
+      getValue("availableSizes"),
+
+    moq:
+      getValue("moq"),
+
+    price:
+      getValue("price"),
+
+    imageUrl:
+      getValue("imageUrl"),
+
+    specification:
+      getValue("specification"),
+
+    description:
+      getValue("description"),
+
+    status:
+      getValue("productStatus") || "Available",
+
+    updatedAt:
+      new Date().toISOString()
+
+  };
+
+  if (!product.name || !product.articleNo) {
+
+    alert(
+      "Please enter Product Name and Article / Product No."
+    );
+
+    return;
+  }
+
+  if (id) {
+
+    const index =
+      products.findIndex(function (p) {
+        return String(p.id) === String(id);
+      });
+
+    if (index !== -1)
+      products[index] = product;
+
+  } else {
+
+    products.unshift(product);
+
+  }
+
+  saveData(PR_KEYS.products, products);
+
+  closeProductModal();
+
+  refreshAll();
+
+  alert("Product saved successfully.");
+
+}
+
+
+/* ============================================================
+   EDIT / DELETE PRODUCT
+   ============================================================ */
+
+function editProduct(id) {
+  openProductModal(id);
+}
+
+
+function deleteProduct(id) {
+
+  if (!confirm("Delete this product?"))
+    return;
+
+  products =
+    products.filter(function (p) {
+      return String(p.id) !== String(id);
+    });
+
+  saveData(PR_KEYS.products, products);
+
+  refreshAll();
+
+}
+
+
+/* ============================================================
+   RENDER PRODUCTS
+   ============================================================ */
+
+function renderProducts() {
+
+  const container =
+    document.getElementById("productList");
+
+  if (!container) return;
+
+  const input =
+    document.getElementById("productSearch");
+
+  const search =
+    input
+      ? input.value.toLowerCase().trim()
+      : "";
+
+  const filtered =
+    products.filter(function (product) {
+
+      return (
+
+        String(product.name || "")
+          .toLowerCase()
+          .includes(search)
+
+        ||
+
+        String(product.articleNo || "")
+          .toLowerCase()
+          .includes(search)
+
+        ||
+
+        String(product.category || "")
+          .toLowerCase()
+          .includes(search)
+
+      );
+
+    });
+
+  if (!filtered.length) {
+
+    container.innerHTML = `
+      <div class="panel">
+        <p>No products found.</p>
+      </div>
+    `;
+
+    return;
+  }
+
+  container.innerHTML =
+    filtered.map(function (product) {
+
+      return `
+
+        <div class="panel product-card">
+
+          ${
+            product.imageUrl
+              ? `
+                <img
+                  src="${escapeHtml(product.imageUrl)}"
+                  alt="${escapeHtml(product.name)}"
+                  style="
+                    width:100%;
+                    max-height:220px;
+                    object-fit:contain;
+                  "
+                >
+              `
+              : ""
+          }
+
+          <h3>
+            ${escapeHtml(product.name)}
+          </h3>
+
+          <p>
+            <strong>Article:</strong>
+            ${escapeHtml(product.articleNo)}
+          </p>
+
+          <p>
+            <strong>Category:</strong>
+            ${escapeHtml(product.category || "-")}
+          </p>
+
+          <p>
+            <strong>Material:</strong>
+            ${escapeHtml(product.material || "-")}
+          </p>
+
+          <p>
+            <strong>Size:</strong>
+            ${escapeHtml(product.size || "-")}
+          </p>
+
+          <p>
+            <strong>Weight:</strong>
+            ${escapeHtml(product.weight || "-")}
+          </p>
+
+          <p>
+            <strong>Color:</strong>
+            ${escapeHtml(product.color || "-")}
+          </p>
+
+          <p>
+            <strong>MOQ:</strong>
+            ${escapeHtml(product.moq || "-")}
+          </
