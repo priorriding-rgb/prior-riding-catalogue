@@ -1,12 +1,12 @@
 /* ============================================================
    PRIOR RIDING — INTERNATIONAL BUYER CRM
-   COMPLETE APP.JS
+   COMPLETE REPAIRED APP.JS
    ============================================================ */
 
 "use strict";
 
 /* ============================================================
-   STORAGE
+   STORAGE KEYS
    ============================================================ */
 
 const PR_KEYS = {
@@ -17,12 +17,6 @@ const PR_KEYS = {
   letters: "prior_riding_letters",
   settings: "prior_riding_settings"
 };
-
-let products = loadData(PR_KEYS.products);
-let buyers = loadData(PR_KEYS.buyers);
-let payments = loadData(PR_KEYS.payments);
-let proformas = loadData(PR_KEYS.proformas);
-let letters = loadData(PR_KEYS.letters);
 
 
 /* ============================================================
@@ -46,17 +40,39 @@ const PR_PRODUCT_CATEGORIES = [
 
 
 /* ============================================================
-   BASIC HELPERS
+   GLOBAL DATA
+   ============================================================ */
+
+let products = [];
+let buyers = [];
+let payments = [];
+let proformas = [];
+let letters = [];
+
+
+/* ============================================================
+   STORAGE HELPERS
    ============================================================ */
 
 function loadData(key) {
   try {
-    const value = localStorage.getItem(key);
-    if (!value) return [];
-    const data = JSON.parse(value);
+    const raw = localStorage.getItem(key);
+
+    if (!raw) {
+      return [];
+    }
+
+    const data = JSON.parse(raw);
+
     return Array.isArray(data) ? data : [];
+
   } catch (error) {
-    console.error("PRIOR RIDING storage error:", error);
+
+    console.error(
+      "PRIOR RIDING storage read error:",
+      error
+    );
+
     return [];
   }
 }
@@ -64,38 +80,119 @@ function loadData(key) {
 
 function saveData(key, data) {
   try {
-    localStorage.setItem(key, JSON.stringify(data));
+
+    localStorage.setItem(
+      key,
+      JSON.stringify(Array.isArray(data) ? data : [])
+    );
+
     return true;
+
   } catch (error) {
-    console.error(error);
-    alert("Data could not be saved.");
+
+    console.error(
+      "PRIOR RIDING storage save error:",
+      error
+    );
+
+    alert(
+      "Data could not be saved. Please check your browser storage."
+    );
+
     return false;
   }
 }
 
 
+function loadAllData() {
+
+  products = loadData(PR_KEYS.products);
+  buyers = loadData(PR_KEYS.buyers);
+  payments = loadData(PR_KEYS.payments);
+  proformas = loadData(PR_KEYS.proformas);
+  letters = loadData(PR_KEYS.letters);
+
+}
+
+
+/* ============================================================
+   ID / VALUE HELPERS
+   ============================================================ */
+
 function generateId() {
-  return Date.now().toString() + "_" +
-    Math.random().toString(36).substring(2, 9);
+
+  return (
+    Date.now().toString(36) +
+    "_" +
+    Math.random()
+      .toString(36)
+      .substring(2, 11)
+  );
 }
 
 
 function getValue(id) {
-  const element = document.getElementById(id);
-  return element ? String(element.value || "").trim() : "";
+
+  const element =
+    document.getElementById(id);
+
+  if (!element) {
+    return "";
+  }
+
+  return String(
+    element.value == null
+      ? ""
+      : element.value
+  ).trim();
 }
 
 
 function setValue(id, value) {
-  const element = document.getElementById(id);
-  if (element) {
-    element.value = value == null ? "" : value;
+
+  const element =
+    document.getElementById(id);
+
+  if (!element) {
+    return;
   }
+
+  element.value =
+    value == null
+      ? ""
+      : value;
+}
+
+
+function getElement(id) {
+  return document.getElementById(id);
+}
+
+
+function today() {
+
+  const date = new Date();
+
+  const year =
+    date.getFullYear();
+
+  const month =
+    String(date.getMonth() + 1)
+      .padStart(2, "0");
+
+  const day =
+    String(date.getDate())
+      .padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
 
 
 function escapeHtml(value) {
-  return String(value == null ? "" : value)
+
+  return String(
+    value == null ? "" : value
+  )
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -104,8 +201,8 @@ function escapeHtml(value) {
 }
 
 
-function today() {
-  return new Date().toISOString().slice(0, 10);
+function escapeAttribute(value) {
+  return escapeHtml(value);
 }
 
 
@@ -113,22 +210,29 @@ function today() {
    INITIALIZATION
    ============================================================ */
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener(
+  "DOMContentLoaded",
+  function () {
 
-  setupForms();
-  setupOutsideClick();
-  setupKeyboard();
+    loadAllData();
 
-  populateCategories();
-  populateInterestedProducts();
+    setupForms();
+    setupOutsideClick();
+    setupKeyboard();
+    setupSearchInputs();
 
-  refreshAll();
+    populateCategories();
+    populateInterestedProducts();
 
-  showSection("dashboard");
+    refreshAll();
 
-  console.log("PRIOR RIDING CRM loaded successfully.");
+    showSection("dashboard");
 
-});
+    console.log(
+      "PRIOR RIDING CRM loaded successfully."
+    );
+  }
+);
 
 
 /* ============================================================
@@ -137,53 +241,123 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function setupForms() {
 
-  const productForm = document.getElementById("productForm");
+  const productForm =
+    getElement("productForm");
 
   if (productForm) {
-    productForm.addEventListener("submit", function (event) {
-      event.preventDefault();
-      saveProduct();
-    });
+
+    productForm.addEventListener(
+      "submit",
+      function (event) {
+
+        event.preventDefault();
+
+        saveProduct();
+      }
+    );
   }
 
 
-  const buyerForm = document.getElementById("buyerForm");
+  const buyerForm =
+    getElement("buyerForm");
 
   if (buyerForm) {
-    buyerForm.addEventListener("submit", function (event) {
-      event.preventDefault();
-      saveBuyer();
-    });
+
+    buyerForm.addEventListener(
+      "submit",
+      function (event) {
+
+        event.preventDefault();
+
+        saveBuyer();
+      }
+    );
   }
 
 
-  const paymentForm = document.getElementById("paymentForm");
+  const paymentForm =
+    getElement("paymentForm");
 
   if (paymentForm) {
-    paymentForm.addEventListener("submit", function (event) {
-      event.preventDefault();
-      savePayment();
-    });
+
+    paymentForm.addEventListener(
+      "submit",
+      function (event) {
+
+        event.preventDefault();
+
+        savePayment();
+      }
+    );
   }
 
 
-  const proformaForm = document.getElementById("proformaForm");
+  const proformaForm =
+    getElement("proformaForm");
 
   if (proformaForm) {
-    proformaForm.addEventListener("submit", function (event) {
-      event.preventDefault();
-      createProforma();
-    });
+
+    proformaForm.addEventListener(
+      "submit",
+      function (event) {
+
+        event.preventDefault();
+
+        createProforma();
+      }
+    );
   }
 
 
-  const letterForm = document.getElementById("letterForm");
+  const letterForm =
+    getElement("letterForm");
 
   if (letterForm) {
-    letterForm.addEventListener("submit", function (event) {
-      event.preventDefault();
-      createProformaLetter();
-    });
+
+    letterForm.addEventListener(
+      "submit",
+      function (event) {
+
+        event.preventDefault();
+
+        createProformaLetter();
+      }
+    );
+  }
+}
+
+
+/* ============================================================
+   SEARCH SETUP
+   ============================================================ */
+
+function setupSearchInputs() {
+
+  const productSearch =
+    getElement("productSearch");
+
+  if (productSearch) {
+
+    productSearch.addEventListener(
+      "input",
+      function () {
+        renderProducts();
+      }
+    );
+  }
+
+
+  const buyerSearch =
+    getElement("buyerSearch");
+
+  if (buyerSearch) {
+
+    buyerSearch.addEventListener(
+      "input",
+      function () {
+        renderBuyers();
+      }
+    );
   }
 }
 
@@ -194,39 +368,75 @@ function setupForms() {
 
 function showSection(sectionId) {
 
-  document.querySelectorAll(".section").forEach(function (section) {
-    section.classList.remove("active");
-    section.style.display = "none";
-  });
+  document.querySelectorAll(
+    ".section"
+  ).forEach(
+    function (section) {
+
+      section.classList.remove(
+        "active"
+      );
+
+      section.style.display =
+        "none";
+    }
+  );
 
 
-  const section = document.getElementById(sectionId);
+  const section =
+    getElement(sectionId);
 
   if (section) {
-    section.classList.add("active");
-    section.style.display = "block";
+
+    section.classList.add(
+      "active"
+    );
+
+    section.style.display =
+      "block";
   }
 
 
-  document.querySelectorAll(".nav-btn").forEach(function (button) {
+  document.querySelectorAll(
+    ".nav-btn"
+  ).forEach(
+    function (button) {
 
-    button.classList.remove("active");
+      button.classList.remove(
+        "active"
+      );
 
-    const text =
-      String(button.textContent || "").toLowerCase();
+      const text =
+        String(
+          button.textContent || ""
+        ).toLowerCase();
 
-    if (
-      (sectionId === "dashboard" && text.includes("dashboard")) ||
-      (sectionId === "products" && text.includes("product")) ||
-      (sectionId === "buyers" && text.includes("buyer"))
-    ) {
-      button.classList.add("active");
+
+      if (
+        (
+          sectionId === "dashboard" &&
+          text.includes("dashboard")
+        ) ||
+        (
+          sectionId === "products" &&
+          text.includes("product")
+        ) ||
+        (
+          sectionId === "buyers" &&
+          text.includes("buyer")
+        )
+      ) {
+
+        button.classList.add(
+          "active"
+        );
+      }
     }
-
-  });
+  );
 
 
   refreshAll();
+
 
   window.scrollTo({
     top: 0,
@@ -236,16 +446,12 @@ function showSection(sectionId) {
 
 
 /* ============================================================
-   REFRESH
+   REFRESH EVERYTHING
    ============================================================ */
 
 function refreshAll() {
 
-  products = loadData(PR_KEYS.products);
-  buyers = loadData(PR_KEYS.buyers);
-  payments = loadData(PR_KEYS.payments);
-  proformas = loadData(PR_KEYS.proformas);
-  letters = loadData(PR_KEYS.letters);
+  loadAllData();
 
   populateCategories();
   populateInterestedProducts();
@@ -253,13 +459,14 @@ function refreshAll() {
   renderProducts();
   renderBuyers();
 
-  updateStats();
-
   renderRecentProducts();
   renderRecentBuyers();
 
+  updateStats();
+
   populateBuyerSelects();
   populateProductSelects();
+
 }
 
 
@@ -270,41 +477,60 @@ function refreshAll() {
 function updateStats() {
 
   const productCount =
-    document.getElementById("productCount");
+    getElement("productCount");
 
   const buyerCount =
-    document.getElementById("buyerCount");
+    getElement("buyerCount");
 
   const activeBuyerCount =
-    document.getElementById("activeBuyerCount");
+    getElement("activeBuyerCount");
 
   const followupCount =
-    document.getElementById("followupCount");
+    getElement("followupCount");
 
 
   if (productCount) {
-    productCount.textContent = products.length;
+
+    productCount.textContent =
+      products.length;
   }
 
 
   if (buyerCount) {
-    buyerCount.textContent = buyers.length;
+
+    buyerCount.textContent =
+      buyers.length;
   }
 
 
   if (activeBuyerCount) {
+
     activeBuyerCount.textContent =
-      buyers.filter(function (buyer) {
-        return buyer.status === "Active";
-      }).length;
+      buyers.filter(
+        function (buyer) {
+
+          return (
+            String(
+              buyer.status || ""
+            ).toLowerCase() ===
+            "active"
+          );
+        }
+      ).length;
   }
 
 
   if (followupCount) {
+
     followupCount.textContent =
-      buyers.filter(function (buyer) {
-        return !!buyer.followupDate;
-      }).length;
+      buyers.filter(
+        function (buyer) {
+
+          return Boolean(
+            buyer.followupDate
+          );
+        }
+      ).length;
   }
 
 
@@ -319,26 +545,40 @@ function updateStats() {
 function populateCategories() {
 
   const select =
-    document.getElementById("category");
+    getElement("category");
 
-  if (!select) return;
+  if (!select) {
+    return;
+  }
 
-  const current = select.value;
+
+  const current =
+    select.value;
+
 
   select.innerHTML =
     '<option value="">Select Product Category</option>';
 
 
-  PR_PRODUCT_CATEGORIES.forEach(function (category) {
+  PR_PRODUCT_CATEGORIES.forEach(
+    function (category) {
 
-    const option =
-      document.createElement("option");
+      const option =
+        document.createElement(
+          "option"
+        );
 
-    option.value = category;
-    option.textContent = category;
+      option.value =
+        category;
 
-    select.appendChild(option);
-  });
+      option.textContent =
+        category;
+
+      select.appendChild(
+        option
+      );
+    }
+  );
 
 
   if (current) {
@@ -347,59 +587,97 @@ function populateCategories() {
 }
 
 
+/* ============================================================
+   BUYER INTERESTED PRODUCT
+   ============================================================ */
+
 function populateInterestedProducts() {
 
   const select =
-    document.getElementById("interestedProduct");
+    getElement("interestedProduct");
 
-  if (!select) return;
+  if (!select) {
+    return;
+  }
 
-  const current = select.value;
+
+  const current =
+    select.value;
+
 
   select.innerHTML =
     '<option value="">Select Product / Category</option>';
 
 
-  PR_PRODUCT_CATEGORIES.forEach(function (category) {
-
-    const option =
-      document.createElement("option");
-
-    option.value = category;
-    option.textContent = category;
-
-    select.appendChild(option);
-  });
-
-
-  if (products.length) {
-
-    const group =
-      document.createElement("optgroup");
-
-    group.label = "Added Products";
-
-
-    products.forEach(function (product) {
+  PR_PRODUCT_CATEGORIES.forEach(
+    function (category) {
 
       const option =
-        document.createElement("option");
-
-      option.value = product.name || "";
-
-      option.textContent =
-        (product.name || "Product") +
-        (
-          product.articleNo
-            ? " — " + product.articleNo
-            : ""
+        document.createElement(
+          "option"
         );
 
-      group.appendChild(option);
-    });
+      option.value =
+        category;
+
+      option.textContent =
+        category;
+
+      select.appendChild(
+        option
+      );
+    }
+  );
 
 
-    select.appendChild(group);
+  if (products.length > 0) {
+
+    const group =
+      document.createElement(
+        "optgroup"
+      );
+
+    group.label =
+      "Added Products";
+
+
+    products.forEach(
+      function (product) {
+
+        if (!product.name) {
+          return;
+        }
+
+
+        const option =
+          document.createElement(
+            "option"
+          );
+
+        option.value =
+          product.name;
+
+
+        option.textContent =
+          product.name +
+          (
+            product.articleNo
+              ? " — " +
+                product.articleNo
+              : ""
+          );
+
+
+        group.appendChild(
+          option
+        );
+      }
+    );
+
+
+    select.appendChild(
+      group
+    );
   }
 
 
@@ -416,77 +694,177 @@ function populateInterestedProducts() {
 function openProductModal(id) {
 
   const modal =
-    document.getElementById("productModal");
+    getElement("productModal");
 
   const form =
-    document.getElementById("productForm");
+    getElement("productForm");
 
-  if (!modal || !form) return;
+  if (!modal) {
+    return;
+  }
 
-  form.reset();
 
-  setValue("productId", "");
+  if (form) {
+    form.reset();
+  }
 
-  setValue("productStatus", "Available");
+
+  setValue(
+    "productId",
+    ""
+  );
+
+  setValue(
+    "productStatus",
+    "Available"
+  );
 
 
   const title =
-    document.getElementById("productModalTitle");
+    getElement(
+      "productModalTitle"
+    );
 
 
   if (id) {
 
     const product =
-      products.find(function (item) {
-        return String(item.id) === String(id);
-      });
+      products.find(
+        function (item) {
+
+          return (
+            String(item.id) ===
+            String(id)
+          );
+        }
+      );
 
 
-    if (!product) return;
+    if (!product) {
+
+      alert(
+        "Product not found."
+      );
+
+      return;
+    }
 
 
-    setValue("productId", product.id);
-    setValue("productName", product.name);
-    setValue("articleNo", product.articleNo);
-    setValue("category", product.category);
-    setValue("material", product.material);
-    setValue("size", product.size);
-    setValue("weight", product.weight);
-    setValue("color", product.color);
-    setValue("availableSizes", product.availableSizes);
-    setValue("moq", product.moq);
-    setValue("price", product.price);
-    setValue("imageUrl", product.imageUrl);
-    setValue("specification", product.specification);
-    setValue("description", product.description);
-    setValue("productStatus", product.status || "Available");
+    setValue(
+      "productId",
+      product.id
+    );
+
+    setValue(
+      "productName",
+      product.name
+    );
+
+    setValue(
+      "articleNo",
+      product.articleNo
+    );
+
+    setValue(
+      "category",
+      product.category
+    );
+
+    setValue(
+      "material",
+      product.material
+    );
+
+    setValue(
+      "size",
+      product.size
+    );
+
+    setValue(
+      "weight",
+      product.weight
+    );
+
+    setValue(
+      "color",
+      product.color
+    );
+
+    setValue(
+      "availableSizes",
+      product.availableSizes
+    );
+
+    setValue(
+      "moq",
+      product.moq
+    );
+
+    setValue(
+      "price",
+      product.price
+    );
+
+    setValue(
+      "imageUrl",
+      product.imageUrl
+    );
+
+    setValue(
+      "specification",
+      product.specification
+    );
+
+    setValue(
+      "description",
+      product.description
+    );
+
+    setValue(
+      "productStatus",
+      product.status ||
+      "Available"
+    );
 
 
     if (title) {
-      title.textContent = "Edit Product";
+
+      title.textContent =
+        "Edit Product";
     }
 
   } else {
 
     if (title) {
-      title.textContent = "Add Product";
+
+      title.textContent =
+        "Add Product";
     }
   }
 
 
-  modal.style.display = "flex";
-  modal.classList.add("show");
+  modal.style.display =
+    "flex";
+
+  modal.classList.add(
+    "show"
+  );
 }
 
 
 function closeProductModal() {
 
   const modal =
-    document.getElementById("productModal");
+    getElement("productModal");
 
   if (modal) {
-    modal.style.display = "none";
-    modal.classList.remove("show");
+
+    modal.style.display =
+      "none";
+
+    modal.classList.remove(
+      "show"
+    );
   }
 }
 
@@ -501,15 +879,33 @@ function saveProduct() {
     getValue("productId");
 
 
+  const name =
+    getValue("productName");
+
+  const articleNo =
+    getValue("articleNo");
+
+
+  if (!name || !articleNo) {
+
+    alert(
+      "Please enter Product Name and Article / Product No."
+    );
+
+    return;
+  }
+
+
   const product = {
 
-    id: id || generateId(),
+    id:
+      id || generateId(),
 
     name:
-      getValue("productName"),
+      name,
 
     articleNo:
-      getValue("articleNo"),
+      articleNo,
 
     category:
       getValue("category"),
@@ -545,48 +941,63 @@ function saveProduct() {
       getValue("description"),
 
     status:
-      getValue("productStatus") || "Available",
+      getValue("productStatus") ||
+      "Available",
 
     updatedAt:
       new Date().toISOString()
   };
 
 
-  if (!product.name || !product.articleNo) {
-
-    alert(
-      "Please enter Product Name and Article / Product No."
-    );
-
-    return;
-  }
-
-
   if (id) {
 
     const index =
-      products.findIndex(function (item) {
-        return String(item.id) === String(id);
-      });
+      products.findIndex(
+        function (item) {
+
+          return (
+            String(item.id) ===
+            String(id)
+          );
+        }
+      );
 
 
     if (index !== -1) {
-      products[index] = product;
+
+      products[index] =
+        product;
+
+    } else {
+
+      products.unshift(
+        product
+      );
     }
 
   } else {
 
-    products.unshift(product);
+    products.unshift(
+      product
+    );
   }
 
 
-  saveData(PR_KEYS.products, products);
+  if (
+    saveData(
+      PR_KEYS.products,
+      products
+    )
+  ) {
 
-  closeProductModal();
+    closeProductModal();
 
-  refreshAll();
+    refreshAll();
 
-  alert("Product saved successfully.");
+    alert(
+      "Product saved successfully."
+    );
+  }
 }
 
 
@@ -595,26 +1006,68 @@ function saveProduct() {
    ============================================================ */
 
 function editProduct(id) {
+
   openProductModal(id);
 }
 
 
 function deleteProduct(id) {
 
-  if (!confirm("Delete this product?")) {
+  const product =
+    products.find(
+      function (item) {
+
+        return (
+          String(item.id) ===
+          String(id)
+        );
+      }
+    );
+
+
+  if (!product) {
+
+    alert(
+      "Product not found."
+    );
+
+    return;
+  }
+
+
+  if (
+    !confirm(
+      'Delete "' +
+      product.name +
+      '"?'
+    )
+  ) {
+
     return;
   }
 
 
   products =
-    products.filter(function (product) {
-      return String(product.id) !== String(id);
-    });
+    products.filter(
+      function (item) {
+
+        return (
+          String(item.id) !==
+          String(id)
+        );
+      }
+    );
 
 
-  saveData(PR_KEYS.products, products);
+  if (
+    saveData(
+      PR_KEYS.products,
+      products
+    )
+  ) {
 
-  refreshAll();
+    refreshAll();
+  }
 }
 
 
@@ -625,38 +1078,52 @@ function deleteProduct(id) {
 function renderProducts() {
 
   const container =
-    document.getElementById("productList");
+    getElement("productList");
 
-  if (!container) return;
+  if (!container) {
+    return;
+  }
 
 
   const searchInput =
-    document.getElementById("productSearch");
+    getElement("productSearch");
 
 
   const search =
     searchInput
-      ? String(searchInput.value || "").toLowerCase().trim()
+      ? String(
+          searchInput.value || ""
+        )
+          .toLowerCase()
+          .trim()
       : "";
 
 
   const filtered =
-    products.filter(function (product) {
+    products.filter(
+      function (product) {
 
-      const text =
-        [
-          product.name,
-          product.articleNo,
-          product.category,
-          product.material,
-          product.color
-        ]
-          .join(" ")
-          .toLowerCase();
+        const text =
+          [
+            product.name,
+            product.articleNo,
+            product.category,
+            product.material,
+            product.color,
+            product.availableSizes,
+            product.moq,
+            product.price,
+            product.status
+          ]
+            .join(" ")
+            .toLowerCase();
 
 
-      return text.includes(search);
-    });
+        return text.includes(
+          search
+        );
+      }
+    );
 
 
   if (!filtered.length) {
@@ -673,128 +1140,164 @@ function renderProducts() {
 
 
   container.innerHTML =
-    filtered.map(function (product) {
+    filtered.map(
+      function (product) {
 
-      return `
-        <div class="panel product-card">
+        const image =
+          product.imageUrl
+            ? `
+              <img
+                src="${escapeAttribute(product.imageUrl)}"
+                alt="${escapeAttribute(product.name)}"
+                loading="lazy"
+                style="
+                  width:100%;
+                  max-height:220px;
+                  object-fit:contain;
+                  border-radius:10px;
+                  margin-bottom:12px;
+                "
+                onerror="this.style.display='none';"
+              >
+            `
+            : "";
 
-          ${
-            product.imageUrl
-              ? `
-                <img
-                  src="${escapeHtml(product.imageUrl)}"
-                  alt="${escapeHtml(product.name)}"
-                  style="
-                    width:100%;
-                    max-height:220px;
-                    object-fit:contain;
-                    border-radius:10px;
-                    margin-bottom:12px;
-                  "
-                >
-              `
-              : ""
-          }
 
-          <h3>
-            ${escapeHtml(product.name)}
-          </h3>
+        const specification =
+          product.specification
+            ? `
+              <p>
+                <strong>Specification:</strong><br>
+                ${escapeHtml(
+                  product.specification
+                )}
+              </p>
+            `
+            : "";
 
-          <p>
-            <strong>Article:</strong>
-            ${escapeHtml(product.articleNo)}
-          </p>
 
-          <p>
-            <strong>Category:</strong>
-            ${escapeHtml(product.category || "-")}
-          </p>
+        const description =
+          product.description
+            ? `
+              <p>
+                <strong>Description:</strong><br>
+                ${escapeHtml(
+                  product.description
+                )}
+              </p>
+            `
+            : "";
 
-          <p>
-            <strong>Material:</strong>
-            ${escapeHtml(product.material || "-")}
-          </p>
 
-          <p>
-            <strong>Size:</strong>
-            ${escapeHtml(product.size || "-")}
-          </p>
+        return `
+          <div class="panel product-card">
 
-          <p>
-            <strong>Weight:</strong>
-            ${escapeHtml(product.weight || "-")}
-          </p>
+            ${image}
 
-          <p>
-            <strong>Color:</strong>
-            ${escapeHtml(product.color || "-")}
-          </p>
+            <h3>
+              ${escapeHtml(
+                product.name
+              )}
+            </h3>
 
-          <p>
-            <strong>Available Sizes:</strong>
-            ${escapeHtml(product.availableSizes || "-")}
-          </p>
+            <p>
+              <strong>Article:</strong>
+              ${escapeHtml(
+                product.articleNo
+              )}
+            </p>
 
-          <p>
-            <strong>MOQ:</strong>
-            ${escapeHtml(product.moq || "-")}
-          </p>
+            <p>
+              <strong>Category:</strong>
+              ${escapeHtml(
+                product.category || "-"
+              )}
+            </p>
 
-          <p>
-            <strong>Price:</strong>
-            ${escapeHtml(product.price || "-")}
-          </p>
+            <p>
+              <strong>Material:</strong>
+              ${escapeHtml(
+                product.material || "-"
+              )}
+            </p>
 
-          <p>
-            <strong>Status:</strong>
-            ${escapeHtml(product.status || "-")}
-          </p>
+            <p>
+              <strong>Size:</strong>
+              ${escapeHtml(
+                product.size || "-"
+              )}
+            </p>
 
-          ${
-            product.specification
-              ? `
-                <p>
-                  <strong>Specification:</strong><br>
-                  ${escapeHtml(product.specification)}
-                </p>
-              `
-              : ""
-          }
+            <p>
+              <strong>Weight:</strong>
+              ${escapeHtml(
+                product.weight || "-"
+              )}
+            </p>
 
-          ${
-            product.description
-              ? `
-                <p>
-                  <strong>Description:</strong><br>
-                  ${escapeHtml(product.description)}
-                </p>
-              `
-              : ""
-          }
+            <p>
+              <strong>Color:</strong>
+              ${escapeHtml(
+                product.color || "-"
+              )}
+            </p>
 
-          <div class="modal-actions">
+            <p>
+              <strong>Available Sizes:</strong>
+              ${escapeHtml(
+                product.availableSizes || "-"
+              )}
+            </p>
 
-            <button
-              type="button"
-              class="secondary-btn"
-              onclick="editProduct('${escapeHtml(product.id)}')"
-            >
-              Edit
-            </button>
+            <p>
+              <strong>MOQ:</strong>
+              ${escapeHtml(
+                product.moq || "-"
+              )}
+            </p>
 
-            <button
-              type="button"
-              class="primary-btn"
-              onclick="deleteProduct('${escapeHtml(product.id)}')"
-            >
-              Delete
-            </button>
+            <p>
+              <strong>Price:</strong>
+              ${escapeHtml(
+                product.price || "-"
+              )}
+            </p>
+
+            <p>
+              <strong>Status:</strong>
+              ${escapeHtml(
+                product.status || "-"
+              )}
+            </p>
+
+            ${specification}
+
+            ${description}
+
+            <div class="modal-actions">
+
+              <button
+                type="button"
+                class="secondary-btn"
+                onclick="editProduct(${JSON.stringify(String(product.id))})"
+              >
+                Edit
+              </button>
+
+              <button
+                type="button"
+                class="primary-btn"
+                onclick="deleteProduct(${JSON.stringify(String(product.id))})"
+              >
+                Delete
+              </button>
+
+            </div>
 
           </div>
-
-        </div>
-      `;
-    })
+        `;
+      }
+    )
     .join("");
 }
 
@@ -806,72 +1309,152 @@ function renderProducts() {
 function openBuyerModal(id) {
 
   const modal =
-    document.getElementById("buyerModal");
+    getElement("buyerModal");
 
   const form =
-    document.getElementById("buyerForm");
+    getElement("buyerForm");
 
-  if (!modal || !form) return;
+  if (!modal) {
+    return;
+  }
 
 
-  form.reset();
+  if (form) {
+    form.reset();
+  }
 
-  setValue("buyerId", "");
-  setValue("buyerStatus", "Active");
+
+  setValue(
+    "buyerId",
+    ""
+  );
+
+  setValue(
+    "buyerStatus",
+    "Active"
+  );
 
 
   const title =
-    document.getElementById("buyerModalTitle");
+    getElement(
+      "buyerModalTitle"
+    );
 
 
   if (id) {
 
     const buyer =
-      buyers.find(function (item) {
-        return String(item.id) === String(id);
-      });
+      buyers.find(
+        function (item) {
+
+          return (
+            String(item.id) ===
+            String(id)
+          );
+        }
+      );
 
 
-    if (!buyer) return;
+    if (!buyer) {
+
+      alert(
+        "Buyer not found."
+      );
+
+      return;
+    }
 
 
-    setValue("buyerId", buyer.id);
-    setValue("buyerName", buyer.name);
-    setValue("buyerCountry", buyer.country);
-    setValue("contactPerson", buyer.contactPerson);
-    setValue("buyerEmail", buyer.email);
-    setValue("buyerPhone", buyer.phone);
-    setValue("interestedProduct", buyer.interestedProduct);
-    setValue("buyerStatus", buyer.status || "Active");
-    setValue("followupDate", buyer.followupDate);
-    setValue("buyerNotes", buyer.notes);
+    setValue(
+      "buyerId",
+      buyer.id
+    );
+
+    setValue(
+      "buyerName",
+      buyer.name
+    );
+
+    setValue(
+      "buyerCountry",
+      buyer.country
+    );
+
+    setValue(
+      "contactPerson",
+      buyer.contactPerson
+    );
+
+    setValue(
+      "buyerEmail",
+      buyer.email
+    );
+
+    setValue(
+      "buyerPhone",
+      buyer.phone
+    );
+
+    setValue(
+      "interestedProduct",
+      buyer.interestedProduct
+    );
+
+    setValue(
+      "buyerStatus",
+      buyer.status ||
+      "Active"
+    );
+
+    setValue(
+      "followupDate",
+      buyer.followupDate
+    );
+
+    setValue(
+      "buyerNotes",
+      buyer.notes
+    );
 
 
     if (title) {
-      title.textContent = "Edit Buyer";
+
+      title.textContent =
+        "Edit Buyer";
     }
 
   } else {
 
     if (title) {
-      title.textContent = "Add Buyer";
+
+      title.textContent =
+        "Add Buyer";
     }
   }
 
 
-  modal.style.display = "flex";
-  modal.classList.add("show");
+  modal.style.display =
+    "flex";
+
+  modal.classList.add(
+    "show"
+  );
 }
 
 
 function closeBuyerModal() {
 
   const modal =
-    document.getElementById("buyerModal");
+    getElement("buyerModal");
 
   if (modal) {
-    modal.style.display = "none";
-    modal.classList.remove("show");
+
+    modal.style.display =
+      "none";
+
+    modal.classList.remove(
+      "show"
+    );
   }
 }
 
@@ -886,15 +1469,33 @@ function saveBuyer() {
     getValue("buyerId");
 
 
+  const name =
+    getValue("buyerName");
+
+  const country =
+    getValue("buyerCountry");
+
+
+  if (!name || !country) {
+
+    alert(
+      "Please enter Buyer / Company Name and Country."
+    );
+
+    return;
+  }
+
+
   const buyer = {
 
-    id: id || generateId(),
+    id:
+      id || generateId(),
 
     name:
-      getValue("buyerName"),
+      name,
 
     country:
-      getValue("buyerCountry"),
+      country,
 
     contactPerson:
       getValue("contactPerson"),
@@ -909,7 +1510,8 @@ function saveBuyer() {
       getValue("interestedProduct"),
 
     status:
-      getValue("buyerStatus") || "Active",
+      getValue("buyerStatus") ||
+      "Active",
 
     followupDate:
       getValue("followupDate"),
@@ -922,41 +1524,55 @@ function saveBuyer() {
   };
 
 
-  if (!buyer.name || !buyer.country) {
-
-    alert(
-      "Please enter Buyer / Company Name and Country."
-    );
-
-    return;
-  }
-
-
   if (id) {
 
     const index =
-      buyers.findIndex(function (item) {
-        return String(item.id) === String(id);
-      });
+      buyers.findIndex(
+        function (item) {
+
+          return (
+            String(item.id) ===
+            String(id)
+          );
+        }
+      );
 
 
     if (index !== -1) {
-      buyers[index] = buyer;
+
+      buyers[index] =
+        buyer;
+
+    } else {
+
+      buyers.unshift(
+        buyer
+      );
     }
 
   } else {
 
-    buyers.unshift(buyer);
+    buyers.unshift(
+      buyer
+    );
   }
 
 
-  saveData(PR_KEYS.buyers, buyers);
+  if (
+    saveData(
+      PR_KEYS.buyers,
+      buyers
+    )
+  ) {
 
-  closeBuyerModal();
+    closeBuyerModal();
 
-  refreshAll();
+    refreshAll();
 
-  alert("Buyer saved successfully.");
+    alert(
+      "Buyer saved successfully."
+    );
+  }
 }
 
 
@@ -965,26 +1581,68 @@ function saveBuyer() {
    ============================================================ */
 
 function editBuyer(id) {
+
   openBuyerModal(id);
 }
 
 
 function deleteBuyer(id) {
 
-  if (!confirm("Delete this buyer?")) {
+  const buyer =
+    buyers.find(
+      function (item) {
+
+        return (
+          String(item.id) ===
+          String(id)
+        );
+      }
+    );
+
+
+  if (!buyer) {
+
+    alert(
+      "Buyer not found."
+    );
+
+    return;
+  }
+
+
+  if (
+    !confirm(
+      'Delete "' +
+      buyer.name +
+      '"?'
+    )
+  ) {
+
     return;
   }
 
 
   buyers =
-    buyers.filter(function (buyer) {
-      return String(buyer.id) !== String(id);
-    });
+    buyers.filter(
+      function (item) {
+
+        return (
+          String(item.id) !==
+          String(id)
+        );
+      }
+    );
 
 
-  saveData(PR_KEYS.buyers, buyers);
+  if (
+    saveData(
+      PR_KEYS.buyers,
+      buyers
+    )
+  ) {
 
-  refreshAll();
+    refreshAll();
+  }
 }
 
 
@@ -995,40 +1653,51 @@ function deleteBuyer(id) {
 function renderBuyers() {
 
   const table =
-    document.getElementById("buyerTable");
+    getElement("buyerTable");
 
-  if (!table) return;
+  if (!table) {
+    return;
+  }
 
 
   const input =
-    document.getElementById("buyerSearch");
+    getElement("buyerSearch");
 
 
   const search =
     input
-      ? String(input.value || "").toLowerCase().trim()
+      ? String(
+          input.value || ""
+        )
+          .toLowerCase()
+          .trim()
       : "";
 
 
   const filtered =
-    buyers.filter(function (buyer) {
+    buyers.filter(
+      function (buyer) {
 
-      const text =
-        [
-          buyer.name,
-          buyer.country,
-          buyer.contactPerson,
-          buyer.email,
-          buyer.phone,
-          buyer.interestedProduct,
-          buyer.status
-        ]
-          .join(" ")
-          .toLowerCase();
+        const text =
+          [
+            buyer.name,
+            buyer.country,
+            buyer.contactPerson,
+            buyer.email,
+            buyer.phone,
+            buyer.interestedProduct,
+            buyer.status,
+            buyer.notes
+          ]
+            .join(" ")
+            .toLowerCase();
 
 
-      return text.includes(search);
-    });
+        return text.includes(
+          search
+        );
+      }
+    );
 
 
   if (!filtered.length) {
@@ -1046,69 +1715,93 @@ function renderBuyers() {
 
 
   table.innerHTML =
-    filtered.map(function (buyer) {
+    filtered.map(
+      function (buyer) {
 
-      return `
-        <tr>
+        return `
+          <tr>
 
-          <td>
-            <strong>
-              ${escapeHtml(buyer.name)}
-            </strong>
-            ${
-              buyer.contactPerson
-                ? `<br><small>${escapeHtml(buyer.contactPerson)}</small>`
-                : ""
-            }
-          </td>
+            <td>
+              <strong>
+                ${escapeHtml(
+                  buyer.name
+                )}
+              </strong>
 
-          <td>
-            ${escapeHtml(buyer.country)}
-          </td>
+              ${
+                buyer.contactPerson
+                  ? `
+                    <br>
+                    <small>
+                      ${escapeHtml(
+                        buyer.contactPerson
+                      )}
+                    </small>
+                  `
+                  : ""
+              }
+            </td>
 
-          <td>
-            ${escapeHtml(buyer.email || "-")}
-          </td>
+            <td>
+              ${escapeHtml(
+                buyer.country
+              )}
+            </td>
 
-          <td>
-            ${escapeHtml(buyer.phone || "-")}
-          </td>
+            <td>
+              ${escapeHtml(
+                buyer.email || "-"
+              )}
+            </td>
 
-          <td>
-            ${escapeHtml(buyer.interestedProduct || "-")}
-          </td>
+            <td>
+              ${escapeHtml(
+                buyer.phone || "-"
+              )}
+            </td>
 
-          <td>
-            ${escapeHtml(buyer.status || "-")}
-          </td>
+            <td>
+              ${escapeHtml(
+                buyer.interestedProduct || "-"
+              )}
+            </td>
 
-          <td>
-            ${escapeHtml(buyer.followupDate || "-")}
-          </td>
+            <td>
+              ${escapeHtml(
+                buyer.status || "-"
+              )}
+            </td>
 
-          <td>
+            <td>
+              ${escapeHtml(
+                buyer.followupDate || "-"
+              )}
+            </td>
 
-            <button
-              type="button"
-              class="secondary-btn"
-              onclick="editBuyer('${escapeHtml(buyer.id)}')"
-            >
-              Edit
-            </button>
+            <td>
 
-            <button
-              type="button"
-              class="primary-btn"
-              onclick="deleteBuyer('${escapeHtml(buyer.id)}')"
-            >
-              Delete
-            </button>
+              <button
+                type="button"
+                class="secondary-btn"
+                onclick="editBuyer(${JSON.stringify(String(buyer.id))})"
+              >
+                Edit
+              </button>
 
-          </td>
+              <button
+                type="button"
+                class="primary-btn"
+                onclick="deleteBuyer(${JSON.stringify(String(buyer.id))})"
+              >
+                Delete
+              </button>
 
-        </tr>
-      `;
-    })
+            </td>
+
+          </tr>
+        `;
+      }
+    )
     .join("");
 }
 
@@ -1120,9 +1813,13 @@ function renderBuyers() {
 function renderRecentProducts() {
 
   const container =
-    document.getElementById("recentProducts");
+    getElement(
+      "recentProducts"
+    );
 
-  if (!container) return;
+  if (!container) {
+    return;
+  }
 
 
   const recent =
@@ -1139,26 +1836,34 @@ function renderRecentProducts() {
 
 
   container.innerHTML =
-    recent.map(function (product) {
+    recent.map(
+      function (product) {
 
-      return `
-        <div class="panel">
+        return `
+          <div class="panel">
 
-          <strong>
-            ${escapeHtml(product.name)}
-          </strong>
+            <strong>
+              ${escapeHtml(
+                product.name
+              )}
+            </strong>
 
-          <p>
-            ${escapeHtml(product.articleNo || "")}
-          </p>
+            <p>
+              ${escapeHtml(
+                product.articleNo || ""
+              )}
+            </p>
 
-          <small>
-            ${escapeHtml(product.category || "")}
-          </small>
+            <small>
+              ${escapeHtml(
+                product.category || ""
+              )}
+            </small>
 
-        </div>
-      `;
-    })
+          </div>
+        `;
+      }
+    )
     .join("");
 }
 
@@ -1170,9 +1875,13 @@ function renderRecentProducts() {
 function renderRecentBuyers() {
 
   const container =
-    document.getElementById("recentBuyers");
+    getElement(
+      "recentBuyers"
+    );
 
-  if (!container) return;
+  if (!container) {
+    return;
+  }
 
 
   const recent =
@@ -1189,26 +1898,34 @@ function renderRecentBuyers() {
 
 
   container.innerHTML =
-    recent.map(function (buyer) {
+    recent.map(
+      function (buyer) {
 
-      return `
-        <div class="panel">
+        return `
+          <div class="panel">
 
-          <strong>
-            ${escapeHtml(buyer.name)}
-          </strong>
+            <strong>
+              ${escapeHtml(
+                buyer.name
+              )}
+            </strong>
 
-          <p>
-            ${escapeHtml(buyer.country)}
-          </p>
+            <p>
+              ${escapeHtml(
+                buyer.country
+              )}
+            </p>
 
-          <small>
-            ${escapeHtml(buyer.status || "")}
-          </small>
+            <small>
+              ${escapeHtml(
+                buyer.status || ""
+              )}
+            </small>
 
-        </div>
-      `;
-    })
+          </div>
+        `;
+      }
+    )
     .join("");
 }
 
@@ -1219,50 +1936,64 @@ function renderRecentBuyers() {
 
 function populateBuyerSelects() {
 
-  const selects = [
+  const selectIds = [
     "paymentBuyer",
     "proformaBuyer"
   ];
 
 
-  selects.forEach(function (id) {
+  selectIds.forEach(
+    function (id) {
 
-    const select =
-      document.getElementById(id);
+      const select =
+        getElement(id);
 
-    if (!select) return;
-
-
-    const current =
-      select.value;
-
-
-    select.innerHTML =
-      '<option value="">Select Buyer</option>';
+      if (!select) {
+        return;
+      }
 
 
-    buyers.forEach(function (buyer) {
-
-      const option =
-        document.createElement("option");
-
-      option.value = buyer.id;
-
-      option.textContent =
-        buyer.name +
-        (buyer.country
-          ? " — " + buyer.country
-          : "");
+      const current =
+        select.value;
 
 
-      select.appendChild(option);
-    });
+      select.innerHTML =
+        '<option value="">Select Buyer</option>';
 
 
-    if (current) {
-      select.value = current;
+      buyers.forEach(
+        function (buyer) {
+
+          const option =
+            document.createElement(
+              "option"
+            );
+
+          option.value =
+            buyer.id;
+
+          option.textContent =
+            buyer.name +
+            (
+              buyer.country
+                ? " — " +
+                  buyer.country
+                : ""
+            );
+
+
+          select.appendChild(
+            option
+          );
+        }
+      );
+
+
+      if (current) {
+        select.value = current;
+      }
     }
-  });
+  );
 }
 
 
@@ -1273,9 +2004,13 @@ function populateBuyerSelects() {
 function populateProductSelects() {
 
   const select =
-    document.getElementById("proformaProduct");
+    getElement(
+      "proformaProduct"
+    );
 
-  if (!select) return;
+  if (!select) {
+    return;
+  }
 
 
   const current =
@@ -1286,24 +2021,32 @@ function populateProductSelects() {
     '<option value="">Select Product</option>';
 
 
-  products.forEach(function (product) {
+  products.forEach(
+    function (product) {
 
-    const option =
-      document.createElement("option");
+      const option =
+        document.createElement(
+          "option"
+        );
 
-    option.value = product.id;
+      option.value =
+        product.id;
 
-    option.textContent =
-      product.name +
-      (
-        product.articleNo
-          ? " — " + product.articleNo
-          : ""
+      option.textContent =
+        product.name +
+        (
+          product.articleNo
+            ? " — " +
+              product.articleNo
+            : ""
+        );
+
+
+      select.appendChild(
+        option
       );
-
-
-    select.appendChild(option);
-  });
+    }
+  );
 
 
   if (current) {
@@ -1313,18 +2056,25 @@ function populateProductSelects() {
 
 
 /* ============================================================
-   PAYMENT
+   PAYMENT MODAL
    ============================================================ */
 
 function openPaymentModal() {
 
   const modal =
-    document.getElementById("paymentModal");
+    getElement(
+      "paymentModal"
+    );
 
   const form =
-    document.getElementById("paymentForm");
+    getElement(
+      "paymentForm"
+    );
 
-  if (!modal) return;
+
+  if (!modal) {
+    return;
+  }
 
 
   if (form) {
@@ -1332,109 +2082,177 @@ function openPaymentModal() {
   }
 
 
-  setValue("paymentDate", today());
+  setValue(
+    "paymentDate",
+    today()
+  );
 
-  modal.style.display = "flex";
-  modal.classList.add("show");
 
   populateBuyerSelects();
+
+
+  modal.style.display =
+    "flex";
+
+  modal.classList.add(
+    "show"
+  );
 }
 
 
 function prClosePayment() {
 
   const modal =
-    document.getElementById("paymentModal");
+    getElement(
+      "paymentModal"
+    );
 
   if (modal) {
-    modal.style.display = "none";
-    modal.classList.remove("show");
+
+    modal.style.display =
+      "none";
+
+    modal.classList.remove(
+      "show"
+    );
   }
 }
 
 
+/* ============================================================
+   SAVE PAYMENT
+   ============================================================ */
+
 function savePayment() {
+
+  const buyerId =
+    getValue("paymentBuyer");
+
+  const foreignAmount =
+    getValue(
+      "paymentForeignAmount"
+    );
+
+
+  if (!buyerId) {
+
+    alert(
+      "Please select a buyer."
+    );
+
+    return;
+  }
+
+
+  if (!foreignAmount) {
+
+    alert(
+      "Please enter payment amount."
+    );
+
+    return;
+  }
+
 
   const payment = {
 
-    id: generateId(),
+    id:
+      generateId(),
 
     buyerId:
-      getValue("paymentBuyer"),
+      buyerId,
 
     bankName:
-      getValue("paymentBankName"),
+      getValue(
+        "paymentBankName"
+      ),
 
     proformaNo:
-      getValue("paymentProformaNo"),
+      getValue(
+        "paymentProformaNo"
+      ),
 
     foreignAmount:
-      getValue("paymentForeignAmount"),
+      foreignAmount,
 
     currency:
-      getValue("paymentForeignCurrency"),
+      getValue(
+        "paymentForeignCurrency"
+      ),
 
     paymentMode:
-      getValue("paymentMode"),
+      getValue(
+        "paymentMode"
+      ),
 
     pkrAmount:
-      getValue("paymentPkrAmount"),
+      getValue(
+        "paymentPkrAmount"
+      ),
 
     paymentDate:
-      getValue("paymentDate") || today(),
+      getValue(
+        "paymentDate"
+      ) || today(),
 
     reference:
-      getValue("paymentReference"),
+      getValue(
+        "paymentReference"
+      ),
 
     notes:
-      getValue("paymentNotes"),
+      getValue(
+        "paymentNotes"
+      ),
 
     createdAt:
       new Date().toISOString()
   };
 
 
-  if (!payment.buyerId) {
+  payments.unshift(
+    payment
+  );
 
-    alert("Please select a buyer.");
 
-    return;
+  if (
+    saveData(
+      PR_KEYS.payments,
+      payments
+    )
+  ) {
+
+    prClosePayment();
+
+    refreshAll();
+
+    alert(
+      "Payment saved successfully."
+    );
   }
-
-
-  if (!payment.foreignAmount) {
-
-    alert("Please enter payment amount.");
-
-    return;
-  }
-
-
-  payments.unshift(payment);
-
-  saveData(PR_KEYS.payments, payments);
-
-  prClosePayment();
-
-  refreshAll();
-
-  alert("Payment saved successfully.");
 }
 
 
 /* ============================================================
-   PROFORMA
+   PROFORMA MODAL
    ============================================================ */
 
 function openProformaModal() {
 
   const modal =
-    document.getElementById("proformaModal");
+    getElement(
+      "proformaModal"
+    );
 
   const form =
-    document.getElementById("proformaForm");
+    getElement(
+      "proformaForm"
+    );
 
-  if (!modal) return;
+
+  if (!modal) {
+    return;
+  }
 
 
   if (form) {
@@ -1442,74 +2260,156 @@ function openProformaModal() {
   }
 
 
-  setValue("proformaQty", "1");
-  setValue("proformaUnitPrice", "0");
-  setValue("proformaDate", today());
+  setValue(
+    "proformaQty",
+    "1"
+  );
+
+  setValue(
+    "proformaUnitPrice",
+    "0"
+  );
+
+  setValue(
+    "proformaDate",
+    today()
+  );
 
 
   populateBuyerSelects();
   populateProductSelects();
 
 
-  modal.style.display = "flex";
-  modal.classList.add("show");
+  modal.style.display =
+    "flex";
+
+  modal.classList.add(
+    "show"
+  );
 }
 
 
 function prCloseProforma() {
 
   const modal =
-    document.getElementById("proformaModal");
+    getElement(
+      "proformaModal"
+    );
 
   if (modal) {
-    modal.style.display = "none";
-    modal.classList.remove("show");
+
+    modal.style.display =
+      "none";
+
+    modal.classList.remove(
+      "show"
+    );
   }
 }
 
 
+/* ============================================================
+   CREATE PROFORMA
+   ============================================================ */
+
 function createProforma() {
 
   const buyerId =
-    getValue("proformaBuyer");
+    getValue(
+      "proformaBuyer"
+    );
 
   const productId =
-    getValue("proformaProduct");
+    getValue(
+      "proformaProduct"
+    );
 
 
   if (!buyerId || !productId) {
 
-    alert("Please select Buyer and Product.");
+    alert(
+      "Please select Buyer and Product."
+    );
 
     return;
   }
 
 
   const buyer =
-    buyers.find(function (item) {
-      return String(item.id) === String(buyerId);
-    });
+    buyers.find(
+      function (item) {
+
+        return (
+          String(item.id) ===
+          String(buyerId)
+        );
+      }
+    );
 
 
   const product =
-    products.find(function (item) {
-      return String(item.id) === String(productId);
-    });
+    products.find(
+      function (item) {
+
+        return (
+          String(item.id) ===
+          String(productId)
+        );
+      }
+    );
 
 
   if (!buyer || !product) {
 
-    alert("Buyer or Product not found.");
+    alert(
+      "Buyer or Product not found."
+    );
 
     return;
   }
 
 
   const qty =
-    Number(getValue("proformaQty") || 0);
+    Number(
+      getValue(
+        "proformaQty"
+      )
+    );
+
 
   const unitPrice =
-    Number(getValue("proformaUnitPrice") || 0);
+    Number(
+      getValue(
+        "proformaUnitPrice"
+      )
+    );
+
+
+  if (
+    !Number.isFinite(qty) ||
+    qty <= 0
+  ) {
+
+    alert(
+      "Please enter a valid quantity."
+    );
+
+    return;
+  }
+
+
+  if (
+    !Number.isFinite(unitPrice) ||
+    unitPrice < 0
+  ) {
+
+    alert(
+      "Please enter a valid unit price."
+    );
+
+    return;
+  }
+
 
   const total =
     qty * unitPrice;
@@ -1517,17 +2417,20 @@ function createProforma() {
 
   const proforma = {
 
-    id: generateId(),
+    id:
+      generateId(),
 
     number:
-      "PI-" +
-      String(proformas.length + 1).padStart(4, "0"),
+      generateProformaNumber(),
 
     buyerId:
       buyer.id,
 
     buyerName:
       buyer.name,
+
+    buyerCountry:
+      buyer.country,
 
     productId:
       product.id,
@@ -1547,37 +2450,124 @@ function createProforma() {
     total:
       total,
 
+    currency:
+      getValue(
+        "proformaCurrency"
+      ),
+
     date:
-      getValue("proformaDate") || today(),
+      getValue(
+        "proformaDate"
+      ) || today(),
 
     createdAt:
       new Date().toISOString()
   };
 
 
-  proformas.unshift(proforma);
+  proformas.unshift(
+    proforma
+  );
 
-  saveData(PR_KEYS.proformas, proformas);
 
-  prCloseProforma();
+  if (
+    saveData(
+      PR_KEYS.proformas,
+      proformas
+    )
+  ) {
 
-  printProforma(proforma);
+    prCloseProforma();
+
+    refreshAll();
+
+    printProforma(
+      proforma
+    );
+  }
 }
 
 
 /* ============================================================
-   PROFORMA LETTER
+   PROFORMA NUMBER
+   ============================================================ */
+
+function generateProformaNumber() {
+
+  const year =
+    new Date()
+      .getFullYear();
+
+
+  let highest =
+    0;
+
+
+  proformas.forEach(
+    function (item) {
+
+      const match =
+        String(
+          item.number || ""
+        ).match(
+          /PI-(\d+)/i
+        );
+
+
+      if (match) {
+
+        const number =
+          Number(
+            match[1]
+          );
+
+
+        if (
+          Number.isFinite(
+            number
+          ) &&
+          number > highest
+        ) {
+
+          highest =
+            number;
+        }
+      }
+    }
+  );
+
+
+  return (
+    "PI-" +
+    year +
+    "-" +
+    String(
+      highest + 1
+    ).padStart(4, "0")
+  );
+}
+
+
+/* ============================================================
+   PROFORMA LETTER MODAL
    ============================================================ */
 
 function openProformaLetterModal() {
 
   const modal =
-    document.getElementById("letterModal");
+    getElement(
+      "letterModal"
+    );
 
   const form =
-    document.getElementById("letterForm");
+    getElement(
+      "letterForm"
+    );
 
-  if (!modal) return;
+
+  if (!modal) {
+    return;
+  }
 
 
   if (form) {
@@ -1585,42 +2575,73 @@ function openProformaLetterModal() {
   }
 
 
-  setValue("letterDate", today());
-  setValue("letterSubject", "Proforma Invoice");
+  setValue(
+    "letterDate",
+    today()
+  );
 
 
-  modal.style.display = "flex";
-  modal.classList.add("show");
+  setValue(
+    "letterSubject",
+    "Proforma Invoice"
+  );
+
+
+  modal.style.display =
+    "flex";
+
+  modal.classList.add(
+    "show"
+  );
 }
 
 
 function prCloseLetter() {
 
   const modal =
-    document.getElementById("letterModal");
+    getElement(
+      "letterModal"
+    );
 
   if (modal) {
-    modal.style.display = "none";
-    modal.classList.remove("show");
+
+    modal.style.display =
+      "none";
+
+    modal.classList.remove(
+      "show"
+    );
   }
 }
 
 
+/* ============================================================
+   CREATE PROFORMA LETTER
+   ============================================================ */
+
 function createProformaLetter() {
 
   const buyer =
-    getValue("letterBuyer");
+    getValue(
+      "letterBuyer"
+    );
 
   const subject =
-    getValue("letterSubject");
+    getValue(
+      "letterSubject"
+    );
 
   const message =
-    getValue("letterMessage");
+    getValue(
+      "letterMessage"
+    );
 
 
   if (!buyer || !message) {
 
-    alert("Please enter Buyer and Message.");
+    alert(
+      "Please enter Buyer and Message."
+    );
 
     return;
   }
@@ -1635,10 +2656,13 @@ function createProformaLetter() {
       buyer,
 
     date:
-      getValue("letterDate") || today(),
+      getValue(
+        "letterDate"
+      ) || today(),
 
     subject:
-      subject || "Proforma Invoice",
+      subject ||
+      "Proforma Invoice",
 
     message:
       message,
@@ -1648,13 +2672,26 @@ function createProformaLetter() {
   };
 
 
-  letters.unshift(letter);
+  letters.unshift(
+    letter
+  );
 
-  saveData(PR_KEYS.letters, letters);
 
-  prCloseLetter();
+  if (
+    saveData(
+      PR_KEYS.letters,
+      letters
+    )
+  ) {
 
-  printLetter(letter);
+    prCloseLetter();
+
+    refreshAll();
+
+    printLetter(
+      letter
+    );
+  }
 }
 
 
@@ -1662,90 +2699,301 @@ function createProformaLetter() {
    PRINT PROFORMA
    ============================================================ */
 
-function printProforma(proforma) {
+function printProforma(
+  proforma
+) {
+
+  const currency =
+    proforma.currency
+      ? " " +
+        escapeHtml(
+          proforma.currency
+        )
+      : "";
+
 
   const html = `
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta charset="UTF-8">
-<title>${escapeHtml(proforma.number)}</title>
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+  ${escapeHtml(
+    proforma.number
+  )}
+</title>
+
 <style>
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: Arial, sans-serif;
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
   padding: 40px;
+
   color: #222;
+
+  max-width: 1000px;
+
+  margin: auto;
 }
+
+.header {
+  border-bottom:
+    3px solid #222;
+
+  padding-bottom: 15px;
+
+  margin-bottom: 30px;
+}
+
 h1 {
-  margin-bottom: 5px;
+  margin:
+    0 0 5px 0;
 }
-table {
-  width: 100%;
-  border-collapse: collapse;
+
+h2 {
   margin-top: 30px;
 }
-th, td {
-  border: 1px solid #ccc;
+
+table {
+  width: 100%;
+
+  border-collapse:
+    collapse;
+
+  margin-top: 30px;
+}
+
+th,
+td {
+  border:
+    1px solid #ccc;
+
   padding: 12px;
+
   text-align: left;
 }
-.total {
-  font-size: 20px;
-  font-weight: bold;
-  margin-top: 20px;
+
+th {
+  background:
+    #f4f4f4;
 }
+
+.total {
+  text-align:
+    right;
+
+  font-size:
+    20px;
+
+  font-weight:
+    bold;
+
+  margin-top:
+    20px;
+}
+
+.footer {
+  margin-top:
+    70px;
+
+  border-top:
+    1px solid #ddd;
+
+  padding-top:
+    20px;
+}
+
+@media print {
+
+  body {
+    padding: 20px;
+  }
+
+}
+
 </style>
+
 </head>
+
 <body>
 
-<h1>PRIOR RIDING</h1>
-<p>International Buyer CRM</p>
+<div class="header">
 
-<h2>PROFORMA INVOICE</h2>
+<h1>
+  PRIOR RIDING
+</h1>
 
-<p><strong>Invoice No:</strong> ${escapeHtml(proforma.number)}</p>
-<p><strong>Date:</strong> ${escapeHtml(proforma.date)}</p>
-<p><strong>Buyer:</strong> ${escapeHtml(proforma.buyerName)}</p>
+<p>
+  International Buyer CRM
+</p>
+
+<p>
+  Sialkot, Pakistan
+</p>
+
+</div>
+
+<h2>
+  PROFORMA INVOICE
+</h2>
+
+<p>
+<strong>Invoice No:</strong>
+${escapeHtml(
+  proforma.number
+)}
+</p>
+
+<p>
+<strong>Date:</strong>
+${escapeHtml(
+  proforma.date
+)}
+</p>
+
+<p>
+<strong>Buyer:</strong>
+${escapeHtml(
+  proforma.buyerName
+)}
+</p>
+
+${
+  proforma.buyerCountry
+    ? `
+      <p>
+        <strong>Country:</strong>
+        ${escapeHtml(
+          proforma.buyerCountry
+        )}
+      </p>
+    `
+    : ""
+}
 
 <table>
+
 <tr>
-<th>Product</th>
-<th>Article</th>
-<th>Quantity</th>
-<th>Unit Price</th>
-<th>Total</th>
+
+<th>
+  Product
+</th>
+
+<th>
+  Article
+</th>
+
+<th>
+  Quantity
+</th>
+
+<th>
+  Unit Price
+</th>
+
+<th>
+  Total
+</th>
+
 </tr>
 
 <tr>
-<td>${escapeHtml(proforma.productName)}</td>
-<td>${escapeHtml(proforma.articleNo)}</td>
-<td>${escapeHtml(proforma.quantity)}</td>
-<td>${escapeHtml(proforma.unitPrice)}</td>
-<td>${escapeHtml(proforma.total)}</td>
+
+<td>
+${escapeHtml(
+  proforma.productName
+)}
+</td>
+
+<td>
+${escapeHtml(
+  proforma.articleNo
+)}
+</td>
+
+<td>
+${escapeHtml(
+  proforma.quantity
+)}
+</td>
+
+<td>
+${currency}
+${escapeHtml(
+  proforma.unitPrice
+)}
+</td>
+
+<td>
+${currency}
+${escapeHtml(
+  proforma.total
+)}
+</td>
+
 </tr>
+
 </table>
 
 <div class="total">
-Grand Total: ${escapeHtml(proforma.total)}
+
+Grand Total:
+${currency}
+${escapeHtml(
+  proforma.total
+)}
+
 </div>
 
-<p style="margin-top:50px;">
+<div class="footer">
+
 PRIOR RIDING<br>
 Sialkot, Pakistan
-</p>
+
+</div>
 
 <script>
-window.onload = function() {
-  window.print();
-};
+
+window.onload =
+  function () {
+
+    setTimeout(
+      function () {
+
+        window.print();
+
+      },
+      300
+    );
+
+  };
+
 </script>
 
 </body>
+
 </html>
 `;
 
 
-  openPrintWindow(html);
+  openPrintWindow(
+    html
+  );
 }
 
 
@@ -1753,69 +3001,192 @@ window.onload = function() {
    PRINT LETTER
    ============================================================ */
 
-function printLetter(letter) {
+function printLetter(
+  letter
+) {
 
   const html = `
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta charset="UTF-8">
-<title>PRIOR RIDING Letter</title>
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+  PRIOR RIDING Letter
+</title>
+
 <style>
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: Arial, sans-serif;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
   padding: 50px;
+
   line-height: 1.7;
+
+  color: #222;
+
+  max-width: 900px;
+
+  margin: auto;
 }
-h1 {
-  margin-bottom: 0;
+
+.header {
+
+  border-bottom:
+    3px solid #222;
+
+  padding-bottom:
+    15px;
+
+  margin-bottom:
+    30px;
 }
+
+.header h1 {
+
+  margin:
+    0;
+}
+
 .date {
-  margin-top: 30px;
+
+  margin-top:
+    30px;
 }
+
 .message {
-  white-space: pre-wrap;
-  margin-top: 30px;
+
+  white-space:
+    pre-wrap;
+
+  margin-top:
+    30px;
 }
+
+.footer {
+
+  margin-top:
+    60px;
+
+  border-top:
+    1px solid #ddd;
+
+  padding-top:
+    20px;
+}
+
+@media print {
+
+  body {
+    padding: 20px;
+  }
+
+}
+
 </style>
+
 </head>
+
 <body>
 
-<h1>PRIOR RIDING</h1>
-<p>International Buyer CRM</p>
+<div class="header">
 
-<p class="date">
-Date: ${escapeHtml(letter.date)}
-</p>
-
-<h2>${escapeHtml(letter.subject)}</h2>
+<h1>
+  PRIOR RIDING
+</h1>
 
 <p>
-Dear ${escapeHtml(letter.buyer)},
+  International Buyer CRM
+</p>
+
+<p>
+  Sialkot, Pakistan
+</p>
+
+</div>
+
+<p class="date">
+
+<strong>Date:</strong>
+${escapeHtml(
+  letter.date
+)}
+
+</p>
+
+<h2>
+${escapeHtml(
+  letter.subject
+)}
+</h2>
+
+<p>
+Dear
+${escapeHtml(
+  letter.buyer
+)},
 </p>
 
 <div class="message">
-${escapeHtml(letter.message)}
+${escapeHtml(
+  letter.message
+)}
 </div>
 
-<p style="margin-top:50px;">
+<div class="footer">
+
 Best Regards,<br>
-<strong>PRIOR RIDING</strong><br>
+
+<strong>
+  PRIOR RIDING
+</strong><br>
+
 Sialkot, Pakistan
-</p>
+
+</div>
 
 <script>
-window.onload = function() {
-  window.print();
-};
+
+window.onload =
+  function () {
+
+    setTimeout(
+      function () {
+
+        window.print();
+
+      },
+      300
+    );
+
+  };
+
 </script>
 
 </body>
+
 </html>
 `;
 
 
-  openPrintWindow(html);
+  openPrintWindow(
+    html
+  );
 }
 
 
@@ -1823,10 +3194,27 @@ window.onload = function() {
    PRINT WINDOW
    ============================================================ */
 
-function openPrintWindow(html) {
+function openPrintWindow(
+  html
+) {
 
-  const printWindow =
-    window.open("", "_blank");
+  let printWindow;
+
+
+  try {
+
+    printWindow =
+      window.open(
+        "",
+        "_blank",
+        "width=1000,height=800"
+      );
+
+  } catch (error) {
+
+    console.error(error);
+  }
+
 
   if (!printWindow) {
 
@@ -1838,11 +3226,27 @@ function openPrintWindow(html) {
   }
 
 
-  printWindow.document.open();
+  try {
 
-  printWindow.document.write(html);
+    printWindow.document.open();
 
-  printWindow.document.close();
+    printWindow.document.write(
+      html
+    );
+
+    printWindow.document.close();
+
+  } catch (error) {
+
+    console.error(
+      "Print window error:",
+      error
+    );
+
+    alert(
+      "Could not open print preview."
+    );
+  }
 }
 
 
@@ -1850,22 +3254,38 @@ function openPrintWindow(html) {
    DASHBOARD TOOLS
    ============================================================ */
 
-function openDashboardTool(type) {
+function openDashboardTool(
+  type
+) {
 
   const panel =
-    document.getElementById("dashboardToolPanel");
+    getElement(
+      "dashboardToolPanel"
+    );
 
   const title =
-    document.getElementById("dashboardToolTitle");
+    getElement(
+      "dashboardToolTitle"
+    );
 
   const body =
-    document.getElementById("dashboardToolBody");
+    getElement(
+      "dashboardToolBody"
+    );
 
 
-  if (!panel || !title || !body) return;
+  if (
+    !panel ||
+    !title ||
+    !body
+  ) {
+
+    return;
+  }
 
 
-  panel.style.display = "block";
+  panel.style.display =
+    "block";
 
 
   if (type === "performance") {
@@ -1873,27 +3293,37 @@ function openDashboardTool(type) {
     title.textContent =
       "📊 Performance Wise";
 
+
     body.innerHTML = `
+
       <div class="stats">
 
         <div class="stat-card">
           <span>Products</span>
-          <strong>${products.length}</strong>
+          <strong>
+            ${products.length}
+          </strong>
         </div>
 
         <div class="stat-card">
           <span>Total Buyers</span>
-          <strong>${buyers.length}</strong>
+          <strong>
+            ${buyers.length}
+          </strong>
         </div>
 
         <div class="stat-card">
           <span>Payments</span>
-          <strong>${payments.length}</strong>
+          <strong>
+            ${payments.length}
+          </strong>
         </div>
 
         <div class="stat-card">
           <span>Proformas</span>
-          <strong>${proformas.length}</strong>
+          <strong>
+            ${proformas.length}
+          </strong>
         </div>
 
       </div>
@@ -1908,17 +3338,41 @@ function openDashboardTool(type) {
     title.textContent =
       "🧮 Calculation Breakdown";
 
+
     body.innerHTML = `
+
       <div class="panel">
 
         <div class="field">
-          <label>Quantity</label>
-          <input id="calcQty" type="number" value="1">
+
+          <label>
+            Quantity
+          </label>
+
+          <input
+            id="calcQty"
+            type="number"
+            min="0"
+            step="1"
+            value="1"
+          >
+
         </div>
 
         <div class="field">
-          <label>Unit Price</label>
-          <input id="calcPrice" type="number" step="0.01" value="0">
+
+          <label>
+            Unit Price
+          </label>
+
+          <input
+            id="calcPrice"
+            type="number"
+            min="0"
+            step="0.01"
+            value="0"
+          >
+
         </div>
 
         <button
@@ -1934,6 +3388,7 @@ function openDashboardTool(type) {
         </h3>
 
       </div>
+
     `;
 
     return;
@@ -1945,31 +3400,64 @@ function openDashboardTool(type) {
     title.textContent =
       "💳 Payment Mode";
 
+
     const counts = {};
 
-    payments.forEach(function (payment) {
 
-      const mode =
-        payment.paymentMode || "Other";
+    payments.forEach(
+      function (payment) {
 
-      counts[mode] =
-        (counts[mode] || 0) + 1;
-    });
+        const mode =
+          payment.paymentMode ||
+          "Other";
+
+
+        counts[mode] =
+          (
+            counts[mode] || 0
+          ) + 1;
+      }
+    );
+
+
+    if (
+      Object.keys(counts)
+        .length === 0
+    ) {
+
+      body.innerHTML =
+        "<p>No payments recorded yet.</p>";
+
+      return;
+    }
 
 
     body.innerHTML =
-      Object.keys(counts).length
-        ? Object.keys(counts).map(function (mode) {
+      Object.keys(counts)
+        .map(
+          function (mode) {
 
             return `
-              <div class="panel">
-                <strong>${escapeHtml(mode)}</strong>
-                <p>${counts[mode]} payment(s)</p>
-              </div>
-            `;
 
-          }).join("")
-        : "<p>No payments recorded yet.</p>";
+              <div class="panel">
+
+                <strong>
+                  ${escapeHtml(
+                    mode
+                  )}
+                </strong>
+
+                <p>
+                  ${counts[mode]}
+                  payment(s)
+                </p>
+
+              </div>
+
+            `;
+          }
+        )
+        .join("");
 
     return;
   }
@@ -1980,8 +3468,13 @@ function openDashboardTool(type) {
     title.textContent =
       "💰 Add Payment";
 
+
     body.innerHTML = `
-      <p>Add a new payment record.</p>
+
+      <p>
+        Add a new payment record.
+      </p>
+
       <button
         type="button"
         class="primary-btn"
@@ -1989,6 +3482,7 @@ function openDashboardTool(type) {
       >
         Add Payment
       </button>
+
     `;
 
     return;
@@ -2000,8 +3494,13 @@ function openDashboardTool(type) {
     title.textContent =
       "🧾 Add Proforma";
 
+
     body.innerHTML = `
-      <p>Create a new proforma invoice.</p>
+
+      <p>
+        Create a new proforma invoice.
+      </p>
+
       <button
         type="button"
         class="primary-btn"
@@ -2009,6 +3508,7 @@ function openDashboardTool(type) {
       >
         Add Proforma
       </button>
+
     `;
 
     return;
@@ -2020,8 +3520,13 @@ function openDashboardTool(type) {
     title.textContent =
       "✉️ Add Proforma Letter";
 
+
     body.innerHTML = `
-      <p>Create a new proforma letter.</p>
+
+      <p>
+        Create a new proforma letter.
+      </p>
+
       <button
         type="button"
         class="primary-btn"
@@ -2029,6 +3534,7 @@ function openDashboardTool(type) {
       >
         Add Proforma Letter
       </button>
+
     `;
 
     return;
@@ -2040,10 +3546,14 @@ function openDashboardTool(type) {
     title.textContent =
       "📚 Product Catalogue";
 
+
     body.innerHTML = `
+
       <p>
         You currently have
-        <strong>${products.length}</strong>
+        <strong>
+          ${products.length}
+        </strong>
         product(s).
       </p>
 
@@ -2054,6 +3564,7 @@ function openDashboardTool(type) {
       >
         Open Catalogue
       </button>
+
     `;
 
     return;
@@ -2064,86 +3575,134 @@ function openDashboardTool(type) {
 function closeDashboardTool() {
 
   const panel =
-    document.getElementById("dashboardToolPanel");
+    getElement(
+      "dashboardToolPanel"
+    );
 
   if (panel) {
-    panel.style.display = "none";
+
+    panel.style.display =
+      "none";
   }
 }
 
 
+/* ============================================================
+   CALCULATOR
+   ============================================================ */
+
 function calculateBreakdown() {
 
   const qty =
-    Number(getValue("calcQty") || 0);
+    Number(
+      getValue(
+        "calcQty"
+      ) || 0
+    );
+
 
   const price =
-    Number(getValue("calcPrice") || 0);
+    Number(
+      getValue(
+        "calcPrice"
+      ) || 0
+    );
+
 
   const total =
     qty * price;
 
 
   const result =
-    document.getElementById("calcResult");
+    getElement(
+      "calcResult"
+    );
 
 
   if (result) {
+
     result.textContent =
       "Total: " +
-      total.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      });
+      total.toLocaleString(
+        undefined,
+        {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }
+      );
   }
 }
 
 
 /* ============================================================
-   PDF / PRINT
+   PRINT / PDF
    ============================================================ */
 
 function printToPdf() {
+
   window.print();
 }
 
 
 /* ============================================================
-   STORAGE / BACKUP
+   STORAGE COUNTS
    ============================================================ */
 
 function updateStorageCounts() {
 
   const productCount =
-    document.getElementById("storageProductCount");
+    getElement(
+      "storageProductCount"
+    );
 
   const buyerCount =
-    document.getElementById("storageBuyerCount");
+    getElement(
+      "storageBuyerCount"
+    );
 
   const paymentCount =
-    document.getElementById("storagePaymentCount");
+    getElement(
+      "storagePaymentCount"
+    );
 
   const proformaCount =
-    document.getElementById("storageProformaCount");
+    getElement(
+      "storageProformaCount"
+    );
 
 
   if (productCount) {
-    productCount.textContent = products.length;
+
+    productCount.textContent =
+      products.length;
   }
+
 
   if (buyerCount) {
-    buyerCount.textContent = buyers.length;
+
+    buyerCount.textContent =
+      buyers.length;
   }
+
 
   if (paymentCount) {
-    paymentCount.textContent = payments.length;
+
+    paymentCount.textContent =
+      payments.length;
   }
 
+
   if (proformaCount) {
-    proformaCount.textContent = proformas.length;
+
+    proformaCount.textContent =
+      proformas.length;
   }
 }
 
+
+/* ============================================================
+   STORAGE PANEL
+   ============================================================ */
 
 function openStoragePanel() {
 
@@ -2153,30 +3712,47 @@ function openStoragePanel() {
 
 
   const modal =
-    document.getElementById("storageModal");
+    getElement(
+      "storageModal"
+    );
 
-  if (!modal) return;
+
+  if (!modal) {
+    return;
+  }
 
 
-  modal.style.display = "flex";
-  modal.classList.add("show");
+  modal.style.display =
+    "flex";
+
+  modal.classList.add(
+    "show"
+  );
 }
 
 
 function closeStoragePanel() {
 
   const modal =
-    document.getElementById("storageModal");
+    getElement(
+      "storageModal"
+    );
+
 
   if (modal) {
-    modal.style.display = "none";
-    modal.classList.remove("show");
+
+    modal.style.display =
+      "none";
+
+    modal.classList.remove(
+      "show"
+    );
   }
 }
 
 
 /* ============================================================
-   EXPORT BACKUP
+   EXPORT ALL DATA
    ============================================================ */
 
 function exportAllData() {
@@ -2187,47 +3763,72 @@ function exportAllData() {
       "PRIOR RIDING — International Buyer CRM",
 
     version:
-      "1.0",
+      "2.0",
 
     exportedAt:
       new Date().toISOString(),
 
     products:
-      loadData(PR_KEYS.products),
+      loadData(
+        PR_KEYS.products
+      ),
 
     buyers:
-      loadData(PR_KEYS.buyers),
+      loadData(
+        PR_KEYS.buyers
+      ),
 
     payments:
-      loadData(PR_KEYS.payments),
+      loadData(
+        PR_KEYS.payments
+      ),
 
     proformas:
-      loadData(PR_KEYS.proformas),
+      loadData(
+        PR_KEYS.proformas
+      ),
 
     letters:
-      loadData(PR_KEYS.letters)
+      loadData(
+        PR_KEYS.letters
+      )
 
   };
 
 
+  const json =
+    JSON.stringify(
+      data,
+      null,
+      2
+    );
+
+
   const blob =
     new Blob(
-      [JSON.stringify(data, null, 2)],
+      [json],
       {
-        type: "application/json"
+        type:
+          "application/json;charset=utf-8"
       }
     );
 
 
   const url =
-    URL.createObjectURL(blob);
+    URL.createObjectURL(
+      blob
+    );
 
 
   const link =
-    document.createElement("a");
+    document.createElement(
+      "a"
+    );
 
 
-  link.href = url;
+  link.href =
+    url;
+
 
   link.download =
     "prior-riding-backup-" +
@@ -2235,13 +3836,27 @@ function exportAllData() {
     ".json";
 
 
-  document.body.appendChild(link);
+  document.body.appendChild(
+    link
+  );
+
 
   link.click();
 
+
   link.remove();
 
-  URL.revokeObjectURL(url);
+
+  setTimeout(
+    function () {
+
+      URL.revokeObjectURL(
+        url
+      );
+
+    },
+    1000
+  );
 }
 
 
@@ -2249,89 +3864,204 @@ function exportAllData() {
    RESTORE BACKUP
    ============================================================ */
 
-function restoreAllData(event) {
+function restoreAllData(
+  event
+) {
+
+  const input =
+    event &&
+    event.target;
+
+
+  if (!input) {
+    return;
+  }
+
 
   const file =
-    event.target.files &&
-    event.target.files[0];
+    input.files &&
+    input.files[0];
 
 
-  if (!file) return;
+  if (!file) {
+    return;
+  }
 
 
   const reader =
     new FileReader();
 
 
-  reader.onload = function (result) {
+  reader.onload =
+    function (result) {
 
-    try {
+      try {
 
-      const data =
-        JSON.parse(result.target.result);
+        const data =
+          JSON.parse(
+            result.target.result
+          );
 
 
-      if (Array.isArray(data.products)) {
-        saveData(
-          PR_KEYS.products,
-          data.products
+        if (
+          !data ||
+          typeof data !==
+          "object"
+        ) {
+
+          throw new Error(
+            "Invalid backup structure."
+          );
+        }
+
+
+        let restored =
+          false;
+
+
+        if (
+          Array.isArray(
+            data.products
+          )
+        ) {
+
+          products =
+            data.products;
+
+          saveData(
+            PR_KEYS.products,
+            products
+          );
+
+          restored = true;
+        }
+
+
+        if (
+          Array.isArray(
+            data.buyers
+          )
+        ) {
+
+          buyers =
+            data.buyers;
+
+          saveData(
+            PR_KEYS.buyers,
+            buyers
+          );
+
+          restored = true;
+        }
+
+
+        if (
+          Array.isArray(
+            data.payments
+          )
+        ) {
+
+          payments =
+            data.payments;
+
+          saveData(
+            PR_KEYS.payments,
+            payments
+          );
+
+          restored = true;
+        }
+
+
+        if (
+          Array.isArray(
+            data.proformas
+          )
+        ) {
+
+          proformas =
+            data.proformas;
+
+          saveData(
+            PR_KEYS.proformas,
+            proformas
+          );
+
+          restored = true;
+        }
+
+
+        if (
+          Array.isArray(
+            data.letters
+          )
+        ) {
+
+          letters =
+            data.letters;
+
+          saveData(
+            PR_KEYS.letters,
+            letters
+          );
+
+          restored = true;
+        }
+
+
+        if (!restored) {
+
+          throw new Error(
+            "No valid PRIOR RIDING data found."
+          );
+        }
+
+
+        alert(
+          "PRIOR RIDING backup restored successfully."
+        );
+
+
+        refreshAll();
+
+
+        closeStoragePanel();
+
+
+      } catch (error) {
+
+        console.error(
+          "Restore error:",
+          error
+        );
+
+
+        alert(
+          "Invalid PRIOR RIDING backup file."
         );
       }
 
 
-      if (Array.isArray(data.buyers)) {
-        saveData(
-          PR_KEYS.buyers,
-          data.buyers
-        );
-      }
+      input.value =
+        "";
+    };
 
 
-      if (Array.isArray(data.payments)) {
-        saveData(
-          PR_KEYS.payments,
-          data.payments
-        );
-      }
-
-
-      if (Array.isArray(data.proformas)) {
-        saveData(
-          PR_KEYS.proformas,
-          data.proformas
-        );
-      }
-
-
-      if (Array.isArray(data.letters)) {
-        saveData(
-          PR_KEYS.letters,
-          data.letters
-        );
-      }
-
+  reader.onerror =
+    function () {
 
       alert(
-        "PRIOR RIDING backup restored successfully."
+        "Could not read the backup file."
       );
 
-
-      location.reload();
-
-    } catch (error) {
-
-      console.error(error);
-
-      alert(
-        "Invalid PRIOR RIDING backup file."
-      );
-    }
-  };
+      input.value =
+        "";
+    };
 
 
-  reader.readAsText(file);
-
-  event.target.value = "";
+  reader.readAsText(
+    file
+  );
 }
 
 
@@ -2342,15 +4072,25 @@ function restoreAllData(event) {
 function toggleSettingsMenu() {
 
   const menu =
-    document.getElementById("settingsMenu");
+    getElement(
+      "settingsMenu"
+    );
 
-  if (!menu) return;
+
+  if (!menu) {
+    return;
+  }
+
+
+  const isOpen =
+    menu.style.display ===
+    "block";
 
 
   menu.style.display =
-    menu.style.display === "none"
-      ? "block"
-      : "none";
+    isOpen
+      ? "none"
+      : "block";
 }
 
 
@@ -2360,24 +4100,41 @@ function showAppInfo() {
 
 
   const modal =
-    document.getElementById("appInfoModal");
+    getElement(
+      "appInfoModal"
+    );
 
-  if (!modal) return;
+
+  if (!modal) {
+    return;
+  }
 
 
-  modal.style.display = "flex";
-  modal.classList.add("show");
+  modal.style.display =
+    "flex";
+
+  modal.classList.add(
+    "show"
+  );
 }
 
 
 function closeAppInfo() {
 
   const modal =
-    document.getElementById("appInfoModal");
+    getElement(
+      "appInfoModal"
+    );
+
 
   if (modal) {
-    modal.style.display = "none";
-    modal.classList.remove("show");
+
+    modal.style.display =
+      "none";
+
+    modal.classList.remove(
+      "show"
+    );
   }
 }
 
@@ -2388,25 +4145,42 @@ function closeAppInfo() {
 
 function setupOutsideClick() {
 
-  document.addEventListener("click", function (event) {
+  document.addEventListener(
+    "click",
+    function (event) {
 
-    const menu =
-      document.getElementById("settingsMenu");
+      const menu =
+        getElement(
+          "settingsMenu"
+        );
 
-    const button =
-      document.querySelector(".menu-btn");
+
+      const button =
+        document.querySelector(
+          ".menu-btn"
+        );
 
 
-    if (
-      menu &&
-      menu.style.display === "block" &&
-      !menu.contains(event.target) &&
-      (!button || !button.contains(event.target))
-    ) {
-      menu.style.display = "none";
+      if (
+        menu &&
+        menu.style.display ===
+          "block" &&
+        !menu.contains(
+          event.target
+        ) &&
+        (
+          !button ||
+          !button.contains(
+            event.target
+          )
+        )
+      ) {
+
+        menu.style.display =
+          "none";
+      }
     }
-
-  });
+  );
 }
 
 
@@ -2416,21 +4190,29 @@ function setupOutsideClick() {
 
 function setupKeyboard() {
 
-  document.addEventListener("keydown", function (event) {
+  document.addEventListener(
+    "keydown",
+    function (event) {
 
-    if (event.key !== "Escape") return;
+      if (
+        event.key !==
+        "Escape"
+      ) {
+
+        return;
+      }
 
 
-    closeProductModal();
-    closeBuyerModal();
-    prClosePayment();
-    prCloseProforma();
-    prCloseLetter();
-    closeStoragePanel();
-    closeAppInfo();
-    closeDashboardTool();
-
-  });
+      closeProductModal();
+      closeBuyerModal();
+      prClosePayment();
+      prCloseProforma();
+      prCloseLetter();
+      closeStoragePanel();
+      closeAppInfo();
+      closeDashboardTool();
+    }
+  );
 }
 
 
@@ -2438,36 +4220,89 @@ function setupKeyboard() {
    GLOBAL COMPATIBILITY
    ============================================================ */
 
-window.showSection = showSection;
+window.showSection =
+  showSection;
 
-window.openProductModal = openProductModal;
-window.closeProductModal = closeProductModal;
-window.saveProduct = saveProduct;
-window.editProduct = editProduct;
-window.deleteProduct = deleteProduct;
-window.renderProducts = renderProducts;
 
-window.openBuyerModal = openBuyerModal;
-window.closeBuyerModal = closeBuyerModal;
-window.saveBuyer = saveBuyer;
-window.editBuyer = editBuyer;
-window.deleteBuyer = deleteBuyer;
-window.renderBuyers = renderBuyers;
+/* PRODUCT */
 
-window.openPaymentModal = openPaymentModal;
-window.prClosePayment = prClosePayment;
-window.savePayment = savePayment;
+window.openProductModal =
+  openProductModal;
 
-window.openProformaModal = openProformaModal;
-window.prCloseProforma = prCloseProforma;
-window.createProforma = createProforma;
+window.closeProductModal =
+  closeProductModal;
+
+window.saveProduct =
+  saveProduct;
+
+window.editProduct =
+  editProduct;
+
+window.deleteProduct =
+  deleteProduct;
+
+window.renderProducts =
+  renderProducts;
+
+
+/* BUYER */
+
+window.openBuyerModal =
+  openBuyerModal;
+
+window.closeBuyerModal =
+  closeBuyerModal;
+
+window.saveBuyer =
+  saveBuyer;
+
+window.editBuyer =
+  editBuyer;
+
+window.deleteBuyer =
+  deleteBuyer;
+
+window.renderBuyers =
+  renderBuyers;
+
+
+/* PAYMENT */
+
+window.openPaymentModal =
+  openPaymentModal;
+
+window.prClosePayment =
+  prClosePayment;
+
+window.savePayment =
+  savePayment;
+
+
+/* PROFORMA */
+
+window.openProformaModal =
+  openProformaModal;
+
+window.prCloseProforma =
+  prCloseProforma;
+
+window.createProforma =
+  createProforma;
+
+
+/* LETTER */
 
 window.openProformaLetterModal =
   openProformaLetterModal;
 
-window.prCloseLetter = prCloseLetter;
+window.prCloseLetter =
+  prCloseLetter;
+
 window.createProformaLetter =
   createProformaLetter;
+
+
+/* DASHBOARD */
 
 window.openDashboardTool =
   openDashboardTool;
@@ -2478,8 +4313,14 @@ window.closeDashboardTool =
 window.calculateBreakdown =
   calculateBreakdown;
 
+
+/* PRINT */
+
 window.printToPdf =
   printToPdf;
+
+
+/* SETTINGS */
 
 window.toggleSettingsMenu =
   toggleSettingsMenu;
@@ -2501,6 +4342,15 @@ window.showAppInfo =
 
 window.closeAppInfo =
   closeAppInfo;
+
+
+/* ============================================================
+   FINAL LOAD
+   ============================================================ */
+
+console.log(
+  "PRIOR RIDING — COMPLETE REPAIRED APP.JS READY"
+);
 
 
 /* ============================================================
