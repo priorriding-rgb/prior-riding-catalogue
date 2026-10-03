@@ -1,225 +1,1851 @@
-/* =========================================================
-   PRIOR RIDING — International Buyer CRM
-   Functional App Controller
-   ========================================================= */
+<!DOCTYPE html>
+<html lang="en">
 
-const PR_KEYS = {
-  products: "prior_riding_products",
-  buyers: "prior_riding_buyers",
-  payments: "prior_riding_payments",
-  proformas: "prior_riding_proformas",
-  letters: "prior_riding_letters",
-  settings: "prior_riding_settings"
-};
+<head>
+  <meta charset="UTF-8">
 
-let products = loadData(PR_KEYS.products);
-let buyers = loadData(PR_KEYS.buyers);
-let payments = loadData(PR_KEYS.payments);
-let proformas = loadData(PR_KEYS.proformas);
-let letters = loadData(PR_KEYS.letters);
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  >
 
-function loadData(key) {
-  try {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : [];
-  } catch (e) {
-    console.error("Storage read error:", e);
-    return [];
-  }
-}
+  <meta name="theme-color" content="#ffffff">
 
-function saveData(key, data) {
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-    return true;
-  } catch (e) {
-    alert("Storage error: data could not be saved.");
-    console.error(e);
-    return false;
-  }
-}
+  <meta
+    name="description"
+    content="PRIOR RIDING — International Buyer CRM & Product Catalogue"
+  >
 
-/* =========================================================
-   SECTION NAVIGATION
-   ========================================================= */
+  <title>PRIOR RIDING — International Buyer CRM</title>
 
-function showSection(sectionId) {
-  document.querySelectorAll(".section").forEach(section => {
-    section.classList.remove("active");
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- App Icons -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="style.css?v=20261003-06">
+</head>
+
+
+<body>
+
+<!-- =====================================================
+     TOP BAR
+===================================================== -->
+
+<header class="topbar">
+
+  <div class="brand">
+
+    <div class="logo-box">
+      <img
+        src="icon-192.png"
+        alt="PRIOR RIDING"
+        style="width:52px;height:52px;object-fit:contain;border-radius:10px;"
+      >
+    </div>
+
+    <div>
+      <h1>PRIOR RIDING</h1>
+      <p>International Buyer CRM & Product Catalogue</p>
+    </div>
+
+  </div>
+
+
+  <!-- SETTINGS / MENU -->
+  <button
+    class="menu-btn"
+    type="button"
+    onclick="toggleSettingsMenu()"
+    aria-label="Settings"
+  >
+    ⋮
+  </button>
+
+</header>
+
+
+<!-- =====================================================
+     SETTINGS MENU
+===================================================== -->
+
+<div
+  id="settingsMenu"
+  class="settings-menu"
+  style="display:none;"
+>
+
+  <div class="settings-menu-head">
+    <strong>PRIOR RIDING</strong>
+    <button
+      type="button"
+      onclick="toggleSettingsMenu()"
+    >
+      ×
+    </button>
+  </div>
+
+  <button type="button" onclick="openStoragePanel()">
+    💾 Storage & Backup
+  </button>
+
+  <button type="button" onclick="exportAllData()">
+    📤 Export Backup
+  </button>
+
+  <button type="button" onclick="document.getElementById('restoreFile').click()">
+    📥 Restore Backup
+  </button>
+
+  <button type="button" onclick="showAppInfo()">
+    ℹ️ App Information
+  </button>
+
+</div>
+
+
+<!-- =====================================================
+     MAIN NAVIGATION
+===================================================== -->
+
+<nav class="nav">
+
+  <button
+    class="nav-btn active"
+    type="button"
+    onclick="showSection('dashboard')"
+  >
+    Dashboard
+  </button>
+
+  <button
+    class="nav-btn"
+    type="button"
+    onclick="showSection('products')"
+  >
+    Product Catalogue
+  </button>
+
+  <button
+    class="nav-btn"
+    type="button"
+    onclick="showSection('buyers')"
+  >
+    Buyer CRM
+  </button>
+
+</nav>
+
+
+<!-- =====================================================
+     MAIN
+===================================================== -->
+
+<main class="container">
+
+
+<!-- =====================================================
+     DASHBOARD
+===================================================== -->
+
+<section
+  id="dashboard"
+  class="section active"
+>
+
+  <div class="hero">
+
+    <div>
+
+      <h2>
+        International Business Dashboard
+      </h2>
+
+      <p>
+        Manage your products, international buyers,
+        payments and business records in one place.
+      </p>
+
+    </div>
+
+    <button
+      class="primary-btn"
+      type="button"
+      onclick="openProductModal()"
+    >
+      + Add Product
+    </button>
+
+  </div>
+
+
+  <!-- QUICK ACTIONS -->
+
+  <div class="quick-actions">
+
+    <button
+      class="quick-btn red"
+      type="button"
+      onclick="openDashboardTool('performance')"
+    >
+      📊 PERFORMANCE WISE
+    </button>
+
+    <button
+      class="quick-btn green"
+      type="button"
+      onclick="showSection('products')"
+    >
+      📦 PRODUCT
+    </button>
+
+    <button
+      class="quick-btn red"
+      type="button"
+      onclick="openDashboardTool('calc')"
+    >
+      🧮 CALC BREAKDOWN
+    </button>
+
+    <button
+      class="quick-btn green"
+      type="button"
+      onclick="openDashboardTool('paymentMode')"
+    >
+      💳 PAYMENT MODE
+    </button>
+
+    <button
+      class="quick-btn red"
+      type="button"
+      onclick="window.print()"
+    >
+      🖨️ PRINT
+    </button>
+
+    <button
+      class="quick-btn green"
+      type="button"
+      onclick="printToPdf()"
+    >
+      📄 PDF
+    </button>
+
+    <button
+      class="quick-btn red"
+      type="button"
+      onclick="openDashboardTool('proforma')"
+    >
+      🧾 ADD PROFORMA
+    </button>
+
+    <button
+      class="quick-btn green"
+      type="button"
+      onclick="openDashboardTool('proformaLetter')"
+    >
+      ✉️ ADD PROFORMA LETTER
+    </button>
+
+    <button
+      class="quick-btn red"
+      type="button"
+      onclick="openDashboardTool('catalogue')"
+    >
+      📚 CATALOGUE
+    </button>
+
+    <button
+      class="quick-btn green"
+      type="button"
+      onclick="openDashboardTool('payment')"
+    >
+      💰 ADD PAYMENT
+    </button>
+
+  </div>
+
+
+  <!-- DASHBOARD TOOL -->
+
+  <div
+    id="dashboardToolPanel"
+    class="dashboard-tool-panel"
+    style="display:none;"
+  >
+
+    <div class="tool-panel-head">
+
+      <h3 id="dashboardToolTitle">
+        Dashboard Tool
+      </h3>
+
+      <button
+        type="button"
+        onclick="closeDashboardTool()"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div id="dashboardToolBody"></div>
+
+  </div>
+
+
+  <!-- STATS -->
+
+  <div class="stats">
+
+    <div class="stat-card">
+      <span>Products</span>
+      <strong id="productCount">0</strong>
+    </div>
+
+    <div class="stat-card">
+      <span>Total Buyers</span>
+      <strong id="buyerCount">0</strong>
+    </div>
+
+    <div class="stat-card">
+      <span>Active Buyers</span>
+      <strong id="activeBuyerCount">0</strong>
+    </div>
+
+    <div class="stat-card">
+      <span>Follow-ups</span>
+      <strong id="followupCount">0</strong>
+    </div>
+
+  </div>
+
+
+  <!-- RECENT -->
+
+  <div class="dashboard-grid">
+
+    <div class="panel">
+
+      <div class="panel-head">
+
+        <h3>Recent Products</h3>
+
+        <button
+          type="button"
+          onclick="showSection('products')"
+        >
+          View All
+        </button>
+
+      </div>
+
+      <div id="recentProducts"></div>
+
+    </div>
+
+
+    <div class="panel">
+
+      <div class="panel-head">
+
+        <h3>Recent Buyers</h3>
+
+        <button
+          type="button"
+          onclick="showSection('buyers')"
+        >
+          View All
+        </button>
+
+      </div>
+
+      <div id="recentBuyers"></div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     PRODUCTS
+===================================================== -->
+
+<section
+  id="products"
+  class="section"
+>
+
+  <div class="section-head">
+
+    <div>
+
+      <h2>Product Catalogue</h2>
+
+      <p>
+        Add and manage your Prior Riding products.
+      </p>
+
+    </div>
+
+    <button
+      class="primary-btn"
+      type="button"
+      onclick="openProductModal()"
+    >
+      + Add Product
+    </button>
+
+  </div>
+
+
+  <div class="search-box">
+
+    <input
+      type="text"
+      id="productSearch"
+      placeholder="Search product, article number or category..."
+      oninput="renderProducts()"
+    >
+
+  </div>
+
+
+  <div
+    id="productList"
+    class="product-grid"
+  ></div>
+
+</section>
+
+
+<!-- =====================================================
+     BUYERS
+===================================================== -->
+
+<section
+  id="buyers"
+  class="section"
+>
+
+  <div class="section-head">
+
+    <div>
+
+      <h2>International Buyer CRM</h2>
+
+      <p>
+        Manage buyers, contacts and follow-ups.
+      </p>
+
+    </div>
+
+    <button
+      class="primary-btn"
+      type="button"
+      onclick="openBuyerModal()"
+    >
+      + Add Buyer
+    </button>
+
+  </div>
+
+
+  <div class="search-box">
+
+    <input
+      type="text"
+      id="buyerSearch"
+      placeholder="Search buyer, company or country..."
+      oninput="renderBuyers()"
+    >
+
+  </div>
+
+
+  <div class="table-wrap">
+
+    <table>
+
+      <thead>
+
+        <tr>
+
+          <th>Buyer / Company</th>
+          <th>Country</th>
+          <th>Contact</th>
+          <th>WhatsApp / Phone</th>
+          <th>Interested Product</th>
+          <th>Status</th>
+          <th>Follow-up</th>
+          <th>Action</th>
+
+        </tr>
+
+      </thead>
+
+      <tbody id="buyerTable"></tbody>
+
+    </table>
+
+  </div>
+
+</section>
+
+</main>
+
+
+<!-- =====================================================
+     PRODUCT MODAL
+===================================================== -->
+
+<div
+  id="productModal"
+  class="modal"
+>
+
+  <div class="modal-content">
+
+    <div class="modal-head">
+
+      <h2 id="productModalTitle">
+        Add Product
+      </h2>
+
+      <button
+        type="button"
+        onclick="closeProductModal()"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <form id="productForm">
+
+      <input
+        type="hidden"
+        id="productId"
+      >
+
+
+      <div class="form-grid">
+
+        <div class="field">
+          <label>Product Name *</label>
+          <input
+            id="productName"
+            required
+          >
+        </div>
+
+
+        <div class="field">
+          <label>Article / Product No. *</label>
+          <input
+            id="articleNo"
+            required
+          >
+        </div>
+
+
+        <div class="field">
+
+          <label>Category</label>
+
+          <select id="category">
+
+            <option value="">
+              Select Product Category
+            </option>
+
+            <option>Goalkeeper Gloves</option>
+            <option>Riding Gloves</option>
+            <option>Cycling Gloves</option>
+            <option>Boxing Gloves</option>
+            <option>MMA Gloves</option>
+            <option>Horse Riding Gloves</option>
+            <option>Hard Riding Gloves</option>
+            <option>Chin Pads / Protective Pads</option>
+            <option>Football / Soccer Gloves</option>
+            <option>Sports Bags</option>
+            <option>Hand Wraps</option>
+            <option>Other Sports Goods / Other Varieties</option>
+
+          </select>
+
+        </div>
+
+
+        <div class="field">
+          <label>Material</label>
+          <input
+            id="material"
+            placeholder="Leather / Synthetic"
+          >
+        </div>
+
+
+        <div class="field">
+          <label>Size</label>
+          <input
+            id="size"
+            placeholder="10oz / 12oz / 14oz / 16oz"
+          >
+        </div>
+
+
+        <div class="field">
+          <label>Weight</label>
+          <input
+            id="weight"
+            placeholder="Example: 500g"
+          >
+        </div>
+
+
+        <div class="field">
+          <label>Color</label>
+          <input
+            id="color"
+            placeholder="Red / Black"
+          >
+        </div>
+
+
+        <div class="field">
+          <label>Available Sizes</label>
+          <input
+            id="availableSizes"
+            placeholder="S, M, L, XL"
+          >
+        </div>
+
+
+        <div class="field">
+          <label>MOQ</label>
+          <input
+            id="moq"
+            placeholder="Example: 100 Pairs"
+          >
+        </div>
+
+
+        <div class="field">
+          <label>Price / Quotation</label>
+          <input
+            id="price"
+            placeholder="Contact for quotation"
+          >
+        </div>
+
+
+        <div class="field full">
+
+          <label>Product Image URL</label>
+
+          <input
+            id="imageUrl"
+            placeholder="Paste product image link"
+          >
+
+        </div>
+
+
+        <div class="field full">
+
+          <label>Product Specification</label>
+
+          <textarea
+            id="specification"
+            rows="4"
+          ></textarea>
+
+        </div>
+
+
+        <div class="field full">
+
+          <label>Product Description</label>
+
+          <textarea
+            id="description"
+            rows="4"
+          ></textarea>
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Status</label>
+
+          <select id="productStatus">
+
+            <option value="Available">
+              Available
+            </option>
+
+            <option value="Coming Soon">
+              Coming Soon
+            </option>
+
+            <option value="Out of Stock">
+              Out of Stock
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-actions">
+
+        <button
+          type="button"
+          class="secondary-btn"
+          onclick="closeProductModal()"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="primary-btn"
+        >
+          Save Product
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     BUYER MODAL
+===================================================== -->
+
+<div
+  id="buyerModal"
+  class="modal"
+>
+
+  <div class="modal-content">
+
+    <div class="modal-head">
+
+      <h2 id="buyerModalTitle">
+        Add Buyer
+      </h2>
+
+      <button
+        type="button"
+        onclick="closeBuyerModal()"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <form id="buyerForm">
+
+      <input
+        type="hidden"
+        id="buyerId"
+      >
+
+
+      <div class="form-grid">
+
+        <div class="field">
+
+          <label>Buyer / Company Name *</label>
+
+          <input
+            id="buyerName"
+            required
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Country *</label>
+
+          <input
+            id="buyerCountry"
+            required
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Contact Person</label>
+
+          <input id="contactPerson">
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Email</label>
+
+          <input
+            type="email"
+            id="buyerEmail"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>WhatsApp / Phone</label>
+
+          <input id="buyerPhone">
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Interested Product</label>
+
+          <select id="interestedProduct">
+
+            <option value="">
+              Select Product / Category
+            </option>
+
+            <option>Goalkeeper Gloves</option>
+            <option>Riding Gloves</option>
+            <option>Cycling Gloves</option>
+            <option>Boxing Gloves</option>
+            <option>MMA Gloves</option>
+            <option>Horse Riding Gloves</option>
+            <option>Hard Riding Gloves</option>
+            <option>Chin Pads / Protective Pads</option>
+            <option>Football / Soccer Gloves</option>
+            <option>Sports Bags</option>
+            <option>Hand Wraps</option>
+            <option>Other Sports Goods / Other Varieties</option>
+
+          </select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Status</label>
+
+          <select id="buyerStatus">
+
+            <option value="Active">
+              Active
+            </option>
+
+            <option value="Potential">
+              Potential
+            </option>
+
+            <option value="Follow-up">
+              Follow-up
+            </option>
+
+            <option value="Closed">
+              Closed
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Follow-up Date</label>
+
+          <input
+            type="date"
+            id="followupDate"
+          >
+
+        </div>
+
+
+        <div class="field full">
+
+          <label>Notes</label>
+
+          <textarea
+            id="buyerNotes"
+            rows="5"
+          ></textarea>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-actions">
+
+        <button
+          type="button"
+          class="secondary-btn"
+          onclick="closeBuyerModal()"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="primary-btn"
+        >
+          Save Buyer
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     PAYMENT MODAL
+===================================================== -->
+
+<div
+  id="paymentModal"
+  class="modal"
+>
+
+  <div class="modal-content">
+
+    <div class="modal-head">
+
+      <h2>Add Payment</h2>
+
+      <button
+        type="button"
+        onclick="prClosePayment()"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <form id="paymentForm">
+
+      <div class="form-grid">
+
+        <div class="field">
+
+          <label>Buyer *</label>
+
+          <select
+            id="paymentBuyer"
+            required
+          >
+
+            <option value="">
+              Select Buyer
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Bank Name</label>
+
+          <select id="paymentBankName">
+
+            <option value="">
+              Select Bank
+            </option>
+
+            <option>Allied Bank Limited</option>
+            <option>Askari Bank Limited</option>
+            <option>Bank Alfalah Limited</option>
+            <option>Bank Al-Habib Limited</option>
+            <option>BankIslami Pakistan Limited</option>
+            <option>Faysal Bank Limited</option>
+            <option>Habib Bank Limited (HBL)</option>
+            <option>Habib Metropolitan Bank Limited</option>
+            <option>JS Bank Limited</option>
+            <option>MCB Bank Limited</option>
+            <option>Meezan Bank Limited</option>
+            <option>National Bank of Pakistan</option>
+            <option>Standard Chartered Bank (Pakistan) Limited</option>
+            <option>United Bank Limited (UBL)</option>
+            <option>Other</option>
+
+          </select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Proforma Invoice No.</label>
+
+          <input
+            id="paymentProformaNo"
+            placeholder="PI-001"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Foreign Currency Amount *</label>
+
+          <input
+            id="paymentForeignAmount"
+            type="number"
+            min="0"
+            step="0.01"
+            required
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Currency</label>
+
+          <select id="paymentForeignCurrency">
+
+            <option>USD</option>
+            <option>EUR</option>
+            <option>GBP</option>
+            <option>AED</option>
+            <option>Other</option>
+
+          </select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Payment Mode *</label>
+
+          <select
+            id="paymentMode"
+            required
+          >
+
+            <option>Bank Transfer / T.T.</option>
+            <option>Advance</option>
+            <option>Balance</option>
+            <option>Cash</option>
+            <option>Card</option>
+            <option>PayPal</option>
+            <option>Other</option>
+
+          </select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label>PKR Amount</label>
+
+          <input
+            id="paymentPkrAmount"
+            type="number"
+            min="0"
+            step="0.01"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Payment Date</label>
+
+          <input
+            id="paymentDate"
+            type="date"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Reference</label>
+
+          <input
+            id="paymentReference"
+            placeholder="Transaction reference"
+          >
+
+        </div>
+
+
+        <div class="field full">
+
+          <label>Notes</label>
+
+          <textarea
+            id="paymentNotes"
+            rows="4"
+          ></textarea>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-actions">
+
+        <button
+          type="button"
+          class="secondary-btn"
+          onclick="prClosePayment()"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="primary-btn"
+        >
+          Save Payment
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     PROFORMA MODAL
+===================================================== -->
+
+<div
+  id="proformaModal"
+  class="modal"
+>
+
+  <div class="modal-content">
+
+    <div class="modal-head">
+
+      <h2>Add Proforma</h2>
+
+      <button
+        type="button"
+        onclick="prCloseProforma()"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <form id="proformaForm">
+
+      <div class="form-grid">
+
+        <div class="field">
+
+          <label>Buyer *</label>
+
+          <select
+            id="proformaBuyer"
+            required
+          ></select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Product *</label>
+
+          <select
+            id="proformaProduct"
+            required
+          ></select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Quantity *</label>
+
+          <input
+            id="proformaQty"
+            type="number"
+            min="1"
+            value="1"
+            required
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Unit Price</label>
+
+          <input
+            id="proformaUnitPrice"
+            type="number"
+            min="0"
+            step="0.01"
+            value="0"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Date</label>
+
+          <input
+            id="proformaDate"
+            type="date"
+          >
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-actions">
+
+        <button
+          type="button"
+          class="secondary-btn"
+          onclick="prCloseProforma()"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="primary-btn"
+        >
+          Create & Print
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     PROFORMA LETTER
+===================================================== -->
+
+<div
+  id="letterModal"
+  class="modal"
+>
+
+  <div class="modal-content">
+
+    <div class="modal-head">
+
+      <h2>Add Proforma Letter</h2>
+
+      <button
+        type="button"
+        onclick="prCloseLetter()"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <form id="letterForm">
+
+      <div class="form-grid">
+
+        <div class="field">
+
+          <label>Buyer / Company *</label>
+
+          <input
+            id="letterBuyer"
+            required
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>Date</label>
+
+          <input
+            id="letterDate"
+            type="date"
+          >
+
+        </div>
+
+
+        <div class="field full">
+
+          <label>Subject</label>
+
+          <input
+            id="letterSubject"
+            value="Proforma Invoice"
+          >
+
+        </div>
+
+
+        <div class="field full">
+
+          <label>Message *</label>
+
+          <textarea
+            id="letterMessage"
+            rows="8"
+            required
+          ></textarea>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-actions">
+
+        <button
+          type="button"
+          class="secondary-btn"
+          onclick="prCloseLetter()"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="primary-btn"
+        >
+          Create & Print
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     STORAGE PANEL
+===================================================== -->
+
+<div
+  id="storageModal"
+  class="modal"
+>
+
+  <div class="modal-content">
+
+    <div class="modal-head">
+
+      <h2>💾 Storage & Backup</h2>
+
+      <button
+        type="button"
+        onclick="closeStoragePanel()"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="panel">
+
+      <h3>PRIOR RIDING Data Storage</h3>
+
+      <p>
+        Your business records are stored locally on this app/device.
+      </p>
+
+      <div class="stats">
+
+        <div class="stat-card">
+          <span>Products</span>
+          <strong id="storageProductCount">0</strong>
+        </div>
+
+        <div class="stat-card">
+          <span>Buyers</span>
+          <strong id="storageBuyerCount">0</strong>
+        </div>
+
+        <div class="stat-card">
+          <span>Payments</span>
+          <strong id="storagePaymentCount">0</strong>
+        </div>
+
+        <div class="stat-card">
+          <span>Proformas</span>
+          <strong id="storageProformaCount">0</strong>
+        </div>
+
+      </div>
+
+
+      <div class="modal-actions">
+
+        <button
+          type="button"
+          class="primary-btn"
+          onclick="exportAllData()"
+        >
+          📤 Export Backup
+        </button>
+
+        <button
+          type="button"
+          class="secondary-btn"
+          onclick="document.getElementById('restoreFile').click()"
+        >
+          📥 Restore Backup
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- HIDDEN RESTORE FILE -->
+
+<input
+  type="file"
+  id="restoreFile"
+  accept=".json,application/json"
+  style="display:none;"
+  onchange="restoreAllData(event)"
+>
+
+
+<!-- =====================================================
+     APP INFORMATION
+===================================================== -->
+
+<div
+  id="appInfoModal"
+  class="modal"
+>
+
+  <div class="modal-content">
+
+    <div class="modal-head">
+
+      <h2>PRIOR RIDING</h2>
+
+      <button
+        type="button"
+        onclick="closeAppInfo()"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div class="panel">
+
+      <img
+        src="icon-192.png"
+        alt="PRIOR RIDING Logo"
+        style="width:100px;height:100px;object-fit:contain;"
+      >
+
+      <h3>International Buyer CRM</h3>
+
+      <p>
+        PRIOR RIDING International Buyer CRM &
+        Product Catalogue.
+      </p>
+
+      <p>
+        Version 1.0
+      </p>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     JAVASCRIPT
+===================================================== -->
+
+<script src="app.js?v=20261003-07"></script>
+
+
+<!-- =====================================================
+     SERVICE WORKER
+===================================================== -->
+
+<script>
+
+if ("serviceWorker" in navigator) {
+
+  window.addEventListener("load", function() {
+
+    navigator.serviceWorker
+      .register("./pwabuilder-sw-v4.js")
+      .then(function() {
+        console.log("PRIOR RIDING Service Worker registered.");
+      })
+      .catch(function(error) {
+        console.error(
+          "PRIOR RIDING Service Worker registration failed:",
+          error
+        );
+      });
+
   });
 
-  const section = document.getElementById(sectionId);
-
-  if (section) {
-    section.classList.add("active");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  document.querySelectorAll(".nav-btn").forEach(btn => {
-    btn.classList.remove("active");
-
-    const text = btn.textContent.toLowerCase();
-
-    if (
-      (sectionId === "dashboard" && text.includes("dashboard")) ||
-      (sectionId === "products" && text.includes("product")) ||
-      (sectionId === "buyers" && text.includes("buyer"))
-    ) {
-      btn.classList.add("active");
-    }
-  });
-
-  refreshAll();
 }
 
-/* =========================================================
-   INITIALIZE
-   ========================================================= */
 
-document.addEventListener("DOMContentLoaded", () => {
-  setupForms();
-  refreshAll();
-});
+function toggleSettingsMenu() {
 
-/* =========================================================
-   REFRESH
-   ========================================================= */
+  const menu =
+    document.getElementById("settingsMenu");
 
-function refreshAll() {
-  renderProducts();
-  renderBuyers();
-  updateStats();
-  renderRecentProducts();
-  renderRecentBuyers();
-  populateBuyerSelects();
-  populateProductSelects();
+  if (!menu) return;
+
+  menu.style.display =
+    menu.style.display === "none"
+      ? "block"
+      : "none";
 }
 
-/* =========================================================
-   DASHBOARD STATS
-   ========================================================= */
 
-function updateStats() {
-  const productCount = document.getElementById("productCount");
-  const buyerCount = document.getElementById("buyerCount");
-  const activeBuyerCount = document.getElementById("activeBuyerCount");
-  const followupCount = document.getElementById("followupCount");
+function openStoragePanel() {
 
-  if (productCount) productCount.textContent = products.length;
-  if (buyerCount) buyerCount.textContent = buyers.length;
+  toggleSettingsMenu();
 
-  if (activeBuyerCount) {
-    activeBuyerCount.textContent =
-      buyers.filter(b => b.status === "Active").length;
+  const modal =
+    document.getElementById("storageModal");
+
+  if (!modal) return;
+
+  const productCount =
+    document.getElementById("storageProductCount");
+
+  const buyerCount =
+    document.getElementById("storageBuyerCount");
+
+  const paymentCount =
+    document.getElementById("storagePaymentCount");
+
+  const proformaCount =
+    document.getElementById("storageProformaCount");
+
+  if (productCount) {
+    productCount.textContent =
+      Array.isArray(window.products)
+        ? window.products.length
+        : 0;
   }
 
-  if (followupCount) {
-    followupCount.textContent =
-      buyers.filter(b => b.followupDate).length;
+  if (buyerCount) {
+    buyerCount.textContent =
+      Array.isArray(window.buyers)
+        ? window.buyers.length
+        : 0;
   }
-}
 
-/* =========================================================
-   PRODUCTS
-   ========================================================= */
+  if (paymentCount) {
+    paymentCount.textContent =
+      Array.isArray(window.payments)
+        ? window.payments.length
+        : 0;
+  }
 
-function openProductModal(id = null) {
-  const modal = document.getElementById("productModal");
-  const form = document.getElementById("productForm");
-
-  if (!modal || !form) return;
-
-  form.reset();
-
-  document.getElementById("productId").value = "";
-
-  if (id) {
-    const product = products.find(p => p.id === id);
-
-    if (!product) return;
-
-    document.getElementById("productModalTitle").textContent =
-      "Edit Product";
-
-    setValue("productId", product.id);
-    setValue("productName", product.name);
-    setValue("articleNo", product.articleNo);
-    setValue("category", product.category);
-    setValue("material", product.material);
-    setValue("size", product.size);
-    setValue("weight", product.weight);
-    setValue("color", product.color);
-    setValue("availableSizes", product.availableSizes);
-    setValue("moq", product.moq);
-    setValue("price", product.price);
-    setValue("imageUrl", product.imageUrl);
-    setValue("specification", product.specification);
-    setValue("description", product.description);
-    setValue("productStatus", product.status);
-  } else {
-    document.getElementById("productModalTitle").textContent =
-      "Add Product";
+  if (proformaCount) {
+    proformaCount.textContent =
+      Array.isArray(window.proformas)
+        ? window.proformas.length
+        : 0;
   }
 
   modal.classList.add("show");
   modal.style.display = "flex";
 }
 
-function closeProductModal() {
-  const modal = document.getElementById("productModal");
+
+function closeStoragePanel() {
+
+  const modal =
+    document.getElementById("storageModal");
 
   if (modal) {
+
     modal.classList.remove("show");
     modal.style.display = "none";
+
   }
+
 }
 
-function saveProduct() {
-  const id = getValue("productId");
 
-  const product = {
-    id: id || generateId(),
-    name: getValue("productName"),
-    articleNo: getValue("articleNo"),
-    category: getValue("category"),
-    material: getValue("material"),
-    size: getValue("size"),
-    weight: getValue("weight"),
-    color: getValue("color"),
-    availableSizes: getValue("availableSizes"),
-    moq: getValue("moq"),
-    price: getValue("price"),
-    imageUrl: getValue("imageUrl"),
-    specification: getValue("specification"),
-    description: getValue("description"),
-    status: getValue("productStatus"),
-    createdAt: new Date().toISOString()
+function showAppInfo() {
+
+  toggleSettingsMenu();
+
+  const modal =
+    document.getElementById("appInfoModal");
+
+  if (!modal) return;
+
+  modal.classList.add("show");
+  modal.style.display = "flex";
+}
+
+
+function closeAppInfo() {
+
+  const modal =
+    document.getElementById("appInfoModal");
+
+  if (modal) {
+
+    modal.classList.remove("show");
+    modal.style.display = "none";
+
+  }
+
+}
+
+
+function exportAllData() {
+
+  const data = {
+
+    app: "PRIOR RIDING — International Buyer CRM",
+
+    version: "1.0",
+
+    exportedAt:
+      new Date().toISOString(),
+
+    products:
+      JSON.parse(
+        localStorage.getItem("prior_riding_products") || "[]"
+      ),
+
+    buyers:
+      JSON.parse(
+        localStorage.getItem("prior_riding_buyers") || "[]"
+      ),
+
+    payments:
+      JSON.parse(
+        localStorage.getItem("prior_riding_payments") || "[]"
+      ),
+
+    proformas:
+      JSON.parse(
+        localStorage.getItem("prior_riding_proformas") || "[]"
+      ),
+
+    letters:
+      JSON.parse(
+        localStorage.getItem("prior_riding_letters") || "[]"
+      )
+
   };
 
-  if (!product.name || !product.articleNo) {
-    alert("Please enter Product Name and Article / Product No.");
-    return;
-  }
 
-  if (id) {
-    const index = products.findIndex(p => p.id === id);
+  const blob =
+    new Blob(
+      [JSON.stringify(data, null, 2)],
+      { type: "application/json" }
+    );
 
-    if (index !== -1) {
-      products[index] = product;
-    }
-  } else {
-    products.unshift(product);
-  }
 
-  saveData(PR_KEYS.products, products);
-  closeProductModal();
-  refreshAll();
+  const url =
+    URL.createObjectURL(blob);
 
-  alert("Product saved successfully.");
+
+  const link =
+    document.createElement("a");
+
+  link.href = url;
+
+  link.download =
+    "prior-riding-backup-" +
+    new Date().toISOString()
+      .slice(0,10) +
+    ".json";
+
+  document.body.appendChild(link);
+
+  link.click();
+
+  link.remove();
+
+  URL.revokeObjectURL(url);
+
 }
 
-function renderProducts() {
-  const container = document.getElementById("productList");
-  if (!container) return;
 
- 
+function restoreAllData(event) {
+
+  const file =
+    event.target.files &&
+    event.target.files[0];
+
+  if (!file) return;
+
+
+  const reader =
+    new FileReader();
+
+
+  reader.onload = function(e) {
+
+    try {
+
+      const data =
+        JSON.parse(e.target.result);
+
+
+      if (Array.isArray(data.products)) {
+
+        localStorage.setItem(
+          "prior_riding_products",
+          JSON.stringify(data.products)
+        );
+
+      }
+
+
+      if (Array.isArray(data.buyers)) {
+
+        localStorage.setItem(
+          "prior_riding_buyers",
+          JSON.stringify(data.buyers)
+        );
+
+      }
+
+
+      if (Array.isArray(data.payments)) {
+
+        localStorage.setItem(
+          "prior_riding_payments",
+          JSON.stringify(data.payments)
+        );
+
+      }
+
+
+      if (Array.isArray(data.proformas)) {
+
+        localStorage.setItem(
+          "prior_riding_proformas",
+          JSON.stringify(data.proformas)
+        );
+
+      }
+
+
+      if (Array.isArray(data.letters)) {
+
+        localStorage.setItem(
+          "prior_riding_letters",
+          JSON.stringify(data.letters)
+        );
+
+      }
+
+
+      alert(
+        "PRIOR RIDING backup restored successfully."
+      );
+
+
+      location.reload();
+
+    }
+
+    catch(error) {
+
+      alert(
+        "Invalid PRIOR RIDING backup file."
+      );
+
+    }
+
+  };
+
+
+  reader.readAsText(file);
+
+  event.target.value = "";
+
+}
+
+
+</script>
+
+</body>
+               </html>
