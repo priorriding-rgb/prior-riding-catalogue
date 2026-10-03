@@ -1,12 +1,12 @@
 /* ============================================================
    PRIOR RIDING — INTERNATIONAL BUYER CRM
-   COMPLETE FUNCTIONAL APP CONTROLLER
+   COMPLETE APP.JS
    ============================================================ */
 
 "use strict";
 
 /* ============================================================
-   STORAGE KEYS
+   STORAGE
    ============================================================ */
 
 const PR_KEYS = {
@@ -24,17 +24,12 @@ let payments = loadData(PR_KEYS.payments);
 let proformas = loadData(PR_KEYS.proformas);
 let letters = loadData(PR_KEYS.letters);
 
-
-/* ============================================================
-   BASIC HELPERS
-   ============================================================ */
-
 function loadData(key) {
   try {
     const data = localStorage.getItem(key);
     return data ? JSON.parse(data) : [];
-  } catch (e) {
-    console.error("Storage read error:", e);
+  } catch (error) {
+    console.error("PRIOR RIDING storage error:", error);
     return [];
   }
 }
@@ -43,30 +38,30 @@ function saveData(key, data) {
   try {
     localStorage.setItem(key, JSON.stringify(data));
     return true;
-  } catch (e) {
-    console.error(e);
-    alert("Storage error: data could not be saved.");
+  } catch (error) {
+    console.error(error);
+    alert("Data could not be saved.");
     return false;
   }
 }
 
 function generateId() {
-  return Date.now().toString() + "_" +
-    Math.random().toString(36).substring(2, 9);
+  return Date.now().toString(36) + "_" +
+    Math.random().toString(36).substring(2, 10);
 }
 
 function getValue(id) {
-  const el = document.getElementById(id);
-  return el ? el.value.trim() : "";
+  const element = document.getElementById(id);
+  return element ? String(element.value || "").trim() : "";
 }
 
 function setValue(id, value) {
-  const el = document.getElementById(id);
-  if (el) el.value = value ?? "";
+  const element = document.getElementById(id);
+  if (element) element.value = value == null ? "" : value;
 }
 
 function escapeHtml(value) {
-  return String(value ?? "")
+  return String(value == null ? "" : value)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -87,7 +82,7 @@ function today() {
 
 
 /* ============================================================
-   PRODUCT CATEGORIES
+   CATEGORIES / PAYMENT MODES
    ============================================================ */
 
 const PR_PRODUCT_CATEGORIES = [
@@ -120,7 +115,7 @@ const PR_PAYMENT_MODES = [
    INITIALIZATION
    ============================================================ */
 
-document.addEventListener("DOMContentLoaded", function () {
+function initPriorRiding() {
 
   setupForms();
   setupOutsideClick();
@@ -131,9 +126,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
   refreshAll();
 
-  console.log("PRIOR RIDING CRM loaded successfully.");
+  const dashboard =
+    document.getElementById("dashboard");
 
-});
+  if (dashboard) {
+    document.querySelectorAll(".section").forEach(function(section) {
+      section.classList.remove("active");
+      section.style.display = "none";
+    });
+
+    dashboard.classList.add("active");
+    dashboard.style.display = "block";
+  }
+
+  console.log("PRIOR RIDING CRM loaded.");
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initPriorRiding);
+} else {
+  initPriorRiding();
+}
 
 
 /* ============================================================
@@ -142,50 +155,110 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function setupForms() {
 
-  const productForm = document.getElementById("productForm");
+  const productForm =
+    document.getElementById("productForm");
 
   if (productForm) {
-    productForm.addEventListener("submit", function (e) {
-      e.preventDefault();
+    productForm.addEventListener("submit", function(event) {
+      event.preventDefault();
       saveProduct();
     });
   }
 
-  const buyerForm = document.getElementById("buyerForm");
+  const buyerForm =
+    document.getElementById("buyerForm");
 
   if (buyerForm) {
-    buyerForm.addEventListener("submit", function (e) {
-      e.preventDefault();
+    buyerForm.addEventListener("submit", function(event) {
+      event.preventDefault();
       saveBuyer();
     });
   }
 
-  const paymentForm = document.getElementById("paymentForm");
+  const paymentForm =
+    document.getElementById("paymentForm");
 
   if (paymentForm) {
-    paymentForm.addEventListener("submit", function (e) {
-      e.preventDefault();
+    paymentForm.addEventListener("submit", function(event) {
+      event.preventDefault();
       savePayment();
     });
   }
 
-  const proformaForm = document.getElementById("proformaForm");
+  const proformaForm =
+    document.getElementById("proformaForm");
 
   if (proformaForm) {
-    proformaForm.addEventListener("submit", function (e) {
-      e.preventDefault();
+    proformaForm.addEventListener("submit", function(event) {
+      event.preventDefault();
       createProforma();
     });
   }
 
-  const letterForm = document.getElementById("letterForm");
+  const letterForm =
+    document.getElementById("letterForm");
 
   if (letterForm) {
-    letterForm.addEventListener("submit", function (e) {
-      e.preventDefault();
+    letterForm.addEventListener("submit", function(event) {
+      event.preventDefault();
       createProformaLetter();
     });
   }
+}
+
+
+/* ============================================================
+   EXTRA SAFE HELPERS
+   ============================================================ */
+
+function setupOutsideClick() {
+
+  document.addEventListener("click", function(event) {
+
+    const productModal =
+      document.getElementById("productModal");
+
+    const buyerModal =
+      document.getElementById("buyerModal");
+
+    const paymentModal =
+      document.getElementById("paymentModal");
+
+    if (
+      productModal &&
+      event.target === productModal
+    ) {
+      closeProductModal();
+    }
+
+    if (
+      buyerModal &&
+      event.target === buyerModal
+    ) {
+      closeBuyerModal();
+    }
+
+    if (
+      paymentModal &&
+      event.target === paymentModal
+    ) {
+      closePayment();
+    }
+  });
+}
+
+function setupKeyboard() {
+
+  document.addEventListener("keydown", function(event) {
+
+    if (event.key !== "Escape") return;
+
+    closeProductModal();
+    closeBuyerModal();
+    closePayment();
+    closeDashboardTool();
+
+  });
 }
 
 
@@ -195,32 +268,36 @@ function setupForms() {
 
 function showSection(sectionId) {
 
-  document.querySelectorAll(".section").forEach(function (section) {
+  document.querySelectorAll(".section").forEach(function(section) {
     section.classList.remove("active");
     section.style.display = "none";
   });
 
-  const section = document.getElementById(sectionId);
+  const selected =
+    document.getElementById(sectionId);
 
-  if (section) {
-    section.classList.add("active");
-    section.style.display = "block";
+  if (selected) {
+    selected.classList.add("active");
+    selected.style.display = "block";
   }
 
-  document.querySelectorAll(".nav-btn").forEach(function (btn) {
+  document.querySelectorAll(".nav-btn").forEach(function(button) {
 
-    btn.classList.remove("active");
+    button.classList.remove("active");
 
-    const text = btn.textContent.toLowerCase();
+    const text =
+      String(button.textContent || "").toLowerCase();
 
     if (
-      (sectionId === "dashboard" && text.includes("dashboard")) ||
-      (sectionId === "products" && text.includes("product")) ||
-      (sectionId === "buyers" && text.includes("buyer"))
+      (sectionId === "dashboard" &&
+        text.includes("dashboard")) ||
+      (sectionId === "products" &&
+        text.includes("product")) ||
+      (sectionId === "buyers" &&
+        text.includes("buyer"))
     ) {
-      btn.classList.add("active");
+      button.classList.add("active");
     }
-
   });
 
   refreshAll();
@@ -233,7 +310,7 @@ function showSection(sectionId) {
 
 
 /* ============================================================
-   REFRESH EVERYTHING
+   REFRESH
    ============================================================ */
 
 function refreshAll() {
@@ -258,11 +335,14 @@ function refreshAll() {
   populateBuyerSelects();
   populateProductSelects();
 
+  renderPaymentHistory();
+  renderProformaHistory();
+  renderLetterHistory();
 }
 
 
 /* ============================================================
-   DASHBOARD STATS
+   DASHBOARD
    ============================================================ */
 
 function updateStats() {
@@ -279,6 +359,12 @@ function updateStats() {
   const followupCount =
     document.getElementById("followupCount");
 
+  const paymentCount =
+    document.getElementById("paymentCount");
+
+  const paymentTotal =
+    document.getElementById("paymentTotal");
+
   if (productCount)
     productCount.textContent = products.length;
 
@@ -286,27 +372,42 @@ function updateStats() {
     buyerCount.textContent = buyers.length;
 
   if (activeBuyerCount) {
-
     activeBuyerCount.textContent =
-      buyers.filter(function (b) {
-        return b.status === "Active";
+      buyers.filter(function(buyer) {
+        return buyer.status === "Active";
       }).length;
-
   }
 
   if (followupCount) {
-
     followupCount.textContent =
-      buyers.filter(function (b) {
-        return !!b.followupDate;
+      buyers.filter(function(buyer) {
+        return !!buyer.followupDate;
       }).length;
+  }
 
+  if (paymentCount)
+    paymentCount.textContent = payments.length;
+
+  if (paymentTotal) {
+
+    const total =
+      payments.reduce(function(sum, payment) {
+        return sum +
+          Number(
+            payment.pkrAmount ||
+            payment.amount ||
+            0
+          );
+      }, 0);
+
+    paymentTotal.textContent =
+      "PKR " + money(total);
   }
 }
 
 
 /* ============================================================
-   PRODUCT CATEGORY
+   PRODUCT CATEGORIES
    ============================================================ */
 
 function populateCategories() {
@@ -321,7 +422,7 @@ function populateCategories() {
   select.innerHTML =
     '<option value="">Select Product Category</option>';
 
-  PR_PRODUCT_CATEGORIES.forEach(function (category) {
+  PR_PRODUCT_CATEGORIES.forEach(function(category) {
 
     const option =
       document.createElement("option");
@@ -330,7 +431,6 @@ function populateCategories() {
     option.textContent = category;
 
     select.appendChild(option);
-
   });
 
   if (current)
@@ -354,7 +454,7 @@ function populateInterestedProducts() {
   select.innerHTML =
     '<option value="">Select Product / Category</option>';
 
-  PR_PRODUCT_CATEGORIES.forEach(function (category) {
+  PR_PRODUCT_CATEGORIES.forEach(function(category) {
 
     const option =
       document.createElement("option");
@@ -363,7 +463,6 @@ function populateInterestedProducts() {
     option.textContent = category;
 
     select.appendChild(option);
-
   });
 
   if (products.length) {
@@ -373,7 +472,7 @@ function populateInterestedProducts() {
 
     group.label = "Added Products";
 
-    products.forEach(function (product) {
+    products.forEach(function(product) {
 
       const option =
         document.createElement("option");
@@ -382,12 +481,13 @@ function populateInterestedProducts() {
 
       option.textContent =
         product.name +
-        (product.articleNo
-          ? " — " + product.articleNo
-          : "");
+        (
+          product.articleNo
+            ? " — " + product.articleNo
+            : ""
+        );
 
       group.appendChild(option);
-
     });
 
     select.appendChild(group);
@@ -419,8 +519,8 @@ function openProductModal(id) {
   if (id) {
 
     const product =
-      products.find(function (p) {
-        return String(p.id) === String(id);
+      products.find(function(item) {
+        return String(item.id) === String(id);
       });
 
     if (!product) return;
@@ -460,7 +560,6 @@ function openProductModal(id) {
   modal.classList.add("show");
 }
 
-
 function closeProductModal() {
 
   const modal =
@@ -470,7 +569,6 @@ function closeProductModal() {
     modal.style.display = "none";
     modal.classList.remove("show");
   }
-
 }
 
 
@@ -500,215 +598,4 @@ function saveProduct() {
       getValue("material"),
 
     size:
-      getValue("size"),
-
-    weight:
-      getValue("weight"),
-
-    color:
-      getValue("color"),
-
-    availableSizes:
-      getValue("availableSizes"),
-
-    moq:
-      getValue("moq"),
-
-    price:
-      getValue("price"),
-
-    imageUrl:
-      getValue("imageUrl"),
-
-    specification:
-      getValue("specification"),
-
-    description:
-      getValue("description"),
-
-    status:
-      getValue("productStatus") || "Available",
-
-    updatedAt:
-      new Date().toISOString()
-
-  };
-
-  if (!product.name || !product.articleNo) {
-
-    alert(
-      "Please enter Product Name and Article / Product No."
-    );
-
-    return;
-  }
-
-  if (id) {
-
-    const index =
-      products.findIndex(function (p) {
-        return String(p.id) === String(id);
-      });
-
-    if (index !== -1)
-      products[index] = product;
-
-  } else {
-
-    products.unshift(product);
-
-  }
-
-  saveData(PR_KEYS.products, products);
-
-  closeProductModal();
-
-  refreshAll();
-
-  alert("Product saved successfully.");
-
-}
-
-
-/* ============================================================
-   EDIT / DELETE PRODUCT
-   ============================================================ */
-
-function editProduct(id) {
-  openProductModal(id);
-}
-
-
-function deleteProduct(id) {
-
-  if (!confirm("Delete this product?"))
-    return;
-
-  products =
-    products.filter(function (p) {
-      return String(p.id) !== String(id);
-    });
-
-  saveData(PR_KEYS.products, products);
-
-  refreshAll();
-
-}
-
-
-/* ============================================================
-   RENDER PRODUCTS
-   ============================================================ */
-
-function renderProducts() {
-
-  const container =
-    document.getElementById("productList");
-
-  if (!container) return;
-
-  const input =
-    document.getElementById("productSearch");
-
-  const search =
-    input
-      ? input.value.toLowerCase().trim()
-      : "";
-
-  const filtered =
-    products.filter(function (product) {
-
-      return (
-
-        String(product.name || "")
-          .toLowerCase()
-          .includes(search)
-
-        ||
-
-        String(product.articleNo || "")
-          .toLowerCase()
-          .includes(search)
-
-        ||
-
-        String(product.category || "")
-          .toLowerCase()
-          .includes(search)
-
-      );
-
-    });
-
-  if (!filtered.length) {
-
-    container.innerHTML = `
-      <div class="panel">
-        <p>No products found.</p>
-      </div>
-    `;
-
-    return;
-  }
-
-  container.innerHTML =
-    filtered.map(function (product) {
-
-      return `
-
-        <div class="panel product-card">
-
-          ${
-            product.imageUrl
-              ? `
-                <img
-                  src="${escapeHtml(product.imageUrl)}"
-                  alt="${escapeHtml(product.name)}"
-                  style="
-                    width:100%;
-                    max-height:220px;
-                    object-fit:contain;
-                  "
-                >
-              `
-              : ""
-          }
-
-          <h3>
-            ${escapeHtml(product.name)}
-          </h3>
-
-          <p>
-            <strong>Article:</strong>
-            ${escapeHtml(product.articleNo)}
-          </p>
-
-          <p>
-            <strong>Category:</strong>
-            ${escapeHtml(product.category || "-")}
-          </p>
-
-          <p>
-            <strong>Material:</strong>
-            ${escapeHtml(product.material || "-")}
-          </p>
-
-          <p>
-            <strong>Size:</strong>
-            ${escapeHtml(product.size || "-")}
-          </p>
-
-          <p>
-            <strong>Weight:</strong>
-            ${escapeHtml(product.weight || "-")}
-          </p>
-
-          <p>
-            <strong>Color:</strong>
-            ${escapeHtml(product.color || "-")}
-          </p>
-
-          <p>
-            <strong>MOQ:</strong>
-            ${escapeHtml(product.moq || "-")}
-          </
+      getValue("
