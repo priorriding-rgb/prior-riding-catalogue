@@ -1,3 +1,4 @@
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -8,7 +9,19 @@ body {
   font-family: Arial, sans-serif;
   background: #f5f7f6;
   color: #1d1d1d;
+  line-height: 1.45;
 }
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+/* ================================
+   TOP BAR / BRAND
+================================ */
 
 .topbar {
   background: #ffffff;
@@ -29,12 +42,13 @@ body {
   height: 52px;
   border-radius: 10px;
   background: #c62828;
-  color: white;
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   font-size: 20px;
+  flex-shrink: 0;
 }
 
 .brand h1 {
@@ -48,6 +62,10 @@ body {
   font-size: 13px;
 }
 
+/* ================================
+   NAVIGATION
+================================ */
+
 .nav {
   background: #16834b;
   display: flex;
@@ -60,7 +78,7 @@ body {
 .nav-btn {
   border: 0;
   background: transparent;
-  color: white;
+  color: #ffffff;
   padding: 11px 18px;
   border-radius: 7px;
   cursor: pointer;
@@ -70,9 +88,13 @@ body {
 
 .nav-btn:hover,
 .nav-btn.active {
-  background: white;
+  background: #ffffff;
   color: #16834b;
 }
+
+/* ================================
+   MAIN CONTAINER
+================================ */
 
 .container {
   max-width: 1200px;
@@ -88,9 +110,13 @@ body {
   display: block;
 }
 
+/* ================================
+   HERO / SECTION HEAD
+================================ */
+
 .hero,
 .section-head {
-  background: white;
+  background: #ffffff;
   border-radius: 14px;
   padding: 22px;
   margin-bottom: 20px;
@@ -98,7 +124,7 @@ body {
   justify-content: space-between;
   align-items: center;
   gap: 15px;
-  box-shadow: 0 3px 12px rgba(0,0,0,.06);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
 }
 
 .hero h2,
@@ -109,8 +135,12 @@ body {
 
 .hero p,
 .section-head p {
-  color: #666;
+  color: #666666;
 }
+
+/* ================================
+   BUTTONS
+================================ */
 
 .primary-btn,
 .secondary-btn {
@@ -123,7 +153,7 @@ body {
 
 .primary-btn {
   background: #c62828;
-  color: white;
+  color: #ffffff;
 }
 
 .primary-btn:hover {
@@ -132,8 +162,16 @@ body {
 
 .secondary-btn {
   background: #e9eceb;
-  color: #333;
+  color: #333333;
 }
+
+.secondary-btn:hover {
+  background: #dfe3e1;
+}
+
+/* ================================
+   DASHBOARD STATS
+================================ */
 
 .stats {
   display: grid;
@@ -143,15 +181,15 @@ body {
 }
 
 .stat-card {
-  background: white;
+  background: #ffffff;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 3px 12px rgba(0,0,0,.05);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
   border-left: 4px solid #16834b;
 }
 
 .stat-card span {
-  color: #666;
+  color: #666666;
   font-size: 14px;
 }
 
@@ -162,6 +200,10 @@ body {
   color: #c62828;
 }
 
+/* ================================
+   DASHBOARD GRID
+================================ */
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -169,10 +211,10 @@ body {
 }
 
 .panel {
-  background: white;
+  background: #ffffff;
   border-radius: 14px;
   padding: 20px;
-  box-shadow: 0 3px 12px rgba(0,0,0,.05);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
 }
 
 .panel-head {
@@ -190,6 +232,10 @@ body {
   cursor: pointer;
 }
 
+/* ================================
+   SEARCH
+================================ */
+
 .search-box {
   margin-bottom: 20px;
 }
@@ -197,7 +243,7 @@ body {
 .search-box input {
   width: 100%;
   padding: 14px;
-  border: 1px solid #ddd;
+  border: 1px solid #dddddd;
   border-radius: 9px;
   font-size: 15px;
   outline: none;
@@ -210,6 +256,10 @@ body {
   border-color: #16834b;
 }
 
+/* ================================
+   PRODUCT GRID
+================================ */
+
 .product-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -217,10 +267,10 @@ body {
 }
 
 .product-card {
-  background: white;
+  background: #ffffff;
   border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 3px 12px rgba(0,0,0,.07);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.07);
 }
 
 .product-image {
@@ -236,7 +286,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #888;
+  color: #888888;
   font-weight: bold;
 }
 
@@ -247,6 +297,7 @@ body {
 .product-body h3 {
   margin-bottom: 6px;
 }
+
 .article {
   color: #c62828;
   font-weight: bold;
@@ -256,7 +307,7 @@ body {
 .product-meta {
   margin-top: 12px;
   line-height: 1.7;
-  color: #555;
+  color: #555555;
   font-size: 14px;
 }
 
@@ -276,19 +327,31 @@ body {
 
 .edit-btn {
   background: #16834b;
-  color: white;
+  color: #ffffff;
+}
+
+.edit-btn:hover {
+  background: #126b3d;
 }
 
 .delete-btn {
-  background: #eee;
+  background: #eeeeee;
   color: #c62828;
 }
 
+.delete-btn:hover {
+  background: #e2e2e2;
+}
+
+/* ================================
+   BUYER TABLE
+================================ */
+
 .table-wrap {
-  background: white;
+  background: #ffffff;
   border-radius: 12px;
   overflow-x: auto;
-  box-shadow: 0 3px 12px rgba(0,0,0,.05);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
 }
 
 table {
@@ -301,12 +364,12 @@ th,
 td {
   padding: 13px;
   text-align: left;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #eeeeee;
 }
 
 th {
   background: #16834b;
-  color: white;
+  color: #ffffff;
   font-size: 13px;
 }
 
@@ -324,19 +387,49 @@ td {
   color: #16834b;
 }
 
+/* ================================
+   EMPTY STATE
+================================ */
+
 .empty {
   text-align: center;
   padding: 35px;
-  color: #777;
-  background: white;
+  color: #777777;
+  background: #ffffff;
   border-radius: 12px;
 }
+
+/* ================================
+   MINI ITEMS
+================================ */
+
+.mini-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.mini-item:last-child {
+  border-bottom: 0;
+}
+
+.mini-item strong {
+  display: block;
+}
+
+.mini-item span {
+  color: #777777;
+  font-size: 13px;
+}
+
+/* ================================
+   MODALS
+================================ */
 
 .modal {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.55);
+  background: rgba(0, 0, 0, 0.55);
   z-index: 1000;
   padding: 20px;
   overflow-y: auto;
@@ -349,7 +442,7 @@ td {
 }
 
 .modal-content {
-  background: white;
+  background: #ffffff;
   width: 100%;
   max-width: 800px;
   margin: 20px auto;
@@ -366,13 +459,21 @@ td {
 
 .modal-head button {
   border: 0;
-  background: #eee;
+  background: #eeeeee;
   width: 35px;
   height: 35px;
   border-radius: 50%;
   font-size: 22px;
   cursor: pointer;
 }
+
+.modal-head button:hover {
+  background: #dddddd;
+}
+
+/* ================================
+   FORM
+================================ */
 
 .form-grid {
   display: grid;
@@ -404,7 +505,7 @@ td {
   padding: 11px;
   font-size: 14px;
   outline: none;
-  background: white;
+  background: #ffffff;
 }
 
 .field textarea {
@@ -418,112 +519,609 @@ td {
   margin-top: 22px;
 }
 
-.mini-item {
-  padding: 12px 0;
-  border-bottom: 1px solid #eee;
-}
-
-.mini-item:last-child {
-  border-bottom: 0;
-}
-
-.mini-item strong {
-  display: block;
-}
-
-.mini-item span {
-  color: #777;
-  font-size: 13px;
-}
-
+/* ================================
+   DASHBOARD QUICK ACTIONS
+================================ */
 
 .quick-actions {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0 0 22px;
+}
+
+/* IMPORTANT:
+   Complete quick-btn block.
+   This fixes the missing } from the old CSS.
+*/
+
+.quick-btn {
+  min-height: 92px;
+  border: 0;
+  border-radius: 14px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.35px;
+  text-align: center;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.12);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
+}
+
+.quick-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
+  filter: brightness(1.03);
+}
+
+.quick-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.quick-btn.red {
+  background: linear-gradient(145deg, #d73333, #b51f27);
+}
+
+.quick-btn.green {
+  background: linear-gradient(145deg, #1b9b5a, #137642);
+}
+
+.quick-btn span {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  font-size: 22px;
+  line-height: 1;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+/* ================================
+   DASHBOARD TOOL PANEL
+================================ */
+
+.dashboard-tool-panel {
+  background: #ffffff;
+  border: 1px solid #e5e9e7;
+  border-radius: 15px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.tool-panel-head {
+  background: linear-gradient(90deg, #c62828, #16834b);
+  color: #ffffff;
+  padding: 13px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tool-panel-head h3 {
+  font-size: 17px;
+}
+
+.tool-panel-head button {
+  background: transparent;
+  border: 0;
+  color: #ffffff;
+  font-size: 25px;
+  cursor: pointer;
+}
+
+/* ================================
+   PERFORMANCE REPORT
+================================ */
+
+.performance-dashboard {
+  margin-top: 16px;
+}
+
+.perf-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+  margin-bottom: 22px;
+}
+
+.perf-card,
+.perf-mini-card {
+  background: #ffffff;
+  border: 1px solid #e7ebe9;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.perf-card {
+  border-left: 4px solid #16834b;
+}
+
+.perf-card.red {
+  border-left-color: #c62828;
+}
+
+.perf-card.green {
+  border-left-color: #16834b;
+}
+
+.perf-card span,
+.perf-mini-card span {
+  display: block;
+  color: #666666;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.perf-card strong {
+  display: block;
+  font-size: 27px;
+  margin: 5px 0;
+  color: #222222;
+}
+
+.perf-card small,
+.perf-mini-card small {
+  color: #888888;
+  font-size: 11px;
+}
+
+.perf-section-title {
+  margin: 8px 0 10px;
+  font-size: 15px;
+  color: #333333;
+}
+
+.perf-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
   margin-bottom: 20px;
 }
 
-.quick-btn {
-  border: 0;
-  border-radius: 11px;
+.perf-mini-card {
+  border-top: 3px solid #c62828;
+}
 
-/* ===== PRIOR RIDING PROFESSIONAL PERFORMANCE REPORT ===== */
-.performance-dashboard{margin-top:16px}
-.perf-summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px}
-.perf-card,.perf-mini-card{background:#fff;border:1px solid #e7ebe9;border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-.perf-card{border-left:4px solid #16834b}
-.perf-card.red{border-left-color:#c62828}.perf-card.green{border-left-color:#16834b}
-.perf-card span,.perf-mini-card span{display:block;color:#666;font-size:12px;font-weight:700}
-.perf-card strong{display:block;font-size:27px;margin:5px 0;color:#222}
-.perf-card small,.perf-mini-card small{color:#888;font-size:11px}
-.perf-section-title{margin:8px 0 10px;font-size:15px;color:#333}
-.perf-mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
-.perf-mini-card{border-top:3px solid #c62828}.perf-mini-card strong{display:block;font-size:20px;margin:6px 0 2px;color:#c62828}
-.perf-two-col{display:grid;grid-template-columns:1.35fr 1fr;gap:14px;margin-bottom:14px}
-.perf-box{background:#fff;border:1px solid #e7ebe9;border-radius:12px;padding:15px;overflow:hidden}
-.perf-box h4{margin-bottom:12px;color:#16834b;font-size:14px}
-.perf-table{width:100%;min-width:0;box-shadow:none}
-.perf-table th{background:#16834b;padding:10px;font-size:12px}
-.perf-table td{padding:10px;font-size:12px}
-.perf-list-row{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid #eee;font-size:12px}
-.perf-list-row:last-child{border-bottom:0}
-.perf-list-row b{color:#c62828}
-.perf-chip-grid{display:flex;flex-wrap:wrap;gap:8px}
-.perf-chip{background:#f5f7f6;border:1px solid #e1e6e3;border-radius:9px;padding:9px 10px;min-width:145px}
-.perf-chip b{display:block;font-size:11px}.perf-chip span{display:block;color:#777;font-size:10px;margin-top:3px}
-.perf-empty{color:#888;font-size:12px;padding:12px;text-align:center}
-@media(max-width:900px){.perf-summary-grid{grid-template-columns:repeat(2,1fr)}.perf-mini-grid{grid-template-columns:repeat(2,1fr)}.perf-two-col{grid-template-columns:1fr}}
-@media(max-width:600px){.perf-summary-grid{grid-template-columns:1fr 1fr}.perf-card strong{font-size:22px}.perf-mini-grid{grid-template-columns:1fr 1fr}.perf-chip{min-width:120px}}
+.perf-mini-card strong {
+  display: block;
+  font-size: 20px;
+  margin: 6px 0 2px;
+  color: #c62828;
+}
 
-.calc-report{padding:4px 0}.calc-intro{margin:0 0 14px;color:#666;font-size:13px}.calc-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}.calc-card{background:#fff;border:1px solid #e4e8e6;border-radius:10px;padding:13px;border-left:3px solid #16834b}.calc-card:nth-child(odd){border-left-color:#c62828}.calc-card span{display:block;color:#777;font-size:11px}.calc-card strong{display:block;margin-top:5px;font-size:19px}.calc-title{margin:10px 0 9px}.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:14px}.calc-columns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}.calc-box{background:#fff;border:1px solid #e4e8e6;border-radius:10px;padding:13px}.calc-box h4{margin:0 0 8px;font-size:13px;color:#16834b}.calc-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;font-size:12px}.calc-row:last-child{border-bottom:0}.calc-row b{color:#c62828}.calc-empty{padding:12px;text-align:center;color:#888;font-size:12px}.calc-note{margin-top:12px;padding:10px;background:#f7f8f8;border-radius:8px;color:#777;font-size:11px}@media(max-width:800px){.calc-kpis{grid-template-columns:1fr 1fr}.calc-grid{grid-template-columns:1fr 1fr}.calc-columns{grid-template-columns:1fr}}
+.perf-two-col {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
 
-/* ===== PRIOR RIDING DASHBOARD — ORIGINAL RED/GREEN TILE STYLE ===== */
-.quick-actions{
-  display:grid;
-  grid-template-columns:repeat(5,minmax(0,1fr));
-  gap:14px;
-  margin:0 0 22px;
+.perf-box {
+  background: #ffffff;
+  border: 1px solid #e7ebe9;
+  border-radius: 12px;
+  padding: 15px;
+  overflow: hidden;
 }
-.quick-btn{
-  min-height:92px;
-  border:0;
-  border-radius:14px;
-  padding:12px 10px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  cursor:pointer;
-  color:#fff;
-  font-size:12px;
-  font-weight:800;
-  letter-spacing:.35px;
-  text-align:center;
-  box-shadow:0 5px 14px rgba(0,0,0,.12);
-  transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;
+
+.perf-box h4 {
+  margin-bottom: 12px;
+  color: #16834b;
+  font-size: 14px;
 }
-.quick-btn:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0,.16);filter:brightness(1.03)}
-.quick-btn:active{transform:translateY(0);box-shadow:0 4px 10px rgba(0,0,0,.12)}
-.quick-btn.red{background:linear-gradient(145deg,#d73333,#b51f27)}
-.quick-btn.green{background:linear-gradient(145deg,#1b9b5a,#137642)}
-.quick-btn span{
-  width:42px;height:42px;border-radius:11px;
-  display:flex;align-items:center;justify-content:center;
-  background:rgba(255,255,255,.18);
-  border:1px solid rgba(255,255,255,.28);
-  font-size:22px;line-height:1;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.18);
+
+.perf-table {
+  width: 100%;
+  min-width: 0;
+  box-shadow: none;
 }
-.dashboard-tool-panel{
-  background:#fff;border:1px solid #e5e9e7;border-radius:15px;
-  box-shadow:0 6px 22px rgba(0,0,0,.08);margin-bottom:20px;overflow:hidden;
+
+.perf-table th {
+  background: #16834b;
+  padding: 10px;
+  font-size: 12px;
 }
-.tool-panel-head{
-  background:linear-gradient(90deg,#c62828,#16834b);color:#fff;
-  padding:13px 16px;display:flex;align-items:center;justify-content:space-between;
+
+.perf-table td {
+  padding: 10px;
+  font-size: 12px;
 }
-.tool-panel-head h3{font-size:17px}.tool-panel-head button{background:transparent;border:0;color:#fff;font-size:25px;cursor:pointer}
-@media(max-width:900px){.quick-actions{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:600px){.quick-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.quick-btn{min-height:88px;font-size:11px}.quick-btn span{width:38px;height:38px;font-size:20px}}
+
+.perf-list-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 0;
+  border-bottom: 1px solid #eeeeee;
+  font-size: 12px;
+}
+
+.perf-list-row:last-child {
+  border-bottom: 0;
+}
+
+.perf-list-row b {
+  color: #c62828;
+}
+
+.perf-chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.perf-chip {
+  background: #f5f7f6;
+  border: 1px solid #e1e6e3;
+  border-radius: 9px;
+  padding: 9px 10px;
+  min-width: 145px;
+}
+
+.perf-chip b {
+  display: block;
+  font-size: 11px;
+}
+
+.perf-chip span {
+  display: block;
+  color: #777777;
+  font-size: 10px;
+  margin-top: 3px;
+}
+
+.perf-empty {
+  color: #888888;
+  font-size: 12px;
+  padding: 12px;
+  text-align: center;
+}
+
+/* ================================
+   CALC BREAKDOWN
+================================ */
+
+.calc-report {
+  padding: 4px 0;
+}
+
+.calc-intro {
+  margin: 0 0 14px;
+  color: #666666;
+  font-size: 13px;
+}
+
+.calc-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.calc-card {
+  background: #ffffff;
+  border: 1px solid #e4e8e6;
+  border-radius: 10px;
+  padding: 13px;
+  border-left: 3px solid #16834b;
+}
+
+.calc-card:nth-child(odd) {
+  border-left-color: #c62828;
+}
+
+.calc-card span {
+  display: block;
+  color: #777777;
+  font-size: 11px;
+}
+
+.calc-card strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 19px;
+}
+
+.calc-title {
+  margin: 10px 0 9px;
+}
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.calc-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.calc-box {
+  background: #ffffff;
+  border: 1px solid #e4e8e6;
+  border-radius: 10px;
+  padding: 13px;
+}
+
+.calc-box h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: #16834b;
+}
+
+.calc-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #eeeeee;
+  font-size: 12px;
+}
+
+.calc-row:last-child {
+  border-bottom: 0;
+}
+
+.calc-row b {
+  color: #c62828;
+}
+
+.calc-empty {
+  padding: 12px;
+  text-align: center;
+  color: #888888;
+  font-size: 12px;
+}
+
+.calc-note {
+  margin-top: 12px;
+  padding: 10px;
+  background: #f7f8f8;
+  border-radius: 8px;
+  color: #777777;
+  font-size: 11px;
+}
+
+/* ================================
+   UTILITY
+================================ */
+
+.muted {
+  color: #777777;
+  font-size: 12px;
+  margin-top: 12px;
+}
+
+/* ================================
+   MOBILE / TABLET
+================================ */
+
+@media (max-width: 1000px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .quick-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .perf-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .perf-mini-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .perf-two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 800px) {
+  .calc-kpis {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .calc-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .calc-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .container {
+    padding: 14px;
+  }
+
+  .hero,
+  .section-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .field.full {
+    grid-column: auto;
+  }
+
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .brand h1 {
+    font-size: 19px;
+  }
+
+  .brand p {
+    font-size: 11px;
+  }
+
+  .logo-box {
+    width: 46px;
+    height: 46px;
+  }
+
+  .stats {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 15px;
+  }
+
+  .stat-card strong {
+    font-size: 24px;
+  }
+
+  .quick-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .quick-btn {
+    min-height: 88px;
+    font-size: 11px;
+  }
+
+  .quick-btn span {
+    width: 38px;
+    height: 38px;
+    font-size: 20px;
+  }
+
+  .modal {
+    padding: 10px;
+  }
+
+  .modal-content {
+    margin: 8px auto;
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .perf-summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .perf-card strong {
+    font-size: 22px;
+  }
+
+  .perf-mini-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .perf-chip {
+    min-width: 120px;
+  }
+}
+
+@media (max-width: 420px) {
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hero h2,
+  .section-head h2 {
+    font-size: 21px;
+  }
+
+  .perf-summary-grid,
+  .perf-mini-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .calc-kpis,
+  .calc-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ================================
+   PRINT
+================================ */
+
+@media print {
+  body {
+    background: #ffffff;
+  }
+
+  .topbar,
+  .nav,
+  .quick-actions,
+  .primary-btn,
+  .secondary-btn,
+  .search-box,
+  .product-actions,
+  .modal,
+  .tool-panel-head button {
+    display: none !important;
+  }
+
+  .container {
+    max-width: none;
+    padding: 0;
+  }
+
+  .section {
+    display: none !important;
+  }
+
+  .section.active {
+    display: block !important;
+  }
+
+  .hero,
+  .section-head,
+  .panel,
+  .table-wrap,
+  .product-card,
+  .perf-box,
+  .calc-box {
+    box-shadow: none;
+  }
+}
