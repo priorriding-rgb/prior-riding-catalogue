@@ -1,471 +1,582 @@
-<link rel="manifest" href="manifest.json">
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>PRIOR RIDING — International Buyer CRM</title>
-  <link rel="stylesheet" href="style.css?v=20261003-04">
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css?v=20261003-05">
+
+  <meta name="theme-color" content="#c62828">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
 </head>
 
 <body>
 
+<!-- ================= TOP BAR ================= -->
+
 <header class="topbar">
+
   <div class="brand">
-    <div class="logo-box">PR</div>
-    <div>
+
+    <div class="logo-box image-logo">
+      <img
+        src="prior-riding-logo.jpg"
+        alt="PRIOR RIDING"
+        onerror="this.style.display='none';this.parentElement.textContent='PR';"
+      >
+    </div>
+
+    <div class="brand-text">
       <h1>PRIOR RIDING</h1>
       <p>International Buyer CRM & Product Catalogue</p>
     </div>
+
   </div>
+
+  <button
+    class="menu-btn"
+    type="button"
+    onclick="toggleAppMenu()"
+    aria-label="Open menu"
+  >
+    ☰
+  </button>
+
 </header>
 
+
+<!-- ================= APP MENU ================= -->
+
+<div id="appMenu" class="app-menu" style="display:none;">
+
+  <div class="app-menu-head">
+    <strong>PRIOR RIDING</strong>
+    <button type="button" onclick="toggleAppMenu()">×</button>
+  </div>
+
+  <button type="button" onclick="showSection('dashboard');toggleAppMenu()">
+    🏠 Dashboard
+  </button>
+
+  <button type="button" onclick="showSection('products');toggleAppMenu()">
+    📦 Product Catalogue
+  </button>
+
+  <button type="button" onclick="showSection('buyers');toggleAppMenu()">
+    👥 Buyer CRM
+  </button>
+
+  <hr>
+
+  <button type="button" onclick="openStoragePanel()">
+    💾 Storage
+  </button>
+
+  <button type="button" onclick="openBackupPanel()">
+    ☁️ Backup & Restore
+  </button>
+
+  <button type="button" onclick="openAccountPanel()">
+    👤 Account
+  </button>
+
+  <button type="button" onclick="openSettingsPanel()">
+    ⚙️ Settings
+  </button>
+
+</div>
+
+
+<!-- ================= NAVIGATION ================= -->
+
 <nav class="nav">
-  <button class="nav-btn active" onclick="showSection('dashboard')">Dashboard</button>
-  <button class="nav-btn" onclick="showSection('products')">Product Catalogue</button>
-  <button class="nav-btn" onclick="showSection('buyers')">Buyer CRM</button>
+
+  <button
+    class="nav-btn active"
+    type="button"
+    onclick="showSection('dashboard')"
+  >
+    Dashboard
+  </button>
+
+  <button
+    class="nav-btn"
+    type="button"
+    onclick="showSection('products')"
+  >
+    Product Catalogue
+  </button>
+
+  <button
+    class="nav-btn"
+    type="button"
+    onclick="showSection('buyers')"
+  >
+    Buyer CRM
+  </button>
+
 </nav>
+
 
 <main class="container">
 
-  <!-- DASHBOARD -->
-  <section id="dashboard" class="section active">
 
-    <div class="hero">
-      <div>
-        <h2>International Business Dashboard</h2>
-        <p>Manage your products and international buyers in one place.</p>
-      </div>
-      <button class="primary-btn" onclick="showSection('products'); openProductModal()">
-        + Add Product
-      </button>
+<!-- ================= DASHBOARD ================= -->
+
+<section id="dashboard" class="section active">
+
+  <div class="hero">
+
+    <div>
+      <h2>International Business Dashboard</h2>
+      <p>
+        Manage your products and international buyers in one place.
+      </p>
     </div>
 
-    <div class="quick-actions">
-      <button class="quick-btn red" onclick="openDashboardTool('performance')"><span>📊</span> PERFORMANCE WISE</button>
-      <button class="quick-btn green" onclick="showSection('products')"><span>📦</span> PRODUCT</button>
-      <button class="quick-btn red" onclick="openDashboardTool('calc')"><span>🧮</span> CALC BREAKDOWN</button>
-      <button class="quick-btn green" onclick="openDashboardTool('paymentMode')"><span>💳</span> PAYMENT MODE</button>
-      <button class="quick-btn red" onclick="window.print()"><span>🖨️</span> PRINT</button>
-      <button class="quick-btn green" onclick="printToPdf()"><span>📄</span> PDF</button>
-      <button class="quick-btn red" onclick="openDashboardTool('proforma')"><span>🧾</span> ADD PROFORMA</button>
-      <button class="quick-btn green" onclick="openDashboardTool('proformaLetter')"><span>✉️</span> ADD PROFORMA LETTER</button>
-      <button class="quick-btn red" onclick="openDashboardTool('catalogue')"><span>📚</span> CATALOGUE</button>
-      <button class="quick-btn green" onclick="openDashboardTool('payment')"><span>💰</span> ADD PAYMENT</button>
-    </div>
-
-    <div id="dashboardToolPanel" class="dashboard-tool-panel" style="display:none;">
-      <div class="tool-panel-head">
-        <h3 id="dashboardToolTitle">Dashboard Tool</h3>
-        <button onclick="closeDashboardTool()">×</button>
-      </div>
-      <div id="dashboardToolBody"></div>
-    </div>
-
-    <div class="stats">
-      <div class="stat-card">
-        <span>Products</span>
-        <strong id="productCount">0</strong>
-      </div>
-
-      <div class="stat-card">
-        <span>Total Buyers</span>
-        <strong id="buyerCount">0</strong>
-      </div>
-
-      <div class="stat-card">
-        <span>Active Buyers</span>
-        <strong id="activeBuyerCount">0</strong>
-      </div>
-
-      <div class="stat-card">
-        <span>Follow-ups</span>
-        <strong id="followupCount">0</strong>
-      </div>
-    </div>
-
-    <div class="dashboard-grid">
-
-      <div class="panel">
-        <div class="panel-head">
-          <h3>Recent Products</h3>
-          <button onclick="showSection('products')">View All</button>
-        </div>
-        <div id="recentProducts"></div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head">
-          <h3>Recent Buyers</h3>
-          <button onclick="showSection('buyers')">View All</button>
-        </div>
-        <div id="recentBuyers"></div>
-      </div>
-
-    </div>
-  </section>
-
-
-  <!-- PRODUCTS -->
-  <section id="products" class="section">
-
-    <div class="section-head">
-      <div>
-        <h2>Product Catalogue</h2>
-        <p>Add and manage your Prior Riding products.</p>
-      </div>
-
-      <button class="primary-btn" onclick="openProductModal()">
-        + Add Product
-      </button>
-    </div>
-
-    <div class="search-box">
-      <input
-        type="text"
-        id="productSearch"
-        placeholder="Search product, article number or category..."
-        oninput="renderProducts()"
-      >
-    </div>
-
-    <div id="productList" class="product-grid"></div>
-
-  </section>
-
-
-  <!-- BUYERS -->
-  <section id="buyers" class="section">
-
-    <div class="section-head">
-      <div>
-        <h2>International Buyer CRM</h2>
-        <p>Manage buyers, contacts and follow-ups.</p>
-      </div>
-
-      <button class="primary-btn" onclick="openBuyerModal()">
-        + Add Buyer
-      </button>
-    </div>
-
-    <div class="search-box">
-      <input
-        type="text"
-        id="buyerSearch"
-        placeholder="Search buyer, company or country..."
-        oninput="renderBuyers()"
-      >
-    </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Buyer / Company</th>
-            <th>Country</th>
-            <th>Contact</th>
-            <th>WhatsApp / Phone</th>
-            <th>Interested Product</th>
-            <th>Status</th>
-            <th>Follow-up</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-
-        <tbody id="buyerTable"></tbody>
-      </table>
-    </div>
-
-  </section>
-
-</main>
-
-
-<!-- PRODUCT MODAL -->
-<div id="productModal" class="modal">
-
-  <div class="modal-content">
-
-    <div class="modal-head">
-      <h2 id="productModalTitle">Add Product</h2>
-      <button onclick="closeProductModal()">×</button>
-    </div>
-
-    <form id="productForm">
-
-      <input type="hidden" id="productId">
-
-      <div class="form-grid">
-
-        <div class="field">
-          <label>Product Name *</label>
-          <input id="productName" required>
-        </div>
-
-        <div class="field">
-          <label>Article / Product No. *</label>
-          <input id="articleNo" required>
-        </div>
-
-        <div class="field">
-          <label>Category</label>
-          <select id="category">
-            <option value="">Select Product Category</option>
-            <option>Goalkeeper Gloves</option>
-            <option>Riding Gloves</option>
-            <option>Cycling Gloves</option>
-            <option>Boxing Gloves</option>
-            <option>MMA Gloves</option>
-            <option>Horse Riding Gloves</option>
-            <option>Hard Riding Gloves</option>
-            <option>Chin Pads / Protective Pads</option>
-            <option>Football / Soccer Gloves</option>
-            <option>Sports Bags</option>
-            <option>Hand Wraps</option>
-            <option>Other Sports Goods</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Material</label>
-          <input id="material" placeholder="Leather / Synthetic">
-        </div>
-
-        <div class="field">
-          <label>Size</label>
-          <input id="size" placeholder="10oz / 12oz / 14oz / 16oz">
-        </div>
-
-        <div class="field">
-          <label>Weight</label>
-          <input id="weight" placeholder="Example: 500g">
-        </div>
-
-        <div class="field">
-          <label>Color</label>
-          <input id="color" placeholder="Red / Black">
-        </div>
-
-        <div class="field">
-          <label>Available Sizes</label>
-          <input id="availableSizes" placeholder="S, M, L, XL">
-        </div>
-
-        <div class="field">
-          <label>MOQ</label>
-          <input id="moq" placeholder="Example: 100 Pairs">
-        </div>
-
-        <div class="field">
-          <label>Price / Quotation</label>
-          <input id="price" placeholder="Contact for quotation">
-        </div>
-
-        <div class="field full">
-          <label>Product Image URL</label>
-          <input id="imageUrl" placeholder="Paste product image link">
-        </div>
-
-        <div class="field full">
-          <label>Product Specification</label>
-          <textarea id="specification" rows="4"></textarea>
-        </div>
-
-        <div class="field full">
-          <label>Product Description</label>
-          <textarea id="description" rows="4"></textarea>
-        </div>
-
-        <div class="field">
-          <label>Status</label>
-          <select id="productStatus">
-            <option value="Available">Available</option>
-            <option value="Coming Soon">Coming Soon</option>
-            <option value="Out of Stock">Out of Stock</option>
-          </select>
-        </div>
-
-      </div>
-
-      <div class="modal-actions">
-        <button type="button" class="secondary-btn" onclick="closeProductModal()">
-          Cancel
-        </button>
-
-        <button type="submit" class="primary-btn">
-          Save Product
-        </button>
-      </div>
-
-    </form>
+    <button
+      class="primary-btn"
+      type="button"
+      onclick="showSection('products');openProductModal()"
+    >
+      + Add Product
+    </button>
 
   </div>
-</div>
 
 
-<!-- BUYER MODAL -->
-<div id="buyerModal" class="modal">
+  <!-- QUICK ACTIONS -->
 
-  <div class="modal-content">
+  <div class="quick-actions">
 
-    <div class="modal-head">
-      <h2 id="buyerModalTitle">Add Buyer</h2>
-      <button onclick="closeBuyerModal()">×</button>
-    </div>
+    <button
+      class="quick-btn red"
+      type="button"
+      onclick="openDashboardTool('performance')"
+    >
+      <span>📊</span>
+      PERFORMANCE WISE
+    </button>
 
-    <form id="buyerForm">
+    <button
+      class="quick-btn green"
+      type="button"
+      onclick="showSection('products')"
+    >
+      <span>📦</span>
+      PRODUCT
+    </button>
 
-      <input type="hidden" id="buyerId">
+    <button
+      class="quick-btn red"
+      type="button"
+      onclick="openDashboardTool('calc')"
+    >
+      <span>🧮</span>
+      CALC BREAKDOWN
+    </button>
 
-      <div class="form-grid">
+    <button
+      class="quick-btn green"
+      type="button"
+      onclick="openDashboardTool('paymentMode')"
+    >
+      <span>💳</span>
+      PAYMENT MODE
+    </button>
 
-        <div class="field">
-          <label>Buyer / Company Name *</label>
-          <input id="buyerName" required>
-        </div>
+    <button
+      class="quick-btn red"
+      type="button"
+      onclick="window.print()"
+    >
+      <span>🖨️</span>
+      PRINT
+    </button>
 
-        <div class="field">
-          <label>Country *</label>
-          <input id="buyerCountry" required>
-        </div>
+    <button
+      class="quick-btn green"
+      type="button"
+      onclick="printToPdf()"
+    >
+      <span>📄</span>
+      PDF
+    </button>
 
-        <div class="field">
-          <label>Contact Person</label>
-          <input id="contactPerson">
-        </div>
+    <button
+      class="quick-btn red"
+      type="button"
+      onclick="openDashboardTool('proforma')"
+    >
+      <span>🧾</span>
+      ADD PROFORMA
+    </button>
 
-        <div class="field">
-          <label>Email</label>
-          <input type="email" id="buyerEmail">
-        </div>
+    <button
+      class="quick-btn green"
+      type="button"
+      onclick="openDashboardTool('proformaLetter')"
+    >
+      <span>✉️</span>
+      ADD PROFORMA LETTER
+    </button>
 
-        <div class="field">
-          <label>WhatsApp / Phone</label>
-          <input id="buyerPhone">
-        </div>
+    <button
+      class="quick-btn red"
+      type="button"
+      onclick="openDashboardTool('catalogue')"
+    >
+      <span>📚</span>
+      CATALOGUE
+    </button>
 
-        <div class="field">
-          <label>Interested Product</label>
-          <select id="interestedProduct">
-            <option value="">Select Product / Category</option>
-            <option>Goalkeeper Gloves</option>
-            <option>Riding Gloves</option>
-            <option>Cycling Gloves</option>
-            <option>Boxing Gloves</option>
-            <option>MMA Gloves</option>
-            <option>Horse Riding Gloves</option>
-            <option>Hard Riding Gloves</option>
-            <option>Chin Pads / Protective Pads</option>
-            <option>Football / Soccer Gloves</option>
-            <option>Sports Bags</option>
-            <option>Hand Wraps</option>
-            <option>Other Sports Goods</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Status</label>
-          <select id="buyerStatus">
-            <option value="Active">Active</option>
-            <option value="Potential">Potential</option>
-            <option value="Follow-up">Follow-up</option>
-            <option value="Closed">Closed</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Follow-up Date</label>
-          <input type="date" id="followupDate">
-        </div>
-
-        <div class="field full">
-          <label>Notes</label>
-          <textarea id="buyerNotes" rows="5"></textarea>
-        </div>
-
-      </div>
-
-      <div class="modal-actions">
-        <button type="button" class="secondary-btn" onclick="closeBuyerModal()">
-          Cancel
-        </button>
-
-        <button type="submit" class="primary-btn">
-          Save Buyer
-        </button>
-      </div>
-
-    </form>
+    <button
+      class="quick-btn green"
+      type="button"
+      onclick="openDashboardTool('payment')"
+    >
+      <span>💰</span>
+      ADD PAYMENT
+    </button>
 
   </div>
-</div>
 
 
-<!-- Enhanced CRM tools -->
-<div id="paymentModal" class="modal">
- <div class="modal-content">
-  <div class="modal-head"><h2>Add Payment</h2><button onclick="prClosePayment()">×</button></div>
-  <form id="paymentForm">
-   <div class="form-grid">
-    <div class="field"><label>Buyer *</label><select id="paymentBuyer" required><option value="">Select Buyer</option></select></div>
-    <div class="field"><label>Bank Name</label><select id="paymentBankName"><option value="">Select Bank</option><option>Allied Bank Limited</option><option>Askari Bank Limited</option><option>Bank Alfalah Limited</option><option>Bank Al-Habib Limited</option><option>BankIslami Pakistan Limited</option><option>Bank Makramah Limited</option><option>Dubai Islamic Bank Pakistan Limited</option><option>Faysal Bank Limited</option><option>Habib Bank Limited (HBL)</option><option>Habib Metropolitan Bank Limited</option><option>JS Bank Limited</option><option>MCB Bank Limited</option><option>MCB Islamic Bank Limited</option><option>Meezan Bank Limited</option><option>National Bank of Pakistan</option><option>Samba Bank Limited</option><option>Sindh Bank Limited</option><option>Soneri Bank Limited</option><option>Standard Chartered Bank (Pakistan) Limited</option><option>The Bank of Khyber</option><option>The Bank of Punjab</option><option>United Bank Limited (UBL)</option><option>Zarai Taraqiati Bank Limited (ZTBL)</option><option>Punjab Provincial Cooperative Bank Limited</option><option>Other</option></select></div>
-    <div class="field"><label>Proforma Invoice No.</label><input id="paymentProformaNo" placeholder="e.g. PI-001"></div>
-    <div class="field"><label>Foreign Currency Amount *</label><input id="paymentForeignAmount" type="number" min="0" step="0.01" required></div>
-    <div class="field"><label>Currency</label><select id="paymentForeignCurrency"><option>USD</option><option>EUR</option><option>GBP</option><option>AED</option><option>Other</option></select></div>
-    <div class="field"><label>Payment Mode *</label><select id="paymentMode" required><option>Bank Transfer / T.T.</option><option>Advance</option><option>Balance</option><option>Cash</option><option>Card</option><option>PayPal</option><option>Other</option></select></div>
-    <div class="field"><label>PKR Amount</label><input id="paymentPkrAmount" type="number" min="0" step="0.01" placeholder="Amount received in PKR"></div>
-    <div class="field"><label>Received Date</label><input id="paymentReceivedDate" type="date"></div>
-    <div class="field"><label>Payment Date</label><input id="paymentDate" type="date"></div>
-    <div class="field"><label>Reference</label><input id="paymentReference" placeholder="Transaction / invoice reference"></div>
-    <div class="field full"><label>Notes</label><textarea id="paymentNotes" rows="4"></textarea></div>
-   </div>
-   <div class="modal-actions"><button type="button" class="secondary-btn" onclick="prClosePayment()">Cancel</button><button class="primary-btn" type="submit">Save Payment</button></div>
-  </form>
- </div>
-</div>
+  <!-- DASHBOARD TOOL PANEL -->
 
-<div id="proformaModal" class="modal">
- <div class="modal-content">
-  <div class="modal-head"><h2>Add Proforma</h2><button onclick="prCloseProforma()">×</button></div>
-  <form id="proformaForm">
-   <div class="form-grid">
-    <div class="field"><label>Buyer *</label><select id="proformaBuyer" required></select></div>
-    <div class="field"><label>Product *</label><select id="proformaProduct" required></select></div>
-    <div class="field"><label>Quantity *</label><input id="proformaQty" type="number" min="1" value="1" required></div>
-    <div class="field"><label>Unit Price</label><input id="proformaUnitPrice" type="number" min="0" step="0.01" value="0"></div>
-    <div class="field"><label>Date</label><input id="proformaDate" type="date"></div>
-   </div>
-   <p class="muted">The invoice opens in a print-ready window. Use the Android/Chrome print dialog to save it as PDF.</p>
-   <div class="modal-actions"><button type="button" class="secondary-btn" onclick="prCloseProforma()">Cancel</button><button class="primary-btn" type="submit">Create & Print</button></div>
-  </form>
- </div>
-</div>
+  <div
+    id="dashboardToolPanel"
+    class="dashboard-tool-panel"
+    style="display:none;"
+  >
 
-<div id="letterModal" class="modal">
- <div class="modal-content">
-  <div class="modal-head"><h2>Add Proforma Letter</h2><button onclick="prCloseLetter()">×</button></div>
-  <form id="letterForm">
-   <div class="form-grid">
-    <div class="field"><label>Buyer / Company *</label><input id="letterBuyer" required></div>
-    <div class="field"><label>Date</label><input id="letterDate" type="date"></div>
-    <div class="field full"><label>Subject</label><input id="letterSubject" value="Proforma Invoice"></div>
-    <div class="field full"><label>Message *</label><textarea id="letterMessage" rows="8" required placeholder="Dear Sir/Madam,&#10;&#10;Please find attached our proforma invoice..."></textarea></div>
-   </div>
-   <div class="modal-actions"><button type="button" class="secondary-btn" onclick="prCloseLetter()">Cancel</button><button class="primary-btn" type="submit">Create & Print</button></div>
-  </form>
- </div>
-</div>
+    <div class="tool-panel-head">
 
-<script src="app.js?v=20261003-04"></script>
+      <h3 id="dashboardToolTitle">
+        Dashboard Tool
+      </h3>
 
-</body>
-</html>
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./pwabuilder-sw-v4.js')
-      .then(() => console.log('Service Worker registered'))
-      .catch(error => console.error('Service Worker registration failed:', error));
-  });
-}
-</script>
+      <button
+        type="button"
+        onclick="closeDashboardTool()"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div id="dashboardToolBody"></div>
+
+  </div>
+
+
+  <!-- STATS -->
+
+  <div class="stats">
+
+    <div class="stat-card">
+      <span>Products</span>
+      <strong id="productCount">0</strong>
+    </div>
+
+    <div class="stat-card">
+      <span>Total Buyers</span>
+      <strong id="buyerCount">0</strong>
+    </div>
+
+    <div class="stat-card">
+      <span>Active Buyers</span>
+      <strong id="activeBuyerCount">0</strong>
+    </div>
+
+    <div class="stat-card">
+      <span>Follow-ups</span>
+      <strong id="followupCount">0</strong>
+    </div>
+
+  </div>
+
+
+  <!-- RECENT -->
+
+  <div class="dashboard-grid">
+
+    <div class="panel">
+
+      <div class="panel-head">
+
+        <h3>Recent Products</h3>
+
+        <button
+          type="button"
+          onclick="showSection('products')"
+        >
+          View All
+        </button>
+
+      </div>
+
+      <div id="recentProducts"></div>
+
+    </div>
+
+
+    <div class="panel">
+
+      <div class="panel-head">
+
+        <h3>Recent Buyers</h3>
+
+        <button
+          type="button"
+          onclick="showSection('buyers')"
+        >
+          View All
+        </button>
+
+      </div>
+
+      <div id="recentBuyers"></div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ================= PRODUCTS ================= -->
+
+<section id="products" class="section">
+
+  <div class="section-head">
+
+    <div>
+
+      <h2>Product Catalogue</h2>
+
+      <p>
+        Add and manage your Prior Riding products.
+      </p>
+
+    </div>
+
+    <button
+      class="primary-btn"
+      type="button"
+      onclick="openProductModal()"
+    >
+      + Add Product
+    </button>
+
+  </div>
+
+
+  <div class="search-box">
+
+    <input
+      type="text"
+      id="productSearch"
+      placeholder="Search product, article number or category..."
+      oninput="renderProducts()"
+    >
+
+  </div>
+
+
+  <div
+    id="productList"
+    class="product-grid"
+  ></div>
+
+</section>
+
+
+<!-- ================= BUYERS ================= -->
+
+<section id="buyers" class="section">
+
+  <div class="section-head">
+
+    <div>
+
+      <h2>International Buyer CRM</h2>
+
+      <p>
+        Manage buyers, contacts and follow-ups.
+      </p>
+
+    </div>
+
+    <button
+      class="primary-btn"
+      type="button"
+      onclick="openBuyerModal()"
+    >
+      + Add Buyer
+    </button>
+
+  </div>
+
+
+  <div class="search-box">
+
+    <input
+      type="text"
+      id="buyerSearch"
+      placeholder="Search buyer, company or country..."
+      oninput="renderBuyers()"
+    >
+
+  </div>
+
+
+  <div class="table-wrap">
+
+    <table>
+
+      <thead>
+
+        <tr>
+          <th>Buyer / Company</th>
+          <th>Country</th>
+          <th>Contact</th>
+          <th>WhatsApp / Phone</th>
+          <th>Interested Product</th>
+          <th>Status</th>
+          <th>Follow-up</th>
+          <th>Action</th>
+        </tr>
+
+      </thead>
+
+      <tbody id="buyerTable"></tbody>
+
+    </table>
+
+  </div>
+
+</section>
+
+
+<!-- ================= STORAGE ================= -->
+
+<section
+  id="storage"
+  class="section"
+  style="display:none;"
+>
+
+  <div class="section-head">
+
+    <div>
+
+      <h2>Storage</h2>
+
+      <p>
+        Manage PRIOR RIDING data stored on this device.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div class="dashboard-grid">
+
+    <div class="panel">
+
+      <h3>Device Storage</h3>
+
+      <p>
+        Your products, buyers and payment records are stored
+        locally on this device.
+      </p>
+
+      <div class="stats">
+
+        <div class="stat-card">
+          <span>Products</span>
+          <strong id="storageProductCount">0</strong>
+        </div>
+
+        <div class="stat-card">
+          <span>Buyers</span>
+          <strong id="storageBuyerCount">0</strong>
+        </div>
+
+        <div class="stat-card">
+          <span>Payments</span>
+          <strong id="storagePaymentCount">0</strong>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="panel">
+
+      <h3>Storage Actions</h3>
+
+      <button
+        class="primary-btn"
+        type="button"
+        onclick="exportCRMData()"
+      >
+        Export Backup
+      </button>
+
+      <button
+        class="secondary-btn"
+        type="button"
+        onclick="importCRMData()"
+      >
+        Restore Backup
+      </button>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ================= BACKUP ================= -->
+
+<section
+  id="backup"
+  class="section"
+  style="display:none;"
+>
+
+  <div class="section-head">
+
+    <div>
+
+      <h2>Backup & Restore</h2>
+
+      <p>
+        Save and restore your PRIOR RIDING CRM records.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div class="panel">
+
+    <h3>Backup</h3>
+
+    <p>
+      Export Products, Buyers and Payments into a backup file.
+    </p>
+
+    <button
+      class="primary-btn"
