@@ -6,7 +6,7 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    content="width=device-width, initial-scale=1.0"
   >
 
   <meta name="theme-color" content="#ffffff">
@@ -18,15 +18,24 @@
 
   <title>PRIOR RIDING — International Buyer CRM</title>
 
-  <!-- PWA -->
   <link rel="manifest" href="manifest.json">
 
-  <!-- App Icons -->
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-  <link rel="apple-touch-icon" href="icon-192.png">
+  <link
+    rel="icon"
+    type="image/png"
+    sizes="192x192"
+    href="icon-192.png"
+  >
 
-  <!-- Main CSS -->
-  <link rel="stylesheet" href="style.css?v=20261003-06">
+  <link
+    rel="apple-touch-icon"
+    href="icon-192.png"
+  >
+
+  <link
+    rel="stylesheet"
+    href="style.css?v=20261004-01"
+  >
 </head>
 
 
@@ -41,22 +50,33 @@
   <div class="brand">
 
     <div class="logo-box">
+
       <img
         src="icon-192.png"
         alt="PRIOR RIDING"
-        style="width:52px;height:52px;object-fit:contain;border-radius:10px;"
+        style="
+          width:52px;
+          height:52px;
+          object-fit:contain;
+          border-radius:10px;
+        "
       >
+
     </div>
 
     <div>
+
       <h1>PRIOR RIDING</h1>
-      <p>International Buyer CRM & Product Catalogue</p>
+
+      <p>
+        International Buyer CRM & Product Catalogue
+      </p>
+
     </div>
 
   </div>
 
 
-  <!-- SETTINGS / MENU -->
   <button
     class="menu-btn"
     type="button"
@@ -80,28 +100,49 @@
 >
 
   <div class="settings-menu-head">
+
     <strong>PRIOR RIDING</strong>
+
     <button
       type="button"
       onclick="toggleSettingsMenu()"
     >
       ×
     </button>
+
   </div>
 
-  <button type="button" onclick="openStoragePanel()">
+
+  <button
+    type="button"
+    onclick="openStoragePanel()"
+  >
     💾 Storage & Backup
   </button>
 
-  <button type="button" onclick="exportAllData()">
+
+  <button
+    type="button"
+    onclick="exportAllData()"
+  >
     📤 Export Backup
   </button>
 
-  <button type="button" onclick="document.getElementById('restoreFile').click()">
+
+  <button
+    type="button"
+    onclick="
+      document.getElementById('restoreFile').click()
+    "
+  >
     📥 Restore Backup
   </button>
 
-  <button type="button" onclick="showAppInfo()">
+
+  <button
+    type="button"
+    onclick="showAppInfo()"
+  >
     ℹ️ App Information
   </button>
 
@@ -109,7 +150,7 @@
 
 
 <!-- =====================================================
-     MAIN NAVIGATION
+     NAVIGATION
 ===================================================== -->
 
 <nav class="nav">
@@ -122,6 +163,7 @@
     Dashboard
   </button>
 
+
   <button
     class="nav-btn"
     type="button"
@@ -129,6 +171,7 @@
   >
     Product Catalogue
   </button>
+
 
   <button
     class="nav-btn"
@@ -172,6 +215,7 @@
 
     </div>
 
+
     <button
       class="primary-btn"
       type="button"
@@ -195,6 +239,7 @@
       📊 PERFORMANCE WISE
     </button>
 
+
     <button
       class="quick-btn green"
       type="button"
@@ -202,6 +247,7 @@
     >
       📦 PRODUCT
     </button>
+
 
     <button
       class="quick-btn red"
@@ -211,6 +257,7 @@
       🧮 CALC BREAKDOWN
     </button>
 
+
     <button
       class="quick-btn green"
       type="button"
@@ -218,6 +265,7 @@
     >
       💳 PAYMENT MODE
     </button>
+
 
     <button
       class="quick-btn red"
@@ -227,6 +275,7 @@
       🖨️ PRINT
     </button>
 
+
     <button
       class="quick-btn green"
       type="button"
@@ -234,6 +283,7 @@
     >
       📄 PDF
     </button>
+
 
     <button
       class="quick-btn red"
@@ -243,6 +293,7 @@
       🧾 ADD PROFORMA
     </button>
 
+
     <button
       class="quick-btn green"
       type="button"
@@ -251,6 +302,7 @@
       ✉️ ADD PROFORMA LETTER
     </button>
 
+
     <button
       class="quick-btn red"
       type="button"
@@ -258,6 +310,7 @@
     >
       📚 CATALOGUE
     </button>
+
 
     <button
       class="quick-btn green"
@@ -293,6 +346,7 @@
 
     </div>
 
+
     <div id="dashboardToolBody"></div>
 
   </div>
@@ -303,23 +357,46 @@
   <div class="stats">
 
     <div class="stat-card">
+
       <span>Products</span>
-      <strong id="productCount">0</strong>
+
+      <strong id="productCount">
+        0
+      </strong>
+
     </div>
 
+
     <div class="stat-card">
+
       <span>Total Buyers</span>
-      <strong id="buyerCount">0</strong>
+
+      <strong id="buyerCount">
+        0
+      </strong>
+
     </div>
 
+
     <div class="stat-card">
+
       <span>Active Buyers</span>
-      <strong id="activeBuyerCount">0</strong>
+
+      <strong id="activeBuyerCount">
+        0
+      </strong>
+
     </div>
 
+
     <div class="stat-card">
+
       <span>Follow-ups</span>
-      <strong id="followupCount">0</strong>
+
+      <strong id="followupCount">
+        0
+      </strong>
+
     </div>
 
   </div>
@@ -344,6 +421,7 @@
 
       </div>
 
+
       <div id="recentProducts"></div>
 
     </div>
@@ -364,6 +442,7 @@
 
       </div>
 
+
       <div id="recentBuyers"></div>
 
     </div>
@@ -380,6 +459,7 @@
 <section
   id="products"
   class="section"
+  style="display:none;"
 >
 
   <div class="section-head">
@@ -393,6 +473,7 @@
       </p>
 
     </div>
+
 
     <button
       class="primary-btn"
@@ -410,7 +491,9 @@
     <input
       type="text"
       id="productSearch"
-      placeholder="Search product, article number or category..."
+      placeholder="
+        Search product, article number or category...
+      "
       oninput="renderProducts()"
     >
 
@@ -432,6 +515,7 @@
 <section
   id="buyers"
   class="section"
+  style="display:none;"
 >
 
   <div class="section-head">
@@ -445,6 +529,7 @@
       </p>
 
     </div>
+
 
     <button
       class="primary-btn"
@@ -462,7 +547,9 @@
     <input
       type="text"
       id="buyerSearch"
-      placeholder="Search buyer, company or country..."
+      placeholder="
+        Search buyer, company or country...
+      "
       oninput="renderBuyers()"
     >
 
@@ -478,17 +565,25 @@
         <tr>
 
           <th>Buyer / Company</th>
+
           <th>Country</th>
+
           <th>Contact</th>
+
           <th>WhatsApp / Phone</th>
+
           <th>Interested Product</th>
+
           <th>Status</th>
+
           <th>Follow-up</th>
+
           <th>Action</th>
 
         </tr>
 
       </thead>
+
 
       <tbody id="buyerTable"></tbody>
 
@@ -508,6 +603,7 @@
 <div
   id="productModal"
   class="modal"
+  style="display:none;"
 >
 
   <div class="modal-content">
@@ -517,6 +613,7 @@
       <h2 id="productModalTitle">
         Add Product
       </h2>
+
 
       <button
         type="button"
@@ -539,26 +636,38 @@
       <div class="form-grid">
 
         <div class="field">
-          <label>Product Name *</label>
+
+          <label>
+            Product Name *
+          </label>
+
           <input
             id="productName"
             required
           >
+
         </div>
 
 
         <div class="field">
-          <label>Article / Product No. *</label>
+
+          <label>
+            Article / Product No. *
+          </label>
+
           <input
             id="articleNo"
             required
           >
+
         </div>
 
 
         <div class="field">
 
-          <label>Category</label>
+          <label>
+            Category
+          </label>
 
           <select id="category">
 
@@ -566,18 +675,53 @@
               Select Product Category
             </option>
 
-            <option>Goalkeeper Gloves</option>
-            <option>Riding Gloves</option>
-            <option>Cycling Gloves</option>
-            <option>Boxing Gloves</option>
-            <option>MMA Gloves</option>
-            <option>Horse Riding Gloves</option>
-            <option>Hard Riding Gloves</option>
-            <option>Chin Pads / Protective Pads</option>
-            <option>Football / Soccer Gloves</option>
-            <option>Sports Bags</option>
-            <option>Hand Wraps</option>
-            <option>Other Sports Goods / Other Varieties</option>
+            <option>
+              Goalkeeper Gloves
+            </option>
+
+            <option>
+              Riding Gloves
+            </option>
+
+            <option>
+              Cycling Gloves
+            </option>
+
+            <option>
+              Boxing Gloves
+            </option>
+
+            <option>
+              MMA Gloves
+            </option>
+
+            <option>
+              Horse Riding Gloves
+            </option>
+
+            <option>
+              Hard Riding Gloves
+            </option>
+
+            <option>
+              Football / Soccer Gloves
+            </option>
+
+            <option>
+              Chin Pads / Protective Pads
+            </option>
+
+            <option>
+              Sports Bags
+            </option>
+
+            <option>
+              Hand Wraps
+            </option>
+
+            <option>
+              Other Sports Goods / Other Varieties
+            </option>
 
           </select>
 
@@ -585,71 +729,108 @@
 
 
         <div class="field">
-          <label>Material</label>
+
+          <label>
+            Material
+          </label>
+
           <input
             id="material"
             placeholder="Leather / Synthetic"
           >
+
         </div>
 
 
         <div class="field">
-          <label>Size</label>
+
+          <label>
+            Size
+          </label>
+
           <input
             id="size"
             placeholder="10oz / 12oz / 14oz / 16oz"
           >
+
         </div>
 
 
         <div class="field">
-          <label>Weight</label>
+
+          <label>
+            Weight
+          </label>
+
           <input
             id="weight"
             placeholder="Example: 500g"
           >
+
         </div>
 
 
         <div class="field">
-          <label>Color</label>
+
+          <label>
+            Color
+          </label>
+
           <input
             id="color"
             placeholder="Red / Black"
           >
+
         </div>
 
 
         <div class="field">
-          <label>Available Sizes</label>
+
+          <label>
+            Available Sizes
+          </label>
+
           <input
             id="availableSizes"
             placeholder="S, M, L, XL"
           >
+
         </div>
 
 
         <div class="field">
-          <label>MOQ</label>
+
+          <label>
+            MOQ
+          </label>
+
           <input
             id="moq"
             placeholder="Example: 100 Pairs"
           >
+
         </div>
 
 
         <div class="field">
-          <label>Price / Quotation</label>
+
+          <label>
+            Price / Quotation
+          </label>
+
           <input
             id="price"
             placeholder="Contact for quotation"
           >
+
         </div>
 
 
         <div class="field full">
 
-          <label>Product Image URL</label>
+          <label>
+            Product Image URL
+          </label>
 
           <input
             id="imageUrl"
@@ -661,7 +842,9 @@
 
         <div class="field full">
 
-          <label>Product Specification</label>
+          <label>
+            Product Specification
+          </label>
 
           <textarea
             id="specification"
@@ -673,7 +856,9 @@
 
         <div class="field full">
 
-          <label>Product Description</label>
+          <label>
+            Product Description
+          </label>
 
           <textarea
             id="description"
@@ -685,7 +870,9 @@
 
         <div class="field">
 
-          <label>Status</label>
+          <label>
+            Status
+          </label>
 
           <select id="productStatus">
 
@@ -718,6 +905,7 @@
           Cancel
         </button>
 
+
         <button
           type="submit"
           class="primary-btn"
@@ -741,6 +929,7 @@
 <div
   id="buyerModal"
   class="modal"
+  style="display:none;"
 >
 
   <div class="modal-content">
@@ -750,6 +939,7 @@
       <h2 id="buyerModalTitle">
         Add Buyer
       </h2>
+
 
       <button
         type="button"
@@ -773,7 +963,9 @@
 
         <div class="field">
 
-          <label>Buyer / Company Name *</label>
+          <label>
+            Buyer / Company Name *
+          </label>
 
           <input
             id="buyerName"
@@ -785,7 +977,9 @@
 
         <div class="field">
 
-          <label>Country *</label>
+          <label>
+            Country *
+          </label>
 
           <input
             id="buyerCountry"
@@ -797,16 +991,22 @@
 
         <div class="field">
 
-          <label>Contact Person</label>
+          <label>
+            Contact Person
+          </label>
 
-          <input id="contactPerson">
+          <input
+            id="contactPerson"
+          >
 
         </div>
 
 
         <div class="field">
 
-          <label>Email</label>
+          <label>
+            Email
+          </label>
 
           <input
             type="email"
@@ -818,35 +1018,28 @@
 
         <div class="field">
 
-          <label>WhatsApp / Phone</label>
+          <label>
+            WhatsApp / Phone
+          </label>
 
-          <input id="buyerPhone">
+          <input
+            id="buyerPhone"
+          >
 
         </div>
 
 
         <div class="field">
 
-          <label>Interested Product</label>
+          <label>
+            Interested Product
+          </label>
 
           <select id="interestedProduct">
 
             <option value="">
               Select Product / Category
             </option>
-
-            <option>Goalkeeper Gloves</option>
-            <option>Riding Gloves</option>
-            <option>Cycling Gloves</option>
-            <option>Boxing Gloves</option>
-            <option>MMA Gloves</option>
-            <option>Horse Riding Gloves</option>
-            <option>Hard Riding Gloves</option>
-            <option>Chin Pads / Protective Pads</option>
-            <option>Football / Soccer Gloves</option>
-            <option>Sports Bags</option>
-            <option>Hand Wraps</option>
-            <option>Other Sports Goods / Other Varieties</option>
 
           </select>
 
@@ -855,7 +1048,9 @@
 
         <div class="field">
 
-          <label>Status</label>
+          <label>
+            Status
+          </label>
 
           <select id="buyerStatus">
 
@@ -882,7 +1077,9 @@
 
         <div class="field">
 
-          <label>Follow-up Date</label>
+          <label>
+            Follow-up Date
+          </label>
 
           <input
             type="date"
@@ -894,7 +1091,9 @@
 
         <div class="field full">
 
-          <label>Notes</label>
+          <label>
+            Notes
+          </label>
 
           <textarea
             id="buyerNotes"
@@ -915,6 +1114,7 @@
         >
           Cancel
         </button>
+
 
         <button
           type="submit"
@@ -939,6 +1139,7 @@
 <div
   id="paymentModal"
   class="modal"
+  style="display:none;"
 >
 
   <div class="modal-content">
@@ -963,7 +1164,9 @@
 
         <div class="field">
 
-          <label>Buyer *</label>
+          <label>
+            Buyer *
+          </label>
 
           <select
             id="paymentBuyer"
@@ -981,7 +1184,9 @@
 
         <div class="field">
 
-          <label>Bank Name</label>
+          <label>
+            Bank Name
+          </label>
 
           <select id="paymentBankName">
 
@@ -989,21 +1194,65 @@
               Select Bank
             </option>
 
-            <option>Allied Bank Limited</option>
-            <option>Askari Bank Limited</option>
-            <option>Bank Alfalah Limited</option>
-            <option>Bank Al-Habib Limited</option>
-            <option>BankIslami Pakistan Limited</option>
-            <option>Faysal Bank Limited</option>
-            <option>Habib Bank Limited (HBL)</option>
-            <option>Habib Metropolitan Bank Limited</option>
-            <option>JS Bank Limited</option>
-            <option>MCB Bank Limited</option>
-            <option>Meezan Bank Limited</option>
-            <option>National Bank of Pakistan</option>
-            <option>Standard Chartered Bank (Pakistan) Limited</option>
-            <option>United Bank Limited (UBL)</option>
-            <option>Other</option>
+            <option>
+              Allied Bank Limited
+            </option>
+
+            <option>
+              Askari Bank Limited
+            </option>
+
+            <option>
+              Bank Alfalah Limited
+            </option>
+
+            <option>
+              Bank Al-Habib Limited
+            </option>
+
+            <option>
+              BankIslami Pakistan Limited
+            </option>
+
+            <option>
+              Faysal Bank Limited
+            </option>
+
+            <option>
+              Habib Bank Limited (HBL)
+            </option>
+
+            <option>
+              Habib Metropolitan Bank Limited
+            </option>
+
+            <option>
+              JS Bank Limited
+            </option>
+
+            <option>
+              MCB Bank Limited
+            </option>
+
+            <option>
+              Meezan Bank Limited
+            </option>
+
+            <option>
+              National Bank of Pakistan
+            </option>
+
+            <option>
+              Standard Chartered Bank (Pakistan) Limited
+            </option>
+
+            <option>
+              United Bank Limited (UBL)
+            </option>
+
+            <option>
+              Other
+            </option>
 
           </select>
 
@@ -1012,7 +1261,9 @@
 
         <div class="field">
 
-          <label>Proforma Invoice No.</label>
+          <label>
+            Proforma Invoice No.
+          </label>
 
           <input
             id="paymentProformaNo"
@@ -1024,7 +1275,9 @@
 
         <div class="field">
 
-          <label>Foreign Currency Amount *</label>
+          <label>
+            Foreign Currency Amount *
+          </label>
 
           <input
             id="paymentForeignAmount"
@@ -1039,7 +1292,9 @@
 
         <div class="field">
 
-          <label>Currency</label>
+          <label>
+            Currency
+          </label>
 
           <select id="paymentForeignCurrency">
 
@@ -1056,20 +1311,42 @@
 
         <div class="field">
 
-          <label>Payment Mode *</label>
+          <label>
+            Payment Mode *
+          </label>
 
           <select
             id="paymentMode"
             required
           >
 
-            <option>Bank Transfer / T.T.</option>
-            <option>Advance</option>
-            <option>Balance</option>
-            <option>Cash</option>
-            <option>Card</option>
-            <option>PayPal</option>
-            <option>Other</option>
+            <option>
+              Bank Transfer / T.T.
+            </option>
+
+            <option>
+              Advance
+            </option>
+
+            <option>
+              Balance
+            </option>
+
+            <option>
+              Cash
+            </option>
+
+            <option>
+              Card
+            </option>
+
+            <option>
+              PayPal
+            </option>
+
+            <option>
+              Other
+            </option>
 
           </select>
 
@@ -1078,7 +1355,9 @@
 
         <div class="field">
 
-          <label>PKR Amount</label>
+          <label>
+            PKR Amount
+          </label>
 
           <input
             id="paymentPkrAmount"
@@ -1092,7 +1371,9 @@
 
         <div class="field">
 
-          <label>Payment Date</label>
+          <label>
+            Payment Date
+          </label>
 
           <input
             id="paymentDate"
@@ -1104,7 +1385,9 @@
 
         <div class="field">
 
-          <label>Reference</label>
+          <label>
+            Reference
+          </label>
 
           <input
             id="paymentReference"
@@ -1116,7 +1399,9 @@
 
         <div class="field full">
 
-          <label>Notes</label>
+          <label>
+            Notes
+          </label>
 
           <textarea
             id="paymentNotes"
@@ -1137,6 +1422,7 @@
         >
           Cancel
         </button>
+
 
         <button
           type="submit"
@@ -1161,6 +1447,7 @@
 <div
   id="proformaModal"
   class="modal"
+  style="display:none;"
 >
 
   <div class="modal-content">
@@ -1185,7 +1472,9 @@
 
         <div class="field">
 
-          <label>Buyer *</label>
+          <label>
+            Buyer *
+          </label>
 
           <select
             id="proformaBuyer"
@@ -1197,7 +1486,9 @@
 
         <div class="field">
 
-          <label>Product *</label>
+          <label>
+            Product *
+          </label>
 
           <select
             id="proformaProduct"
@@ -1209,7 +1500,9 @@
 
         <div class="field">
 
-          <label>Quantity *</label>
+          <label>
+            Quantity *
+          </label>
 
           <input
             id="proformaQty"
@@ -1224,7 +1517,9 @@
 
         <div class="field">
 
-          <label>Unit Price</label>
+          <label>
+            Unit Price
+          </label>
 
           <input
             id="proformaUnitPrice"
@@ -1239,7 +1534,9 @@
 
         <div class="field">
 
-          <label>Date</label>
+          <label>
+            Date
+          </label>
 
           <input
             id="proformaDate"
@@ -1260,6 +1557,7 @@
         >
           Cancel
         </button>
+
 
         <button
           type="submit"
@@ -1284,13 +1582,16 @@
 <div
   id="letterModal"
   class="modal"
+  style="display:none;"
 >
 
   <div class="modal-content">
 
     <div class="modal-head">
 
-      <h2>Add Proforma Letter</h2>
+      <h2>
+        Add Proforma Letter
+      </h2>
 
       <button
         type="button"
@@ -1308,7 +1609,9 @@
 
         <div class="field">
 
-          <label>Buyer / Company *</label>
+          <label>
+            Buyer / Company *
+          </label>
 
           <input
             id="letterBuyer"
@@ -1320,7 +1623,9 @@
 
         <div class="field">
 
-          <label>Date</label>
+          <label>
+            Date
+          </label>
 
           <input
             id="letterDate"
@@ -1332,7 +1637,9 @@
 
         <div class="field full">
 
-          <label>Subject</label>
+          <label>
+            Subject
+          </label>
 
           <input
             id="letterSubject"
@@ -1344,7 +1651,9 @@
 
         <div class="field full">
 
-          <label>Message *</label>
+          <label>
+            Message *
+          </label>
 
           <textarea
             id="letterMessage"
@@ -1367,6 +1676,7 @@
           Cancel
         </button>
 
+
         <button
           type="submit"
           class="primary-btn"
@@ -1384,19 +1694,22 @@
 
 
 <!-- =====================================================
-     STORAGE PANEL
+     STORAGE MODAL
 ===================================================== -->
 
 <div
   id="storageModal"
   class="modal"
+  style="display:none;"
 >
 
   <div class="modal-content">
 
     <div class="modal-head">
 
-      <h2>💾 Storage & Backup</h2>
+      <h2>
+        💾 Storage & Backup
+      </h2>
 
       <button
         type="button"
@@ -1410,32 +1723,60 @@
 
     <div class="panel">
 
-      <h3>PRIOR RIDING Data Storage</h3>
+      <h3>
+        PRIOR RIDING Data Storage
+      </h3>
+
 
       <p>
-        Your business records are stored locally on this app/device.
+        Your business records are stored locally
+        on this app/device.
       </p>
+
 
       <div class="stats">
 
         <div class="stat-card">
+
           <span>Products</span>
-          <strong id="storageProductCount">0</strong>
+
+          <strong id="storageProductCount">
+            0
+          </strong>
+
         </div>
 
+
         <div class="stat-card">
+
           <span>Buyers</span>
-          <strong id="storageBuyerCount">0</strong>
+
+          <strong id="storageBuyerCount">
+            0
+          </strong>
+
         </div>
 
+
         <div class="stat-card">
+
           <span>Payments</span>
-          <strong id="storagePaymentCount">0</strong>
+
+          <strong id="storagePaymentCount">
+            0
+          </strong>
+
         </div>
 
+
         <div class="stat-card">
+
           <span>Proformas</span>
-          <strong id="storageProformaCount">0</strong>
+
+          <strong id="storageProformaCount">
+            0
+          </strong>
+
         </div>
 
       </div>
@@ -1451,10 +1792,13 @@
           📤 Export Backup
         </button>
 
+
         <button
           type="button"
           class="secondary-btn"
-          onclick="document.getElementById('restoreFile').click()"
+          onclick="
+            document.getElementById('restoreFile').click()
+          "
         >
           📥 Restore Backup
         </button>
@@ -1468,7 +1812,9 @@
 </div>
 
 
-<!-- HIDDEN RESTORE FILE -->
+<!-- =====================================================
+     RESTORE FILE
+===================================================== -->
 
 <input
   type="file"
@@ -1486,13 +1832,17 @@
 <div
   id="appInfoModal"
   class="modal"
+  style="display:none;"
 >
 
   <div class="modal-content">
 
     <div class="modal-head">
 
-      <h2>PRIOR RIDING</h2>
+      <h2>
+        PRIOR RIDING
+      </h2>
+
 
       <button
         type="button"
@@ -1503,20 +1853,30 @@
 
     </div>
 
+
     <div class="panel">
 
       <img
         src="icon-192.png"
         alt="PRIOR RIDING Logo"
-        style="width:100px;height:100px;object-fit:contain;"
+        style="
+          width:100px;
+          height:100px;
+          object-fit:contain;
+        "
       >
 
-      <h3>International Buyer CRM</h3>
+
+      <h3>
+        International Buyer CRM
+      </h3>
+
 
       <p>
         PRIOR RIDING International Buyer CRM &
         Product Catalogue.
       </p>
+
 
       <p>
         Version 1.0
@@ -1530,10 +1890,13 @@
 
 
 <!-- =====================================================
-     JAVASCRIPT
+     APP JAVASCRIPT
 ===================================================== -->
 
-<script src="app.js?v=20261003-07"></script>
+<script
+  src="app.js?v=20261004-01"
+  defer
+></script>
 
 
 <!-- =====================================================
@@ -1544,18 +1907,24 @@
 
 if ("serviceWorker" in navigator) {
 
-  window.addEventListener("load", function() {
+  window.addEventListener("load", function () {
 
     navigator.serviceWorker
       .register("./pwabuilder-sw-v4.js")
-      .then(function() {
-        console.log("PRIOR RIDING Service Worker registered.");
+      .then(function () {
+
+        console.log(
+          "PRIOR RIDING Service Worker registered."
+        );
+
       })
-      .catch(function(error) {
+      .catch(function (error) {
+
         console.error(
           "PRIOR RIDING Service Worker registration failed:",
           error
         );
+
       });
 
   });
@@ -1574,6 +1943,7 @@ function toggleSettingsMenu() {
     menu.style.display === "none"
       ? "block"
       : "none";
+
 }
 
 
@@ -1587,47 +1957,80 @@ function openStoragePanel() {
   if (!modal) return;
 
   const productCount =
-    document.getElementById("storageProductCount");
+    document.getElementById(
+      "storageProductCount"
+    );
 
   const buyerCount =
-    document.getElementById("storageBuyerCount");
+    document.getElementById(
+      "storageBuyerCount"
+    );
 
   const paymentCount =
-    document.getElementById("storagePaymentCount");
+    document.getElementById(
+      "storagePaymentCount"
+    );
 
   const proformaCount =
-    document.getElementById("storageProformaCount");
+    document.getElementById(
+      "storageProformaCount"
+    );
 
-  if (productCount) {
-    productCount.textContent =
-      Array.isArray(window.products)
-        ? window.products.length
-        : 0;
+
+  try {
+
+    const products =
+      JSON.parse(
+        localStorage.getItem(
+          "prior_riding_products"
+        ) || "[]"
+      );
+
+    const buyers =
+      JSON.parse(
+        localStorage.getItem(
+          "prior_riding_buyers"
+        ) || "[]"
+      );
+
+    const payments =
+      JSON.parse(
+        localStorage.getItem(
+          "prior_riding_payments"
+        ) || "[]"
+      );
+
+    const proformas =
+      JSON.parse(
+        localStorage.getItem(
+          "prior_riding_proformas"
+        ) || "[]"
+      );
+
+
+    if (productCount)
+      productCount.textContent = products.length;
+
+    if (buyerCount)
+      buyerCount.textContent = buyers.length;
+
+    if (paymentCount)
+      paymentCount.textContent = payments.length;
+
+    if (proformaCount)
+      proformaCount.textContent = proformas.length;
+
+  } catch (error) {
+
+    console.error(error);
+
   }
 
-  if (buyerCount) {
-    buyerCount.textContent =
-      Array.isArray(window.buyers)
-        ? window.buyers.length
-        : 0;
-  }
-
-  if (paymentCount) {
-    paymentCount.textContent =
-      Array.isArray(window.payments)
-        ? window.payments.length
-        : 0;
-  }
-
-  if (proformaCount) {
-    proformaCount.textContent =
-      Array.isArray(window.proformas)
-        ? window.proformas.length
-        : 0;
-  }
 
   modal.classList.add("show");
+
   modal.style.display = "flex";
+
 }
 
 
@@ -1639,6 +2042,7 @@ function closeStoragePanel() {
   if (modal) {
 
     modal.classList.remove("show");
+
     modal.style.display = "none";
 
   }
@@ -1656,7 +2060,9 @@ function showAppInfo() {
   if (!modal) return;
 
   modal.classList.add("show");
+
   modal.style.display = "flex";
+
 }
 
 
@@ -1668,6 +2074,7 @@ function closeAppInfo() {
   if (modal) {
 
     modal.classList.remove("show");
+
     modal.style.display = "none";
 
   }
@@ -1679,36 +2086,48 @@ function exportAllData() {
 
   const data = {
 
-    app: "PRIOR RIDING — International Buyer CRM",
+    app:
+      "PRIOR RIDING — International Buyer CRM",
 
-    version: "1.0",
+    version:
+      "1.0",
 
     exportedAt:
       new Date().toISOString(),
 
     products:
       JSON.parse(
-        localStorage.getItem("prior_riding_products") || "[]"
+        localStorage.getItem(
+          "prior_riding_products"
+        ) || "[]"
       ),
 
     buyers:
       JSON.parse(
-        localStorage.getItem("prior_riding_buyers") || "[]"
+        localStorage.getItem(
+          "prior_riding_buyers"
+        ) || "[]"
       ),
 
     payments:
       JSON.parse(
-        localStorage.getItem("prior_riding_payments") || "[]"
+        localStorage.getItem(
+          "prior_riding_payments"
+        ) || "[]"
       ),
 
     proformas:
       JSON.parse(
-        localStorage.getItem("prior_riding_proformas") || "[]"
+        localStorage.getItem(
+          "prior_riding_proformas"
+        ) || "[]"
       ),
 
     letters:
       JSON.parse(
-        localStorage.getItem("prior_riding_letters") || "[]"
+        localStorage.getItem(
+          "prior_riding_letters"
+        ) || "[]"
       )
 
   };
@@ -1716,8 +2135,17 @@ function exportAllData() {
 
   const blob =
     new Blob(
-      [JSON.stringify(data, null, 2)],
-      { type: "application/json" }
+      [
+        JSON.stringify(
+          data,
+          null,
+          2
+        )
+      ],
+      {
+        type:
+          "application/json"
+      }
     );
 
 
@@ -1728,13 +2156,17 @@ function exportAllData() {
   const link =
     document.createElement("a");
 
+
   link.href = url;
+
 
   link.download =
     "prior-riding-backup-" +
-    new Date().toISOString()
-      .slice(0,10) +
+    new Date()
+      .toISOString()
+      .slice(0, 10) +
     ".json";
+
 
   document.body.appendChild(link);
 
@@ -1760,82 +2192,97 @@ function restoreAllData(event) {
     new FileReader();
 
 
-  reader.onload = function(e) {
+  reader.onload =
+    function (e) {
 
-    try {
+      try {
 
-      const data =
-        JSON.parse(e.target.result);
+        const data =
+          JSON.parse(
+            e.target.result
+          );
 
 
-      if (Array.isArray(data.products)) {
+        if (Array.isArray(data.products)) {
 
-        localStorage.setItem(
-          "prior_riding_products",
-          JSON.stringify(data.products)
+          localStorage.setItem(
+            "prior_riding_products",
+            JSON.stringify(
+              data.products
+            )
+          );
+
+        }
+
+
+        if (Array.isArray(data.buyers)) {
+
+          localStorage.setItem(
+            "prior_riding_buyers",
+            JSON.stringify(
+              data.buyers
+            )
+          );
+
+        }
+
+
+        if (Array.isArray(data.payments)) {
+
+          localStorage.setItem(
+            "prior_riding_payments",
+            JSON.stringify(
+              data.payments
+            )
+          );
+
+        }
+
+
+        if (Array.isArray(data.proformas)) {
+
+          localStorage.setItem(
+            "prior_riding_proformas",
+            JSON.stringify(
+              data.proformas
+            )
+          );
+
+        }
+
+
+        if (Array.isArray(data.letters)) {
+
+          localStorage.setItem(
+            "prior_riding_letters",
+            JSON.stringify(
+              data.letters
+            )
+          );
+
+        }
+
+
+        alert(
+          "PRIOR RIDING backup restored successfully."
+        );
+
+
+        location.reload();
+
+      }
+
+      catch (error) {
+
+        console.error(error);
+
+        alert(
+          "Invalid PRIOR RIDING backup file."
         );
 
       }
 
-
-      if (Array.isArray(data.buyers)) {
-
-        localStorage.setItem(
-          "prior_riding_buyers",
-          JSON.stringify(data.buyers)
-        );
-
-      }
-
-
-      if (Array.isArray(data.payments)) {
-
-        localStorage.setItem(
-          "prior_riding_payments",
-          JSON.stringify(data.payments)
-        );
-
-      }
-
-
-      if (Array.isArray(data.proformas)) {
-
-        localStorage.setItem(
-          "prior_riding_proformas",
-          JSON.stringify(data.proformas)
-        );
-
-      }
-
-
-      if (Array.isArray(data.letters)) {
-
-        localStorage.setItem(
-          "prior_riding_letters",
-          JSON.stringify(data.letters)
-        );
-
-      }
-
-
-      alert(
-        "PRIOR RIDING backup restored successfully."
-      );
-
-
-      location.reload();
-
-    }
-
-    catch(error) {
-
-      alert(
-        "Invalid PRIOR RIDING backup file."
-      );
-
-    }
-
-  };
+    };
 
 
   reader.readAsText(file);
@@ -1844,8 +2291,9 @@ function restoreAllData(event) {
 
 }
 
-
 </script>
 
+
 </body>
-               </html>
+
+</html>
