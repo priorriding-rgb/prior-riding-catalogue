@@ -1,582 +1,225 @@
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>PRIOR RIDING — International Buyer CRM</title>
-
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=20261003-05">
-
-  <meta name="theme-color" content="#c62828">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-</head>
-
-<body>
-
-<!-- ================= TOP BAR ================= -->
-
-<header class="topbar">
-
-  <div class="brand">
-
-    <div class="logo-box image-logo">
-      <img
-        src="prior-riding-logo.jpg"
-        alt="PRIOR RIDING"
-        onerror="this.style.display='none';this.parentElement.textContent='PR';"
-      >
-    </div>
-
-    <div class="brand-text">
-      <h1>PRIOR RIDING</h1>
-      <p>International Buyer CRM & Product Catalogue</p>
-    </div>
-
-  </div>
-
-  <button
-    class="menu-btn"
-    type="button"
-    onclick="toggleAppMenu()"
-    aria-label="Open menu"
-  >
-    ☰
-  </button>
-
-</header>
-
-
-<!-- ================= APP MENU ================= -->
-
-<div id="appMenu" class="app-menu" style="display:none;">
-
-  <div class="app-menu-head">
-    <strong>PRIOR RIDING</strong>
-    <button type="button" onclick="toggleAppMenu()">×</button>
-  </div>
-
-  <button type="button" onclick="showSection('dashboard');toggleAppMenu()">
-    🏠 Dashboard
-  </button>
-
-  <button type="button" onclick="showSection('products');toggleAppMenu()">
-    📦 Product Catalogue
-  </button>
-
-  <button type="button" onclick="showSection('buyers');toggleAppMenu()">
-    👥 Buyer CRM
-  </button>
-
-  <hr>
-
-  <button type="button" onclick="openStoragePanel()">
-    💾 Storage
-  </button>
-
-  <button type="button" onclick="openBackupPanel()">
-    ☁️ Backup & Restore
-  </button>
-
-  <button type="button" onclick="openAccountPanel()">
-    👤 Account
-  </button>
-
-  <button type="button" onclick="openSettingsPanel()">
-    ⚙️ Settings
-  </button>
-
-</div>
-
-
-<!-- ================= NAVIGATION ================= -->
-
-<nav class="nav">
-
-  <button
-    class="nav-btn active"
-    type="button"
-    onclick="showSection('dashboard')"
-  >
-    Dashboard
-  </button>
-
-  <button
-    class="nav-btn"
-    type="button"
-    onclick="showSection('products')"
-  >
-    Product Catalogue
-  </button>
-
-  <button
-    class="nav-btn"
-    type="button"
-    onclick="showSection('buyers')"
-  >
-    Buyer CRM
-  </button>
-
-</nav>
-
-
-<main class="container">
-
-
-<!-- ================= DASHBOARD ================= -->
-
-<section id="dashboard" class="section active">
-
-  <div class="hero">
-
-    <div>
-      <h2>International Business Dashboard</h2>
-      <p>
-        Manage your products and international buyers in one place.
-      </p>
-    </div>
-
-    <button
-      class="primary-btn"
-      type="button"
-      onclick="showSection('products');openProductModal()"
-    >
-      + Add Product
-    </button>
-
-  </div>
-
-
-  <!-- QUICK ACTIONS -->
-
-  <div class="quick-actions">
-
-    <button
-      class="quick-btn red"
-      type="button"
-      onclick="openDashboardTool('performance')"
-    >
-      <span>📊</span>
-      PERFORMANCE WISE
-    </button>
-
-    <button
-      class="quick-btn green"
-      type="button"
-      onclick="showSection('products')"
-    >
-      <span>📦</span>
-      PRODUCT
-    </button>
-
-    <button
-      class="quick-btn red"
-      type="button"
-      onclick="openDashboardTool('calc')"
-    >
-      <span>🧮</span>
-      CALC BREAKDOWN
-    </button>
-
-    <button
-      class="quick-btn green"
-      type="button"
-      onclick="openDashboardTool('paymentMode')"
-    >
-      <span>💳</span>
-      PAYMENT MODE
-    </button>
-
-    <button
-      class="quick-btn red"
-      type="button"
-      onclick="window.print()"
-    >
-      <span>🖨️</span>
-      PRINT
-    </button>
-
-    <button
-      class="quick-btn green"
-      type="button"
-      onclick="printToPdf()"
-    >
-      <span>📄</span>
-      PDF
-    </button>
-
-    <button
-      class="quick-btn red"
-      type="button"
-      onclick="openDashboardTool('proforma')"
-    >
-      <span>🧾</span>
-      ADD PROFORMA
-    </button>
-
-    <button
-      class="quick-btn green"
-      type="button"
-      onclick="openDashboardTool('proformaLetter')"
-    >
-      <span>✉️</span>
-      ADD PROFORMA LETTER
-    </button>
-
-    <button
-      class="quick-btn red"
-      type="button"
-      onclick="openDashboardTool('catalogue')"
-    >
-      <span>📚</span>
-      CATALOGUE
-    </button>
-
-    <button
-      class="quick-btn green"
-      type="button"
-      onclick="openDashboardTool('payment')"
-    >
-      <span>💰</span>
-      ADD PAYMENT
-    </button>
-
-  </div>
-
-
-  <!-- DASHBOARD TOOL PANEL -->
-
-  <div
-    id="dashboardToolPanel"
-    class="dashboard-tool-panel"
-    style="display:none;"
-  >
-
-    <div class="tool-panel-head">
-
-      <h3 id="dashboardToolTitle">
-        Dashboard Tool
-      </h3>
-
-      <button
-        type="button"
-        onclick="closeDashboardTool()"
-      >
-        ×
-      </button>
-
-    </div>
-
-    <div id="dashboardToolBody"></div>
-
-  </div>
-
-
-  <!-- STATS -->
-
-  <div class="stats">
-
-    <div class="stat-card">
-      <span>Products</span>
-      <strong id="productCount">0</strong>
-    </div>
-
-    <div class="stat-card">
-      <span>Total Buyers</span>
-      <strong id="buyerCount">0</strong>
-    </div>
-
-    <div class="stat-card">
-      <span>Active Buyers</span>
-      <strong id="activeBuyerCount">0</strong>
-    </div>
-
-    <div class="stat-card">
-      <span>Follow-ups</span>
-      <strong id="followupCount">0</strong>
-    </div>
-
-  </div>
-
-
-  <!-- RECENT -->
-
-  <div class="dashboard-grid">
-
-    <div class="panel">
-
-      <div class="panel-head">
-
-        <h3>Recent Products</h3>
-
-        <button
-          type="button"
-          onclick="showSection('products')"
-        >
-          View All
-        </button>
-
-      </div>
-
-      <div id="recentProducts"></div>
-
-    </div>
-
-
-    <div class="panel">
-
-      <div class="panel-head">
-
-        <h3>Recent Buyers</h3>
-
-        <button
-          type="button"
-          onclick="showSection('buyers')"
-        >
-          View All
-        </button>
-
-      </div>
-
-      <div id="recentBuyers"></div>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- ================= PRODUCTS ================= -->
-
-<section id="products" class="section">
-
-  <div class="section-head">
-
-    <div>
-
-      <h2>Product Catalogue</h2>
-
-      <p>
-        Add and manage your Prior Riding products.
-      </p>
-
-    </div>
-
-    <button
-      class="primary-btn"
-      type="button"
-      onclick="openProductModal()"
-    >
-      + Add Product
-    </button>
-
-  </div>
-
-
-  <div class="search-box">
-
-    <input
-      type="text"
-      id="productSearch"
-      placeholder="Search product, article number or category..."
-      oninput="renderProducts()"
-    >
-
-  </div>
-
-
-  <div
-    id="productList"
-    class="product-grid"
-  ></div>
-
-</section>
-
-
-<!-- ================= BUYERS ================= -->
-
-<section id="buyers" class="section">
-
-  <div class="section-head">
-
-    <div>
-
-      <h2>International Buyer CRM</h2>
-
-      <p>
-        Manage buyers, contacts and follow-ups.
-      </p>
-
-    </div>
-
-    <button
-      class="primary-btn"
-      type="button"
-      onclick="openBuyerModal()"
-    >
-      + Add Buyer
-    </button>
-
-  </div>
-
-
-  <div class="search-box">
-
-    <input
-      type="text"
-      id="buyerSearch"
-      placeholder="Search buyer, company or country..."
-      oninput="renderBuyers()"
-    >
-
-  </div>
-
-
-  <div class="table-wrap">
-
-    <table>
-
-      <thead>
-
-        <tr>
-          <th>Buyer / Company</th>
-          <th>Country</th>
-          <th>Contact</th>
-          <th>WhatsApp / Phone</th>
-          <th>Interested Product</th>
-          <th>Status</th>
-          <th>Follow-up</th>
-          <th>Action</th>
-        </tr>
-
-      </thead>
-
-      <tbody id="buyerTable"></tbody>
-
-    </table>
-
-  </div>
-
-</section>
-
-
-<!-- ================= STORAGE ================= -->
-
-<section
-  id="storage"
-  class="section"
-  style="display:none;"
->
-
-  <div class="section-head">
-
-    <div>
-
-      <h2>Storage</h2>
-
-      <p>
-        Manage PRIOR RIDING data stored on this device.
-      </p>
-
-    </div>
-
-  </div>
-
-
-  <div class="dashboard-grid">
-
-    <div class="panel">
-
-      <h3>Device Storage</h3>
-
-      <p>
-        Your products, buyers and payment records are stored
-        locally on this device.
-      </p>
-
-      <div class="stats">
-
-        <div class="stat-card">
-          <span>Products</span>
-          <strong id="storageProductCount">0</strong>
-        </div>
-
-        <div class="stat-card">
-          <span>Buyers</span>
-          <strong id="storageBuyerCount">0</strong>
-        </div>
-
-        <div class="stat-card">
-          <span>Payments</span>
-          <strong id="storagePaymentCount">0</strong>
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <div class="panel">
-
-      <h3>Storage Actions</h3>
-
-      <button
-        class="primary-btn"
-        type="button"
-        onclick="exportCRMData()"
-      >
-        Export Backup
-      </button>
-
-      <button
-        class="secondary-btn"
-        type="button"
-        onclick="importCRMData()"
-      >
-        Restore Backup
-      </button>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- ================= BACKUP ================= -->
-
-<section
-  id="backup"
-  class="section"
-  style="display:none;"
->
-
-  <div class="section-head">
-
-    <div>
-
-      <h2>Backup & Restore</h2>
-
-      <p>
-        Save and restore your PRIOR RIDING CRM records.
-      </p>
-
-    </div>
-
-  </div>
-
-
-  <div class="panel">
-
-    <h3>Backup</h3>
-
-    <p>
-      Export Products, Buyers and Payments into a backup file.
-    </p>
-
-    <button
-      class="primary-btn"
+/* =========================================================
+   PRIOR RIDING — International Buyer CRM
+   Functional App Controller
+   ========================================================= */
+
+const PR_KEYS = {
+  products: "prior_riding_products",
+  buyers: "prior_riding_buyers",
+  payments: "prior_riding_payments",
+  proformas: "prior_riding_proformas",
+  letters: "prior_riding_letters",
+  settings: "prior_riding_settings"
+};
+
+let products = loadData(PR_KEYS.products);
+let buyers = loadData(PR_KEYS.buyers);
+let payments = loadData(PR_KEYS.payments);
+let proformas = loadData(PR_KEYS.proformas);
+let letters = loadData(PR_KEYS.letters);
+
+function loadData(key) {
+  try {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : [];
+  } catch (e) {
+    console.error("Storage read error:", e);
+    return [];
+  }
+}
+
+function saveData(key, data) {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+    return true;
+  } catch (e) {
+    alert("Storage error: data could not be saved.");
+    console.error(e);
+    return false;
+  }
+}
+
+/* =========================================================
+   SECTION NAVIGATION
+   ========================================================= */
+
+function showSection(sectionId) {
+  document.querySelectorAll(".section").forEach(section => {
+    section.classList.remove("active");
+  });
+
+  const section = document.getElementById(sectionId);
+
+  if (section) {
+    section.classList.add("active");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  document.querySelectorAll(".nav-btn").forEach(btn => {
+    btn.classList.remove("active");
+
+    const text = btn.textContent.toLowerCase();
+
+    if (
+      (sectionId === "dashboard" && text.includes("dashboard")) ||
+      (sectionId === "products" && text.includes("product")) ||
+      (sectionId === "buyers" && text.includes("buyer"))
+    ) {
+      btn.classList.add("active");
+    }
+  });
+
+  refreshAll();
+}
+
+/* =========================================================
+   INITIALIZE
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+  setupForms();
+  refreshAll();
+});
+
+/* =========================================================
+   REFRESH
+   ========================================================= */
+
+function refreshAll() {
+  renderProducts();
+  renderBuyers();
+  updateStats();
+  renderRecentProducts();
+  renderRecentBuyers();
+  populateBuyerSelects();
+  populateProductSelects();
+}
+
+/* =========================================================
+   DASHBOARD STATS
+   ========================================================= */
+
+function updateStats() {
+  const productCount = document.getElementById("productCount");
+  const buyerCount = document.getElementById("buyerCount");
+  const activeBuyerCount = document.getElementById("activeBuyerCount");
+  const followupCount = document.getElementById("followupCount");
+
+  if (productCount) productCount.textContent = products.length;
+  if (buyerCount) buyerCount.textContent = buyers.length;
+
+  if (activeBuyerCount) {
+    activeBuyerCount.textContent =
+      buyers.filter(b => b.status === "Active").length;
+  }
+
+  if (followupCount) {
+    followupCount.textContent =
+      buyers.filter(b => b.followupDate).length;
+  }
+}
+
+/* =========================================================
+   PRODUCTS
+   ========================================================= */
+
+function openProductModal(id = null) {
+  const modal = document.getElementById("productModal");
+  const form = document.getElementById("productForm");
+
+  if (!modal || !form) return;
+
+  form.reset();
+
+  document.getElementById("productId").value = "";
+
+  if (id) {
+    const product = products.find(p => p.id === id);
+
+    if (!product) return;
+
+    document.getElementById("productModalTitle").textContent =
+      "Edit Product";
+
+    setValue("productId", product.id);
+    setValue("productName", product.name);
+    setValue("articleNo", product.articleNo);
+    setValue("category", product.category);
+    setValue("material", product.material);
+    setValue("size", product.size);
+    setValue("weight", product.weight);
+    setValue("color", product.color);
+    setValue("availableSizes", product.availableSizes);
+    setValue("moq", product.moq);
+    setValue("price", product.price);
+    setValue("imageUrl", product.imageUrl);
+    setValue("specification", product.specification);
+    setValue("description", product.description);
+    setValue("productStatus", product.status);
+  } else {
+    document.getElementById("productModalTitle").textContent =
+      "Add Product";
+  }
+
+  modal.classList.add("show");
+  modal.style.display = "flex";
+}
+
+function closeProductModal() {
+  const modal = document.getElementById("productModal");
+
+  if (modal) {
+    modal.classList.remove("show");
+    modal.style.display = "none";
+  }
+}
+
+function saveProduct() {
+  const id = getValue("productId");
+
+  const product = {
+    id: id || generateId(),
+    name: getValue("productName"),
+    articleNo: getValue("articleNo"),
+    category: getValue("category"),
+    material: getValue("material"),
+    size: getValue("size"),
+    weight: getValue("weight"),
+    color: getValue("color"),
+    availableSizes: getValue("availableSizes"),
+    moq: getValue("moq"),
+    price: getValue("price"),
+    imageUrl: getValue("imageUrl"),
+    specification: getValue("specification"),
+    description: getValue("description"),
+    status: getValue("productStatus"),
+    createdAt: new Date().toISOString()
+  };
+
+  if (!product.name || !product.articleNo) {
+    alert("Please enter Product Name and Article / Product No.");
+    return;
+  }
+
+  if (id) {
+    const index = products.findIndex(p => p.id === id);
+
+    if (index !== -1) {
+      products[index] = product;
+    }
+  } else {
+    products.unshift(product);
+  }
+
+  saveData(PR_KEYS.products, products);
+  closeProductModal();
+  refreshAll();
+
+  alert("Product saved successfully.");
+}
+
+function renderProducts() {
+  const container = document.getElementById("productList");
+  if (!container) return;
+
+ 
