@@ -1,12 +1,18 @@
+/* ============================================================
+   PRIOR RIDING — INTERNATIONAL BUYER CRM
+   COMPLETE APP.JS
+   ============================================================ */
 
-// ============================================================
-// PRIOR RIDING CRM
-// Buyer + Product + Payment + Proforma Storage System
-// ============================================================
+"use strict";
 
-var products = JSON.parse(localStorage.getItem("priorRidingProducts") || "[]");
-var buyers = JSON.parse(localStorage.getItem("priorRidingBuyers") || "[]");
-var prPayments = JSON.parse(localStorage.getItem("priorRidingPayments") || "[]");
+/* ============================================================
+   DATA
+   ============================================================ */
+
+var products = prLoad("priorRidingProducts", []);
+var buyers = prLoad("priorRidingBuyers", []);
+var prPayments = prLoad("priorRidingPayments", []);
+var proformas = prLoad("priorRidingProformas", []);
 
 var PR_PRODUCT_CATEGORIES = [
   "Goalkeeper Gloves",
@@ -34,24 +40,50 @@ var PR_PAYMENT_MODES = [
 ];
 
 
-// ============================================================
-// STORAGE
-// ============================================================
+/* ============================================================
+   SAFE STORAGE
+   ============================================================ */
+
+function prLoad(key, fallback) {
+  try {
+    var value = localStorage.getItem(key);
+    return value ? JSON.parse(value) : fallback;
+  } catch (e) {
+    console.error("Storage load error:", key, e);
+    return fallback;
+  }
+}
+
+function prStore(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (e) {
+    console.error("Storage save error:", key, e);
+    alert("Storage error. Please check your device storage.");
+    return false;
+  }
+}
 
 function saveProducts() {
-  localStorage.setItem("priorRidingProducts", JSON.stringify(products));
+  prStore("priorRidingProducts", products);
 }
 
 function saveBuyers() {
-  localStorage.setItem("priorRidingBuyers", JSON.stringify(buyers));
+  prStore("priorRidingBuyers", buyers);
 }
 
 function prSavePayments() {
-  localStorage.setItem("priorRidingPayments", JSON.stringify(prPayments));
+  prStore("priorRidingPayments", prPayments);
+}
+
+function saveProformas() {
+  prStore("priorRidingProformas", proformas);
 }
 
 function generateId() {
-  return Date.now().toString() + Math.random().toString(36).substring(2, 8);
+  return Date.now().toString(36) +
+    Math.random().toString(36).substring(2, 10);
 }
 
 function prMoney(n) {
@@ -62,7 +94,7 @@ function prMoney(n) {
 }
 
 function escapeHtml(value) {
-  return String(value || "")
+  return String(value == null ? "" : value)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -71,19 +103,22 @@ function escapeHtml(value) {
 }
 
 
-// ============================================================
-// SECTION NAVIGATION
-// ============================================================
+/* ============================================================
+   SECTION NAVIGATION
+   ============================================================ */
 
 function showSection(section) {
+
   document.querySelectorAll(".section").forEach(function(item) {
     item.style.display = "none";
+    item.classList.remove("active");
   });
 
   var selected = document.getElementById(section);
 
   if (selected) {
     selected.style.display = "block";
+    selected.classList.add("active");
   }
 
   document.querySelectorAll(".nav-btn").forEach(function(btn) {
@@ -92,115 +127,113 @@ function showSection(section) {
     var text = btn.textContent.toLowerCase();
 
     if (
-      (section === "dashboard" && text.includes("dashboard")) ||
-      (section === "products" && text.includes("product")) ||
-      (section === "buyers" && text.includes("buyer"))
+      (section === "dashboard" && text.indexOf("dashboard") !== -1) ||
+      (section === "products" && text.indexOf("product") !== -1) ||
+      (section === "buyers" && text.indexOf("buyer") !== -1)
     ) {
       btn.classList.add("active");
     }
   });
 
   updateDashboard();
+
+  if (section === "products") renderProducts();
+  if (section === "buyers") renderBuyers();
 }
 
 
-// ============================================================
-// PRODUCT MODAL
-// ============================================================
+/* ============================================================
+   PRODUCT MODAL
+   ============================================================ */
 
 function openProductModal() {
+
   var modal = document.getElementById("productModal");
 
-  if (modal) {
-    modal.style.display = "flex";
-  }
-
-  var title = document.getElementById("productModalTitle");
-
-  if (title) {
-    title.textContent = "Add Product";
-  }
-}
-
-function closeProductModal() {
-  var modal = document.getElementById("productModal");
-
-  if (modal) {
-    modal.style.display = "none";
-  }
+  if (modal) modal.style.display = "flex";
 
   var form = document.getElementById("productForm");
 
-  if (form) {
+  if (form && !document.getElementById("productId").value) {
     form.reset();
-  }
-
-  var id = document.getElementById("productId");
-
-  if (id) {
-    id.value = "";
   }
 
   var title = document.getElementById("productModalTitle");
 
-  if (title) {
-    title.textContent = "Add Product";
-  }
+  if (title) title.textContent = "Add Product";
+
+  prFillCategories();
+}
+
+function closeProductModal() {
+
+  var modal = document.getElementById("productModal");
+
+  if (modal) modal.style.display = "none";
+
+  var form = document.getElementById("productForm");
+
+  if (form) form.reset();
+
+  var id = document.getElementById("productId");
+
+  if (id) id.value = "";
+
+  var title = document.getElementById("productModalTitle");
+
+  if (title) title.textContent = "Add Product";
 }
 
 
-// ============================================================
-// BUYER MODAL
-// ============================================================
+/* ============================================================
+   BUYER MODAL
+   ============================================================ */
 
 function openBuyerModal() {
+
   var modal = document.getElementById("buyerModal");
 
-  if (modal) {
-    modal.style.display = "flex";
+  if (modal) modal.style.display = "flex";
+
+  var form = document.getElementById("buyerForm");
+
+  if (form && !document.getElementById("buyerId").value) {
+    form.reset();
   }
 
   var title = document.getElementById("buyerModalTitle");
 
-  if (title) {
-    title.textContent = "Add Buyer";
-  }
+  if (title) title.textContent = "Add Buyer";
 
   populateInterestedProducts();
 }
 
 function closeBuyerModal() {
+
   var modal = document.getElementById("buyerModal");
 
-  if (modal) {
-    modal.style.display = "none";
-  }
+  if (modal) modal.style.display = "none";
 
   var form = document.getElementById("buyerForm");
 
-  if (form) {
-    form.reset();
-  }
+  if (form) form.reset();
 
   var id = document.getElementById("buyerId");
 
-  if (id) {
-    id.value = "";
-  }
+  if (id) id.value = "";
 
   var title = document.getElementById("buyerModalTitle");
 
-  if (title) {
-    title.textContent = "Add Buyer";
-  }
+  if (title) title.textContent = "Add Buyer";
 }
 
 
-// ============================================================
-// PRODUCT SAVE
-// ============================================================
+/* ============================================================
+   PRODUCT SAVE
+   ============================================================ */
 
 function handleProductSubmit(event) {
+
   event.preventDefault();
 
   var id = document.getElementById("productId").value;
@@ -209,7 +242,7 @@ function handleProductSubmit(event) {
     id: id || generateId(),
     name: document.getElementById("productName").value.trim(),
     articleNo: document.getElementById("articleNo").value.trim(),
-    category: document.getElementById("category").value.trim(),
+    category: document.getElementById("category").value,
     material: document.getElementById("material").value.trim(),
     size: document.getElementById("size").value.trim(),
     weight: document.getElementById("weight").value.trim(),
@@ -229,13 +262,15 @@ function handleProductSubmit(event) {
   }
 
   if (id) {
+
     var index = products.findIndex(function(p) {
-      return p.id === id;
+      return String(p.id) === String(id);
     });
 
-    if (index !== -1) {
+    if (index >= 0) {
       products[index] = product;
     }
+
   } else {
     products.push(product);
   }
@@ -250,11 +285,12 @@ function handleProductSubmit(event) {
 }
 
 
-// ============================================================
-// BUYER SAVE
-// ============================================================
+/* ============================================================
+   BUYER SAVE
+   ============================================================ */
 
 function handleBuyerSubmit(event) {
+
   event.preventDefault();
 
   var id = document.getElementById("buyerId").value;
@@ -278,13 +314,15 @@ function handleBuyerSubmit(event) {
   }
 
   if (id) {
+
     var index = buyers.findIndex(function(b) {
-      return b.id === id;
+      return String(b.id) === String(id);
     });
 
-    if (index !== -1) {
+    if (index >= 0) {
       buyers[index] = buyer;
     }
+
   } else {
     buyers.push(buyer);
   }
@@ -298,11 +336,12 @@ function handleBuyerSubmit(event) {
 }
 
 
-// ============================================================
-// PRODUCT LIST
-// ============================================================
+/* ============================================================
+   PRODUCTS
+   ============================================================ */
 
 function renderProducts() {
+
   var container = document.getElementById("productList");
 
   if (!container) return;
@@ -314,20 +353,27 @@ function renderProducts() {
     : "";
 
   var filtered = products.filter(function(product) {
+
     return (
       String(product.name || "").toLowerCase().includes(search) ||
       String(product.articleNo || "").toLowerCase().includes(search) ||
       String(product.category || "").toLowerCase().includes(search)
     );
+
   });
 
-  if (filtered.length === 0) {
+  if (!filtered.length) {
+
     container.innerHTML =
-      '<div class="panel"><p>No products found. Click "+ Add Product" to add one.</p></div>';
+      '<div class="panel">' +
+      '<p>No products found. Click "+ Add Product" to add one.</p>' +
+      '</div>';
+
     return;
   }
 
   container.innerHTML = filtered.map(function(product) {
+
     return `
       <div class="panel product-card">
 
@@ -342,28 +388,28 @@ function renderProducts() {
         <h3>${escapeHtml(product.name)}</h3>
 
         <p><strong>Article:</strong>
-          ${escapeHtml(product.articleNo)}</p>
+        ${escapeHtml(product.articleNo)}</p>
 
         <p><strong>Category:</strong>
-          ${escapeHtml(product.category || "-")}</p>
+        ${escapeHtml(product.category || "-")}</p>
 
         <p><strong>Material:</strong>
-          ${escapeHtml(product.material || "-")}</p>
+        ${escapeHtml(product.material || "-")}</p>
 
         <p><strong>Size:</strong>
-          ${escapeHtml(product.size || "-")}</p>
+        ${escapeHtml(product.size || "-")}</p>
 
         <p><strong>Color:</strong>
-          ${escapeHtml(product.color || "-")}</p>
+        ${escapeHtml(product.color || "-")}</p>
 
         <p><strong>MOQ:</strong>
-          ${escapeHtml(product.moq || "-")}</p>
+        ${escapeHtml(product.moq || "-")}</p>
 
         <p><strong>Price:</strong>
-          ${escapeHtml(product.price || "-")}</p>
+        ${escapeHtml(product.price || "-")}</p>
 
         <p><strong>Status:</strong>
-          ${escapeHtml(product.status || "-")}</p>
+        ${escapeHtml(product.status || "-")}</p>
 
         <div style="margin-top:12px;">
           <button onclick="editProduct('${product.id}')">
@@ -377,15 +423,17 @@ function renderProducts() {
 
       </div>
     `;
+
   }).join("");
 }
 
 
-// ============================================================
-// BUYER LIST
-// ============================================================
+/* ============================================================
+   BUYERS
+   ============================================================ */
 
 function renderBuyers() {
+
   var table = document.getElementById("buyerTable");
 
   if (!table) return;
@@ -397,14 +445,17 @@ function renderBuyers() {
     : "";
 
   var filtered = buyers.filter(function(buyer) {
+
     return (
       String(buyer.name || "").toLowerCase().includes(search) ||
       String(buyer.country || "").toLowerCase().includes(search) ||
       String(buyer.phone || "").toLowerCase().includes(search)
     );
+
   });
 
-  if (filtered.length === 0) {
+  if (!filtered.length) {
+
     table.innerHTML = `
       <tr>
         <td colspan="8">
@@ -412,10 +463,12 @@ function renderBuyers() {
         </td>
       </tr>
     `;
+
     return;
   }
 
   table.innerHTML = filtered.map(function(buyer) {
+
     return `
       <tr>
 
@@ -452,43 +505,44 @@ function renderBuyers() {
 
       </tr>
     `;
+
   }).join("");
 }
 
 
-// ============================================================
-// CATEGORY OPTIONS
-// ============================================================
+/* ============================================================
+   CATEGORY
+   ============================================================ */
 
 function prFillCategories() {
 
   var category = document.getElementById("category");
 
-  if (category) {
-    var current = category.value;
+  if (!category) return;
 
-    category.innerHTML =
-      '<option value="">Select Product Category</option>';
+  var current = category.value;
 
-    PR_PRODUCT_CATEGORIES.forEach(function(c) {
-      var option = document.createElement("option");
-      option.value = c;
-      option.textContent = c;
-      category.appendChild(option);
-    });
+  category.innerHTML =
+    '<option value="">Select Product Category</option>';
 
-    if (current) {
-      category.value = current;
-    }
-  }
+  PR_PRODUCT_CATEGORIES.forEach(function(item) {
 
-  populateInterestedProducts();
+    var option = document.createElement("option");
+
+    option.value = item;
+    option.textContent = item;
+
+    category.appendChild(option);
+  });
+
+  if (current) category.value = current;
 }
 
 
 function populateInterestedProducts() {
 
-  var select = document.getElementById("interestedProduct");
+  var select =
+    document.getElementById("interestedProduct");
 
   if (!select) return;
 
@@ -509,13 +563,15 @@ function populateInterestedProducts() {
 
   if (products.length) {
 
-    var group = document.createElement("optgroup");
+    var group =
+      document.createElement("optgroup");
 
     group.label = "Added Products";
 
     products.forEach(function(product) {
 
-      var option = document.createElement("option");
+      var option =
+        document.createElement("option");
 
       option.value = product.name;
 
@@ -531,23 +587,23 @@ function populateInterestedProducts() {
     select.appendChild(group);
   }
 
-  if (current) {
-    select.value = current;
-  }
+  if (current) select.value = current;
 }
 
 
-// ============================================================
-// EDIT PRODUCT
-// ============================================================
+/* ============================================================
+   EDIT
+   ============================================================ */
 
 function editProduct(id) {
 
   var product = products.find(function(p) {
-    return p.id === id;
+    return String(p.id) === String(id);
   });
 
   if (!product) return;
+
+  prFillCategories();
 
   document.getElementById("productId").value = product.id;
   document.getElementById("productName").value = product.name || "";
@@ -572,18 +628,15 @@ function editProduct(id) {
   document.getElementById("productModalTitle").textContent =
     "Edit Product";
 
-  document.getElementById("productModal").style.display = "flex";
+  document.getElementById("productModal").style.display =
+    "flex";
 }
 
-
-// ============================================================
-// EDIT BUYER
-// ============================================================
 
 function editBuyer(id) {
 
   var buyer = buyers.find(function(b) {
-    return b.id === id;
+    return String(b.id) === String(id);
   });
 
   if (!buyer) return;
@@ -592,11 +645,14 @@ function editBuyer(id) {
 
   document.getElementById("buyerId").value = buyer.id;
   document.getElementById("buyerName").value = buyer.name || "";
-  document.getElementById("buyerCountry").value = buyer.country || "";
+  document.getElementById("buyerCountry").value =
+    buyer.country || "";
   document.getElementById("contactPerson").value =
     buyer.contactPerson || "";
-  document.getElementById("buyerEmail").value = buyer.email || "";
-  document.getElementById("buyerPhone").value = buyer.phone || "";
+  document.getElementById("buyerEmail").value =
+    buyer.email || "";
+  document.getElementById("buyerPhone").value =
+    buyer.phone || "";
   document.getElementById("interestedProduct").value =
     buyer.interestedProduct || "";
   document.getElementById("buyerStatus").value =
@@ -609,24 +665,24 @@ function editBuyer(id) {
   document.getElementById("buyerModalTitle").textContent =
     "Edit Buyer";
 
-  document.getElementById("buyerModal").style.display = "flex";
+  document.getElementById("buyerModal").style.display =
+    "flex";
 }
 
 
-// ============================================================
-// DELETE
-// ============================================================
+/* ============================================================
+   DELETE
+   ============================================================ */
 
 function deleteProduct(id) {
 
   if (!confirm("Delete this product?")) return;
 
   products = products.filter(function(product) {
-    return product.id !== id;
+    return String(product.id) !== String(id);
   });
 
   saveProducts();
-
   renderProducts();
   populateInterestedProducts();
   updateDashboard();
@@ -638,19 +694,18 @@ function deleteBuyer(id) {
   if (!confirm("Delete this buyer?")) return;
 
   buyers = buyers.filter(function(buyer) {
-    return buyer.id !== id;
+    return String(buyer.id) !== String(id);
   });
 
   saveBuyers();
-
   renderBuyers();
   updateDashboard();
 }
 
 
-// ============================================================
-// DASHBOARD
-// ============================================================
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
 
 function updateDashboard() {
 
@@ -666,21 +721,14 @@ function updateDashboard() {
   var followupCount =
     document.getElementById("followupCount");
 
-  var paymentCount =
-    document.getElementById("paymentCount");
-
-  var paymentTotal =
-    document.getElementById("paymentTotal");
-
-  if (productCount) {
+  if (productCount)
     productCount.textContent = products.length;
-  }
 
-  if (buyerCount) {
+  if (buyerCount)
     buyerCount.textContent = buyers.length;
-  }
 
   if (activeBuyerCount) {
+
     activeBuyerCount.textContent =
       buyers.filter(function(buyer) {
         return buyer.status === "Active";
@@ -688,30 +736,11 @@ function updateDashboard() {
   }
 
   if (followupCount) {
+
     followupCount.textContent =
       buyers.filter(function(buyer) {
         return !!buyer.followupDate;
       }).length;
-  }
-
-  if (paymentCount) {
-    paymentCount.textContent = prPayments.length;
-  }
-
-  if (paymentTotal) {
-
-    var total = prPayments.reduce(function(sum, payment) {
-
-      return sum +
-        Number(
-          payment.foreignAmount != null
-            ? payment.foreignAmount
-            : payment.amount || 0
-        );
-
-    }, 0);
-
-    paymentTotal.textContent = prMoney(total);
   }
 
   renderRecentProducts();
@@ -722,537 +751,4 @@ function updateDashboard() {
 function renderRecentProducts() {
 
   var container =
-    document.getElementById("recentProducts");
-
-  if (!container) return;
-
-  var recent =
-    products.slice(-5).reverse();
-
-  if (!recent.length) {
-    container.innerHTML =
-      "<p>No products added yet.</p>";
-    return;
-  }
-
-  container.innerHTML =
-    recent.map(function(product) {
-
-      return `
-        <div style="padding:10px 0;border-bottom:1px solid #ddd;">
-          <strong>${escapeHtml(product.name)}</strong>
-          <br>
-          <small>${escapeHtml(product.articleNo)}</small>
-        </div>
-      `;
-
-    }).join("");
-}
-
-
-function renderRecentBuyers() {
-
-  var container =
-    document.getElementById("recentBuyers");
-
-  if (!container) return;
-
-  var recent =
-    buyers.slice(-5).reverse();
-
-  if (!recent.length) {
-    container.innerHTML =
-      "<p>No buyers added yet.</p>";
-    return;
-  }
-
-  container.innerHTML =
-    recent.map(function(buyer) {
-
-      return `
-        <div style="padding:10px 0;border-bottom:1px solid #ddd;">
-          <strong>${escapeHtml(buyer.name)}</strong>
-          <br>
-          <small>${escapeHtml(buyer.country)}</small>
-        </div>
-      `;
-
-    }).join("");
-}
-
-
-// ============================================================
-// PAYMENT
-// ============================================================
-
-function prFillBuyerSelect(id) {
-
-  var select =
-    document.getElementById(id);
-
-  if (!select) return;
-
-  select.innerHTML =
-    '<option value="">Select Buyer</option>';
-
-  buyers.forEach(function(buyer) {
-
-    var option =
-      document.createElement("option");
-
-    option.value = String(buyer.id);
-
-    option.textContent =
-      buyer.name +
-      (buyer.country
-        ? " — " + buyer.country
-        : "");
-
-    select.appendChild(option);
-  });
-}
-
-
-function prOpenPayment() {
-
-  closeDashboardTool();
-
-  buyers =
-    JSON.parse(
-      localStorage.getItem("priorRidingBuyers") || "[]"
-    );
-
-  prFillBuyerSelect("paymentBuyer");
-
-  var mode =
-    document.getElementById("paymentMode");
-
-  if (mode) {
-
-    mode.innerHTML =
-      '<option value="">Select Payment Mode</option>';
-
-    PR_PAYMENT_MODES.forEach(function(item) {
-
-      var option =
-        document.createElement("option");
-
-      option.value = item;
-      option.textContent = item;
-
-      mode.appendChild(option);
-    });
-  }
-
-  var date =
-    document.getElementById("paymentDate");
-
-  if (date && !date.value) {
-    date.value =
-      new Date().toISOString().slice(0, 10);
-  }
-
-  var modal =
-    document.getElementById("paymentModal");
-
-  if (modal) {
-    modal.style.display = "flex";
-  }
-}
-
-
-function prClosePayment() {
-
-  var modal =
-    document.getElementById("paymentModal");
-
-  if (modal) {
-    modal.style.display = "none";
-  }
-
-  var form =
-    document.getElementById("paymentForm");
-
-  if (form) {
-    form.reset();
-  }
-}
-
-
-function prSavePayment(event) {
-
-  event.preventDefault();
-
-  var buyerId =
-    document.getElementById("paymentBuyer").value;
-
-  var buyer =
-    buyers.find(function(b) {
-      return String(b.id) === String(buyerId);
-    });
-
-  var foreignAmount =
-    Number(
-      document.getElementById("paymentForeignAmount").value || 0
-    );
-
-  var pkrAmount =
-    Number(
-      document.getElementById("paymentPkrAmount").value || 0
-    );
-
-  if (!buyer) {
-
-    alert("Please select a buyer.");
-    return;
-  }
-
-  if (!(foreignAmount > 0) && !(pkrAmount > 0)) {
-
-    alert("Please enter payment amount.");
-    return;
-  }
-
-  var currency =
-    document.getElementById("paymentForeignCurrency")
-      ? document.getElementById("paymentForeignCurrency").value
-      : "USD";
-
-  var payment = {
-
-    id: generateId(),
-
-    buyerId: buyerId,
-
-    buyerName: buyer.name,
-
-    foreignAmount: foreignAmount,
-
-    foreignCurrency: currency,
-
-    pkrAmount: pkrAmount,
-
-    mode:
-      document.getElementById("paymentMode").value,
-
-    bankName:
-      document.getElementById("paymentBankName")
-        ? document.getElementById("paymentBankName").value.trim()
-        : "",
-
-    proformaNo:
-      document.getElementById("paymentProformaNo")
-        ? document.getElementById("paymentProformaNo").value.trim()
-        : "",
-
-    receivedDate:
-      document.getElementById("paymentReceivedDate")
-        ? document.getElementById("paymentReceivedDate").value
-        : "",
-
-    paymentDate:
-      document.getElementById("paymentDate").value,
-
-    reference:
-      document.getElementById("paymentReference").value.trim(),
-
-    notes:
-      document.getElementById("paymentNotes").value.trim()
-  };
-
-  prPayments.push(payment);
-
-  prSavePayments();
-
-  prClosePayment();
-
-  updateDashboard();
-
-  alert("Payment saved successfully.");
-}
-
-
-// ============================================================
-// PAYMENT HISTORY
-// ============================================================
-
-function prRenderPaymentHistory() {
-
-  var box =
-    document.getElementById("prPaymentHistory");
-
-  if (!box) return;
-
-  if (!prPayments.length) {
-
-    box.innerHTML =
-      '<div class="empty">No payments recorded yet.</div>';
-
-    return;
-  }
-
-  box.innerHTML =
-    '<div class="payment-history">' +
-
-    prPayments.slice().reverse().map(function(payment) {
-
-      var amount =
-        Number(
-          payment.foreignAmount != null
-            ? payment.foreignAmount
-            : payment.amount || 0
-        );
-
-      var currency =
-        payment.foreignCurrency ||
-        payment.currency ||
-        "USD";
-
-      return `
-        <div class="payment-row">
-
-          <div>
-            <b>${escapeHtml(payment.buyerName)}</b>
-
-            <span>
-              ${escapeHtml(payment.paymentDate || "-")}
-              ·
-              ${escapeHtml(payment.mode || "-")}
-
-              ${
-                payment.bankName
-                  ? " · " + escapeHtml(payment.bankName)
-                  : ""
-              }
-            </span>
-          </div>
-
-          <strong>
-            ${escapeHtml(currency)}
-            ${prMoney(amount)}
-          </strong>
-
-          <button
-            class="small-btn delete-btn"
-            onclick="prDeletePayment('${payment.id}')">
-            Delete
-          </button>
-
-        </div>
-      `;
-
-    }).join("") +
-
-    "</div>";
-}
-
-
-function prDeletePayment(id) {
-
-  if (!confirm("Delete this payment record?")) {
-    return;
-  }
-
-  prPayments =
-    prPayments.filter(function(payment) {
-      return payment.id !== id;
-    });
-
-  prSavePayments();
-
-  prRenderPaymentHistory();
-
-  updateDashboard();
-}
-
-
-// ============================================================
-// DASHBOARD TOOLS
-// ============================================================
-
-function closeDashboardTool() {
-
-  var panel =
-    document.getElementById("dashboardToolPanel");
-
-  if (panel) {
-    panel.style.display = "none";
-  }
-}
-
-
-function performanceReport() {
-
-  var active =
-    buyers.filter(function(b) {
-      return b.status === "Active";
-    }).length;
-
-  var potential =
-    buyers.filter(function(b) {
-      return b.status === "Potential";
-    }).length;
-
-  var followups =
-    buyers.filter(function(b) {
-      return !!b.followupDate;
-    }).length;
-
-  var totalPkr =
-    prPayments.reduce(function(sum, p) {
-      return sum + Number(p.pkrAmount || 0);
-    }, 0);
-
-  var currencyTotals = {};
-
-  prPayments.forEach(function(p) {
-
-    var currency =
-      p.foreignCurrency ||
-      p.currency ||
-      "USD";
-
-    var amount =
-      Number(
-        p.foreignAmount != null
-          ? p.foreignAmount
-          : p.amount || 0
-      );
-
-    currencyTotals[currency] =
-      (currencyTotals[currency] || 0) +
-      amount;
-  });
-
-  var currencyHtml =
-    Object.keys(currencyTotals).map(function(currency) {
-
-      return `
-        <div class="calc-card">
-          <span>${escapeHtml(currency)} Received</span>
-          <strong>${prMoney(currencyTotals[currency])}</strong>
-        </div>
-      `;
-
-    }).join("");
-
-  if (!currencyHtml) {
-    currencyHtml =
-      '<div class="calc-empty">No payment received yet.</div>';
-  }
-
-  return `
-    <div class="calc-report">
-
-      <p class="calc-intro">
-        PRIOR RIDING business performance summary.
-      </p>
-
-      <div class="calc-kpis">
-
-        <div class="calc-card">
-          <span>Total Products</span>
-          <strong>${products.length}</strong>
-        </div>
-
-        <div class="calc-card">
-          <span>Total Buyers</span>
-          <strong>${buyers.length}</strong>
-        </div>
-
-        <div class="calc-card">
-          <span>Active Buyers</span>
-          <strong>${active}</strong>
-        </div>
-
-        <div class="calc-card">
-          <span>Potential Buyers</span>
-          <strong>${potential}</strong>
-        </div>
-
-        <div class="calc-card">
-          <span>Follow-ups</span>
-          <strong>${followups}</strong>
-        </div>
-
-        <div class="calc-card">
-          <span>Payments</span>
-          <strong>${prPayments.length}</strong>
-        </div>
-
-        <div class="calc-card">
-          <span>PKR Received</span>
-          <strong>PKR ${prMoney(totalPkr)}</strong>
-        </div>
-
-      </div>
-
-      <h4 class="calc-title">
-        Currency-wise Received
-      </h4>
-
-      <div class="calc-grid">
-        ${currencyHtml}
-      </div>
-
-    </div>
-  `;
-}
-
-
-// ============================================================
-// DASHBOARD TOOL OPEN
-// ============================================================
-
-function openDashboardTool(tool) {
-
-  var panel =
-    document.getElementById("dashboardToolPanel");
-
-  var title =
-    document.getElementById("dashboardToolTitle");
-
-  var body =
-    document.getElementById("dashboardToolBody");
-
-  if (!panel || !title || !body) {
-    return;
-  }
-
-  if (tool === "performance") {
-
-    title.textContent =
-      "Performance Wise";
-
-    body.innerHTML =
-      performanceReport();
-
-  } else if (tool === "calc") {
-
-    title.textContent =
-      "Calc Breakdown";
-
-    body.innerHTML =
-      performanceReport();
-
-  } else if (tool === "paymentMode") {
-
-    title.textContent =
-      "Payment Mode";
-
-    var modes = {};
-
-    PR_PAYMENT_MODES.forEach(function(mode) {
-      modes[mode] = 0;
-    });
-
-    prPayments.forEach(function(payment) {
-
-      var mode =
-        payment.mode || "Other";
-
-      modes[mode] =
-        (modes[mode] || 0) + 1;
-    });
-
    
