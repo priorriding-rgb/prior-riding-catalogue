@@ -27,18 +27,37 @@ jobs:
       - name: Install Capacitor
         run: npm install
 
+      - name: Install Capacitor Assets
+        run: npm install --save-dev @capacitor/assets
+
       - name: Prepare web assets
         run: |
           rm -rf www
           mkdir -p www
           cp index.html app.js style.css manifest.json app-config.json pwabuilder-sw.js pwabuilder-sw-v4.js prior-riding-logo.jpg icon-192.png icon-512.png icon.svg www/
 
+      - name: Prepare Capacitor icon source
+        run: |
+          mkdir -p assets
+          cp icon-512.png assets/icon-only.png
+          cp icon-512.png assets/icon-foreground.png
+
       - name: Create Android project
         run: |
           npx cap init "PRIOR RIDING CRM" "com.priorriding.crm" --web-dir=www
           npx cap add android
+
+      - name: Generate Android icons
+        run: |
+          npx capacitor-assets generate --android
+
+      - name: Copy web assets
+        run: |
           npx cap copy android
-          sed -i -E 's/versionCode [0-9]+/versionCode 30/; s/versionName "[^"]+"/versionName "3.0.0"/' android/app/build.gradle
+
+      - name: Set Android version
+        run: |
+          sed -i -E 's/versionCode [0-9]+/versionCode 31/; s/versionName "[^"]+"/versionName "3.1.0"/' android/app/build.gradle
 
       - name: Restore stable Android debug signing key
         uses: actions/cache@v4
