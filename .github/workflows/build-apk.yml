@@ -16,48 +16,98 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
 
-      - name: Install Capacitor
+      - name: Install dependencies
         run: npm install
-
-      - name: Install Capacitor Assets
-        run: npm install --save-dev @capacitor/assets
 
       - name: Prepare web assets
         run: |
           rm -rf www
           mkdir -p www
-          cp index.html app.js style.css manifest.json app-config.json pwabuilder-sw.js pwabuilder-sw-v4.js prior-riding-logo.jpg icon-192.png icon-512.png icon.svg www/
 
-      - name: Prepare Capacitor icon source
-        run: |
-          mkdir -p assets
-          cp icon-512.png assets/icon-only.png
-          cp icon-512.png assets/icon-foreground.png
+          cp index.html www/
+          cp app.js www/
+          cp style.css www/
+          cp manifest.json www/
+          cp app-config.json www/
+          cp pwabuilder-sw.js www/
+          cp pwabuilder-sw-v4.js www/
+          cp prior-riding-logo.jpg www/
+
+          # Web/PWA icons
+          cp icon-192.png www/
+          cp icon-512.png www/
 
       - name: Create Android project
         run: |
           npx cap init "PRIOR RIDING CRM" "com.priorriding.crm" --web-dir=www
           npx cap add android
-
-      - name: Generate Android icons
-        run: |
-          npx capacitor-assets generate --android
-
-      - name: Copy web assets
-        run: |
           npx cap copy android
 
-      - name: Set Android version
+      - name: Configure Android app
         run: |
-          sed -i -E 's/versionCode [0-9]+/versionCode 31/; s/versionName "[^"]+"/versionName "3.1.0"/' android/app/build.gradle
+          python3 - <<'PY'
+          from pathlib import Path
+
+          gradle = Path("android/app/build.gradle")
+
+          text = gradle.read_text()
+
+          import re
+
+          text = re.sub(
+              r'versionCode\s+\d+',
+              'versionCode 31',
+              text
+          )
+
+          text = re.sub(
+              r'versionName\s+"[^"]+"',
+              'versionName "3.1.0"',
+              text
+          )
+
+          gradle.write_text(text)
+          PY
+
+      - name: Create launcher icon resources
+        run: |
+          mkdir -p android/app/src/main/res/drawable
+          mkdir -p android/app/src/main/res/mipmap-hdpi
+          mkdir -p android/app/src/main/res/mipmap-mdpi
+          mkdir -p android/app/src/main/res/mipmap-xhdpi
+          mkdir -p android/app/src/main/res/mipmap-xxhdpi
+          mkdir -p android/app/src/main/res/mipmap-xxxhdpi
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64
+
+          png = Path("icon-512.png").read_bytes()
+
+          for folder in [
+              "android/app/src/main/res/mipmap-mdpi",
+              "android/app/src/main/res/mipmap-hdpi",
+              "android/app/src/main/res/mipmap-xhdpi",
+              "android/app/src/main/res/mipmap-xxhdpi",
+              "android/app/src/main/res/mipmap-xxxhdpi"
+          ]:
+              Path(folder, "ic_launcher.png").write_bytes(png)
+
+          Path(
+              "android/app/src/main/res/drawable/ic_launcher_background.png"
+          ).write_bytes(png)
+          PY
+
+          rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
 
       - name: Restore stable Android debug signing key
         uses: actions/cache@v4
