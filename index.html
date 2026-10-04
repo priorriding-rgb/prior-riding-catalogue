@@ -40,7 +40,291 @@
 
 
 <body>
+<!-- ============================================================
+     PRIOR RIDING — FIREBASE LOGIN
+============================================================ -->
 
+<div id="prLoginScreen" style="
+  position:fixed;
+  inset:0;
+  z-index:999999;
+  background:#ffffff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  box-sizing:border-box;
+">
+
+  <div style="
+    width:100%;
+    max-width:420px;
+    background:#ffffff;
+    border:1px solid #dddddd;
+    border-radius:18px;
+    padding:28px;
+    box-sizing:border-box;
+    box-shadow:0 10px 35px rgba(0,0,0,.12);
+    text-align:center;
+  ">
+
+    <img
+      src="icon-192.png"
+      alt="PRIOR RIDING"
+      style="
+        width:90px;
+        height:90px;
+        object-fit:contain;
+        border-radius:16px;
+        margin-bottom:12px;
+      "
+    >
+
+    <h2 style="
+      margin:0 0 6px;
+      color:#111111;
+    ">
+      PRIOR RIDING
+    </h2>
+
+    <p style="
+      margin:0 0 22px;
+      color:#666666;
+    ">
+      International Buyer CRM
+    </p>
+
+    <input
+      id="prLoginEmail"
+      type="email"
+      autocomplete="username"
+      placeholder="Company Email"
+      style="
+        width:100%;
+        padding:14px;
+        margin-bottom:12px;
+        box-sizing:border-box;
+        border:1px solid #cccccc;
+        border-radius:10px;
+        font-size:16px;
+      "
+    >
+
+    <input
+      id="prLoginPassword"
+      type="password"
+      autocomplete="current-password"
+      placeholder="Password"
+      style="
+        width:100%;
+        padding:14px;
+        margin-bottom:14px;
+        box-sizing:border-box;
+        border:1px solid #cccccc;
+        border-radius:10px;
+        font-size:16px;
+      "
+    >
+
+    <button
+      id="prLoginButton"
+      type="button"
+      style="
+        width:100%;
+        padding:14px;
+        border:0;
+        border-radius:10px;
+        background:#16833b;
+        color:#ffffff;
+        font-size:16px;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      Login
+    </button>
+
+    <p
+      id="prLoginMessage"
+      style="
+        min-height:22px;
+        margin:14px 0 0;
+        color:#c62828;
+        font-size:14px;
+      "
+    ></p>
+
+  </div>
+
+</div>
+
+
+<!-- ============================================================
+     FIREBASE AUTHENTICATION
+============================================================ -->
+
+<script type="module">
+
+  import {
+    initializeApp
+  } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+
+  import {
+    getAuth,
+    onAuthStateChanged,
+    signInWithEmailAndPassword
+  } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+
+  const firebaseConfig = {
+
+    apiKey:
+      "AIzaSyDHjKTC58CIdhcCFSECqXV8VWmWwFYLyfw",
+
+    authDomain:
+      "planning-with-ai-96477.firebaseapp.com",
+
+    projectId:
+      "planning-with-ai-96477",
+
+    storageBucket:
+      "planning-with-ai-96477.firebasestorage.app",
+
+    messagingSenderId:
+      "990843359871",
+
+    appId:
+      "1:990843359871:web:37c31f9579135c917d654a"
+
+  };
+
+
+  const firebaseApp =
+    initializeApp(firebaseConfig);
+
+  const auth =
+    getAuth(firebaseApp);
+
+
+  const loginScreen =
+    document.getElementById("prLoginScreen");
+
+  const loginEmail =
+    document.getElementById("prLoginEmail");
+
+  const loginPassword =
+    document.getElementById("prLoginPassword");
+
+  const loginButton =
+    document.getElementById("prLoginButton");
+
+  const loginMessage =
+    document.getElementById("prLoginMessage");
+
+
+  function showLogin() {
+
+    if (loginScreen) {
+      loginScreen.style.display = "flex";
+    }
+
+  }
+
+
+  function hideLogin() {
+
+    if (loginScreen) {
+      loginScreen.style.display = "none";
+    }
+
+  }
+
+
+  loginButton.addEventListener(
+    "click",
+    async function () {
+
+      const email =
+        loginEmail.value.trim();
+
+      const password =
+        loginPassword.value;
+
+
+      if (!email || !password) {
+
+        loginMessage.textContent =
+          "Email اور Password دونوں درج کریں۔";
+
+        return;
+
+      }
+
+
+      loginButton.disabled = true;
+
+      loginButton.textContent =
+        "Logging in...";
+
+      loginMessage.textContent = "";
+
+
+      try {
+
+        await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+
+      } catch (error) {
+
+        console.error(error);
+
+        loginMessage.textContent =
+          "Email یا Password درست نہیں ہے۔";
+
+        loginButton.disabled = false;
+
+        loginButton.textContent =
+          "Login";
+
+      }
+
+    }
+  );
+
+
+  loginPassword.addEventListener(
+    "keydown",
+    function (event) {
+
+      if (event.key === "Enter") {
+        loginButton.click();
+      }
+
+    }
+  );
+
+
+  onAuthStateChanged(
+    auth,
+    function (user) {
+
+      if (user) {
+
+        hideLogin();
+
+      } else {
+
+        showLogin();
+
+      }
+
+    }
+  );
+
+</script>
 <!-- =====================================================
      TOP BAR
 ===================================================== -->
