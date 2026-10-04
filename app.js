@@ -272,3 +272,24 @@ function updateStats() {
   const fc = getElement("followupCount");
 
   if (pc) pc
+function updateStats() {
+  const pc = getElement("productCount");
+  const bc = getElement("buyerCount");
+  const ac = getElement("activeBuyerCount");
+  const fc = getElement("followupCount");
+
+  if (pc) pc.textContent = products.length;
+  if (bc) bc.textContent = buyers.length;
+
+  if (ac) {
+    ac.textContent = buyers.filter(function (buyer) {
+      return String(buyer.status || "").toLowerCase() === "active";
+    }).length;
+  }
+
+  if (fc) {
+    fc.textContent = buyers.filter(function (buyer) {
+      return Boolean(buyer.followupDate);
+    }).length;
+  }
+}
