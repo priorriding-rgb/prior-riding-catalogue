@@ -1,5 +1,5 @@
 // PRIOR RIDING native/web cache reset service worker v4
-const CACHE = "pwabuilder-page-v4";
+const CACHE = "pwabuilder-page-v5";
 
 self.addEventListener("install", event => {
   event.waitUntil((async () => {
