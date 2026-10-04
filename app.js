@@ -285,3 +285,4 @@ function updateStats() {
     }).length;
   }
 }
+updateStorageCounts();
