@@ -264,14 +264,6 @@ function refreshAll() {
 /* ============================================================
    STATS
 ============================================================ */
-
-function updateStats() {
-  const pc = getElement("productCount");
-  const bc = getElement("buyerCount");
-  const ac = getElement("activeBuyerCount");
-  const fc = getElement("followupCount");
-
-  if (pc) pc
 function updateStats() {
   const pc = getElement("productCount");
   const bc = getElement("buyerCount");
