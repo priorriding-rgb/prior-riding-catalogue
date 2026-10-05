@@ -2238,6 +2238,8 @@ function toggleSettingsMenu() {
       : "none";
 }
 </script>
+<script>
+function openStoragePanel() {
 
   const modal =
     document.getElementById("storageModal");
@@ -2245,15 +2247,61 @@ function toggleSettingsMenu() {
   if (!modal) return;
 
   const productCount =
-    document.getElementById(
-      "storageProductCount"
-    );
+    document.getElementById("storageProductCount");
 
   const buyerCount =
-    document.getElementById(
-      "storageBuyerCount"
-    );
+    document.getElementById("storageBuyerCount");
 
+  const paymentCount =
+    document.getElementById("storagePaymentCount");
+
+  const proformaCount =
+    document.getElementById("storageProformaCount");
+
+  try {
+
+    const products =
+      JSON.parse(
+        localStorage.getItem("prior_riding_products") || "[]"
+      );
+
+    const buyers =
+      JSON.parse(
+        localStorage.getItem("prior_riding_buyers") || "[]"
+      );
+
+    const payments =
+      JSON.parse(
+        localStorage.getItem("prior_riding_payments") || "[]"
+      );
+
+    const proformas =
+      JSON.parse(
+        localStorage.getItem("prior_riding_proformas") || "[]"
+      );
+
+    if (productCount)
+      productCount.textContent = products.length;
+
+    if (buyerCount)
+      buyerCount.textContent = buyers.length;
+
+    if (paymentCount)
+      paymentCount.textContent = payments.length;
+
+    if (proformaCount)
+      proformaCount.textContent = proformas.length;
+
+  } catch (error) {
+
+    console.error("Storage error:", error);
+
+  }
+
+  modal.classList.add("show");
+  modal.style.display = "flex";
+}
+</script>
   const paymentCount =
     document.getElementById(
       "storagePaymentCount"
@@ -2354,7 +2402,7 @@ function showAppInfo() {
 }
 
 
-function closeAppInfo() {
+. closeAppInfo() {
 
   const modal =
     document.getElementById("appInfoModal");
