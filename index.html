@@ -2192,46 +2192,44 @@
 if ("serviceWorker" in navigator) {
 
   window.addEventListener("load", function () {
+<script>
+if ("serviceWorker" in navigator) {
 
-    navigator.serviceWorker
-      .register("./pwabuilder-sw-v4.js")
-      .then(function () {
+  window.addEventListener("load", async function () {
 
-        console.log(
-          "PRIOR RIDING Service Worker registered."
+    try {
+
+      const registration =
+        await navigator.serviceWorker.register(
+          "./pwabuilder-sw-v4.js?v=20261005",
+          {
+            updateViaCache: "none"
+          }
         );
 
-      })
-      .catch(function (error) {
+      console.log(
+        "PRIOR RIDING Service Worker registered."
+      );
 
-        console.error(
-          "PRIOR RIDING Service Worker registration failed:",
-          error
-        );
+      await registration.update();
 
-      });
+      console.log(
+        "PRIOR RIDING Service Worker update checked."
+      );
+
+    } catch (error) {
+
+      console.error(
+        "PRIOR RIDING Service Worker registration failed:",
+        error
+      );
+
+    }
 
   });
 
 }
-
-
-function toggleSettingsMenu() {
-
-  const menu =
-    document.getElementById("settingsMenu");
-
-  if (!menu) return;
-
-  menu.style.display =
-    menu.style.display === "none"
-      ? "block"
-      : "none";
-
-}
-
-
-function openStoragePanel() {
+</script>
 
   toggleSettingsMenu();
 
