@@ -1,107 +1,119 @@
-/* ============================================================
-   PRIOR RIDING — INTERNATIONAL BUYER CRM
-   FINAL COMPLETE FUNCTIONAL APP.JS
-   ============================================================ */
+/* =========================================================
+   PRIOR RIDING — International Buyer CRM
+   app.js
+   Version: 2026-10-05
+   ========================================================= */
 
 "use strict";
 
-/* ============================================================
-   STORAGE
-============================================================ */
+/* =========================================================
+   STORAGE KEYS
+   ========================================================= */
 
-const PR_KEYS = {
-  products: "prior_riding_products",
-  buyers: "prior_riding_buyers",
-  payments: "prior_riding_payments",
-  proformas: "prior_riding_proformas",
-  letters: "prior_riding_letters",
-  settings: "prior_riding_settings"
-};
+const PR_PRODUCTS_KEY = "prior_riding_products";
+const PR_BUYERS_KEY = "prior_riding_buyers";
+const PR_PAYMENTS_KEY = "prior_riding_payments";
+const PR_PROFORMAS_KEY = "prior_riding_proformas";
+const PR_LETTERS_KEY = "prior_riding_letters";
 
-const PR_PRODUCT_CATEGORIES = [
-  "Goalkeeper Gloves",
-  "Riding Gloves",
-  "Cycling Gloves",
-  "Boxing Gloves",
-  "MMA Gloves",
-  "Horse Riding Gloves",
-  "Hard Riding Gloves",
-  "Football / Soccer Gloves",
-  "Chin Pads / Protective Pads",
-  "Sports Bags",
-  "Hand Wraps",
-  "Other Sports Goods / Other Varieties"
-];
+/* =========================================================
+   BASIC HELPERS
+   ========================================================= */
 
-let products = [];
-let buyers = [];
-let payments = [];
-let proformas = [];
-let letters = [];
-
-/* ============================================================
-   HELPERS
-============================================================ */
-
-function loadData(key) {
+function prRead(key, fallback = []) {
   try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return [];
-    const data = JSON.parse(raw);
-    return Array.isArray(data) ? data : [];
-  } catch (e) {
-    console.error("Load error:", e);
-    return [];
+    const value = localStorage.getItem(key);
+    if (!value) return fallback;
+    const parsed = JSON.parse(value);
+    return parsed ?? fallback;
+  } catch (error) {
+    console.error("PR read error:", key, error);
+    return fallback;
   }
 }
 
-function saveData(key, data) {
+function prWrite(key, value) {
   try {
-    localStorage.setItem(key, JSON.stringify(data));
+    localStorage.setItem(key, JSON.stringify(value));
     return true;
-  } catch (e) {
-    console.error("Save error:", e);
-    alert("Data could not be saved.");
+  } catch (error) {
+    console.error("PR write error:", key, error);
+    alert("Storage error. Please check your phone storage.");
     return false;
   }
 }
 
-function loadAllData() {
-  products = loadData(PR_KEYS.products);
-  buyers = loadData(PR_KEYS.buyers);
-  payments = loadData(PR_KEYS.payments);
-  proformas = loadData(PR_KEYS.proformas);
-  letters = loadData(PR_KEYS.letters);
+function prProducts() {
+  return prRead(PR_PRODUCTS_KEY, []);
 }
 
-function generateId() {
-  return Date.now().toString(36) + "_" +
-    Math.random().toString(36).slice(2, 10);
+function prBuyers() {
+  return prRead(PR_BUYERS_KEY, []);
 }
 
-function getElement(id) {
-  return document.getElementById(id);
+function prPayments() {
+  return prRead(PR_PAYMENTS_KEY, []);
 }
 
-function getValue(id) {
-  const el = getElement(id);
-  return el ? String(el.value ?? "").trim() : "";
+function prProformas() {
+  return prRead(PR_PROFORMAS_KEY, []);
 }
 
-function setValue(id, value) {
-  const el = getElement(id);
-  if (el) el.value = value ?? "";
+function prLetters() {
+  return prRead(PR_LETTERS_KEY, []);
 }
 
-function today() {
+function prUid(prefix = "PR") {
+  return (
+    prefix +
+    "_" +
+    Date.now().toString(36) +
+    "_" +
+    Math.random().toString(36).slice(2, 8)
+  );
+}
+
+function prToday() {
   const d = new Date();
-
-  return d.getFullYear() + "-" +
-    String(d.getMonth() + 1).padStart(2, "0") + "-" +
-    String(d.getDate()).padStart(2, "0");
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
-function escapeHtml(value) {
+function prFormatDate(value) {
+  if (!value) return "-";
+
+  try {
+    const d = new Date(value + (String(value).length === 10 ? "T00:00:00" : ""));
+
+    if (Number.isNaN(d.getTime())) return value;
+
+    return d.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    });
+  } catch {
+    return value;
+  }
+}
+
+function prNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function prMoney(value, currency = "") {
+  const n = prNumber(value);
+
+  return `${currency ? currency + " " : ""}${n.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })}`;
+}
+
+function prEscape(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -110,411 +122,242 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
-function money(value) {
-  const n = Number(value);
-  return Number.isFinite(n) ? n.toFixed(2) : "0.00";
+function prEl(id) {
+  return document.getElementById(id);
 }
 
-/* ============================================================
-   START
-============================================================ */
-
-document.addEventListener("DOMContentLoaded", function () {
-  loadAllData();
-  setupForms();
-  setupSearchInputs();
-  setupOutsideClick();
-  setupKeyboard();
-
-  populateCategories();
-  populateInterestedProducts();
-  populateBuyerSelects();
-  populateProductSelects();
-
-  refreshAll();
-
-  if (getElement("dashboard")) {
-    showSection("dashboard");
-  }
-});
-
-/* ============================================================
-   FORMS
-============================================================ */
-
-function setupForms() {
-  const forms = [
-    ["productForm", saveProduct],
-    ["buyerForm", saveBuyer],
-    ["paymentForm", savePayment],
-    ["proformaForm", createProforma],
-    ["letterForm", createProformaLetter]
-  ];
-
-  forms.forEach(function (item) {
-    const form = getElement(item[0]);
-
-    if (!form) return;
-
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      item[1]();
-    });
-  });
+function prSetValue(id, value) {
+  const el = prEl(id);
+  if (el) el.value = value ?? "";
 }
 
-function setupSearchInputs() {
-  const p = getElement("productSearch");
-  const b = getElement("buyerSearch");
-
-  if (p) {
-    p.addEventListener("input", renderProducts);
-  }
-
-  if (b) {
-    b.addEventListener("input", renderBuyers);
-  }
+function prGetValue(id) {
+  const el = prEl(id);
+  return el ? el.value.trim() : "";
 }
 
-function setupOutsideClick() {
-  document.addEventListener("click", function (e) {
-    const menu = getElement("settingsMenu");
-    const button = document.querySelector(".menu-btn");
-
-    if (
-      menu &&
-      menu.style.display === "block" &&
-      !menu.contains(e.target) &&
-      (!button || !button.contains(e.target))
-    ) {
-      menu.style.display = "none";
-    }
-  });
-
-  document.querySelectorAll(".modal").forEach(function (modal) {
-    modal.addEventListener("click", function (e) {
-      if (e.target === modal) {
-        modal.style.display = "none";
-        modal.classList.remove("show");
-      }
-    });
-  });
+function prNotify(message) {
+  alert(message);
 }
 
-function setupKeyboard() {
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") {
-      document.querySelectorAll(".modal").forEach(function (modal) {
-        modal.style.display = "none";
-        modal.classList.remove("show");
-      });
+/* =========================================================
+   MODAL HELPERS
+   ========================================================= */
 
-      closeDashboardTool();
-    }
-  });
+function prFindModal(formId) {
+  const form = prEl(formId);
+  if (!form) return null;
+
+  return (
+    form.closest(".modal") ||
+    form.closest(".modal-overlay") ||
+    form.parentElement
+  );
 }
 
-/* ============================================================
-   NAVIGATION
-============================================================ */
-
-function showSection(sectionId) {
-  document.querySelectorAll(".section").forEach(function (section) {
-    section.classList.remove("active");
-    section.style.display = "none";
-  });
-
-  const section = getElement(sectionId);
-
-  if (section) {
-    section.classList.add("active");
-    section.style.display = "block";
-  }
-
-  document.querySelectorAll(".nav-btn").forEach(function (button) {
-    button.classList.remove("active");
-
-    const text =
-      String(button.textContent || "").toLowerCase();
-
-    if (
-      (sectionId === "dashboard" && text.includes("dashboard")) ||
-      (sectionId === "products" && text.includes("product")) ||
-      (sectionId === "buyers" && text.includes("buyer"))
-    ) {
-      button.classList.add("active");
-    }
-  });
-
-  refreshAll();
-
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
-}
-
-/* ============================================================
-   REFRESH
-============================================================ */
-
-function refreshAll() {
-  loadAllData();
-
-  populateCategories();
-  populateInterestedProducts();
-  populateBuyerSelects();
-  populateProductSelects();
-
-  renderProducts();
-  renderBuyers();
-  renderRecentProducts();
-  renderRecentBuyers();
-
-  updateStats();
-}
-
-/* ============================================================
-   STATS
-============================================================ */
-
-function updateStats() {
-  const pc = getElement("productCount");
-  const bc = getElement("buyerCount");
-  const ac = getElement("activeBuyerCount");
-  const fc = getElement("followupCount");
-
-  if (pc) pc.textContent = products.length;
-  if (bc) bc.textContent = buyers.length;
-
-  if (ac) {
-    ac.textContent = buyers.filter(function (buyer) {
-      return String(buyer.status || "").toLowerCase() === "active";
-    }).length;
-  }
-
-  if (fc) {
-    fc.textContent = buyers.filter(function (buyer) {
-      return Boolean(buyer.followupDate);
-    }).length;
-  }
-
-  updateStorageCounts();
-}
-
-/* ============================================================
-   STORAGE COUNTS
-============================================================ */
-
-function updateStorageCounts() {
-  const pc = getElement("storageProductCount");
-  const bc = getElement("storageBuyerCount");
-  const pay = getElement("storagePaymentCount");
-  const pro = getElement("storageProformaCount");
-
-  if (pc) pc.textContent = products.length;
-  if (bc) bc.textContent = buyers.length;
-  if (pay) pay.textContent = payments.length;
-  if (pro) pro.textContent = proformas.length;
-}
-
-/* ============================================================
-   CATEGORIES
-============================================================ */
-
-function populateCategories() {
-  const select = getElement("category");
-
-  if (!select) return;
-
-  const current = select.value;
-
-  select.innerHTML =
-    '<option value="">Select Product Category</option>';
-
-  PR_PRODUCT_CATEGORIES.forEach(function (category) {
-    const option = document.createElement("option");
-
-    option.value = category;
-    option.textContent = category;
-
-    select.appendChild(option);
-  });
-
-  if (current) {
-    select.value = current;
-  }
-}
-
-function populateInterestedProducts() {
-  const select = getElement("interestedProduct");
-
-  if (!select) return;
-
-  const current = select.value;
-
-  select.innerHTML =
-    '<option value="">Select Product / Category</option>';
-
-  PR_PRODUCT_CATEGORIES.forEach(function (category) {
-    const option = document.createElement("option");
-
-    option.value = category;
-    option.textContent = category;
-
-    select.appendChild(option);
-  });
-
-  if (products.length) {
-    const group = document.createElement("optgroup");
-
-    group.label = "Added Products";
-
-    products.forEach(function (product) {
-      if (!product.name) return;
-
-      const option = document.createElement("option");
-
-      option.value = product.name;
-
-      option.textContent =
-        product.name +
-        (product.articleNo
-          ? " — " + product.articleNo
-          : "");
-
-      group.appendChild(option);
-    });
-
-    select.appendChild(group);
-  }
-
-  if (current) {
-    select.value = current;
-  }
-}
-
-/* ============================================================
-   PRODUCT MODAL
-============================================================ */
-
-function openProductModal(id) {
-  const modal = getElement("productModal");
-  const form = getElement("productForm");
-
+function prShowModal(formId) {
+  const modal = prFindModal(formId);
   if (!modal) return;
-
-  if (form) form.reset();
-
-  setValue("productId", "");
-  setValue("productStatus", "Available");
-
-  const title = getElement("productModalTitle");
-
-  if (id) {
-    const product = products.find(function (item) {
-      return String(item.id) === String(id);
-    });
-
-    if (!product) {
-      alert("Product not found.");
-      return;
-    }
-
-    setValue("productId", product.id);
-    setValue("productName", product.name);
-    setValue("articleNo", product.articleNo);
-    setValue("category", product.category);
-    setValue("material", product.material);
-    setValue("size", product.size);
-    setValue("weight", product.weight);
-    setValue("color", product.color);
-    setValue("availableSizes", product.availableSizes);
-    setValue("moq", product.moq);
-    setValue("price", product.price);
-    setValue("imageUrl", product.imageUrl);
-    setValue("specification", product.specification);
-    setValue("description", product.description);
-    setValue("productStatus", product.status || "Available");
-
-    if (title) {
-      title.textContent = "Edit Product";
-    }
-  } else {
-    if (title) {
-      title.textContent = "Add Product";
-    }
-  }
 
   modal.style.display = "flex";
   modal.classList.add("show");
+  modal.setAttribute("aria-hidden", "false");
+}
+
+function prHideModal(formId) {
+  const modal = prFindModal(formId);
+  if (!modal) return;
+
+  modal.style.display = "none";
+  modal.classList.remove("show");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+function prCloseById(id) {
+  const el = prEl(id);
+  if (!el) return;
+
+  el.style.display = "none";
+  el.classList.remove("show");
+  el.setAttribute("aria-hidden", "true");
+}
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+
+function showSection(sectionId) {
+  const sections = document.querySelectorAll(".section");
+
+  sections.forEach(section => {
+    section.style.display = "none";
+    section.classList.remove("active");
+  });
+
+  const target = prEl(sectionId);
+
+  if (target) {
+    target.style.display = "block";
+    target.classList.add("active");
+  }
+
+  document.querySelectorAll(".nav-btn").forEach(btn => {
+    btn.classList.remove("active");
+
+    const onclick = btn.getAttribute("onclick") || "";
+
+    if (onclick.includes("'" + sectionId + "'") ||
+        onclick.includes('"' + sectionId + '"')) {
+      btn.classList.add("active");
+    }
+  });
+
+  if (sectionId === "dashboard") {
+    renderDashboard();
+  }
+
+  if (sectionId === "products") {
+    renderProducts();
+  }
+
+  if (sectionId === "buyers") {
+    renderBuyers();
+  }
+}
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
+
+function updateDashboardStats() {
+  const products = prProducts();
+  const buyers = prBuyers();
+
+  const activeBuyers = buyers.filter(
+    b => String(b.status || "").toLowerCase() === "active"
+  );
+
+  const followups = buyers.filter(
+    b => String(b.status || "").toLowerCase() === "follow-up" ||
+         String(b.status || "").toLowerCase() === "followup" ||
+         b.followupDate
+  );
+
+  const productCount = prEl("productCount");
+  const buyerCount = prEl("buyerCount");
+  const activeBuyerCount = prEl("activeBuyerCount");
+  const followupCount = prEl("followupCount");
+
+  if (productCount) productCount.textContent = products.length;
+  if (buyerCount) buyerCount.textContent = buyers.length;
+  if (activeBuyerCount) activeBuyerCount.textContent = activeBuyers.length;
+  if (followupCount) followupCount.textContent = followups.length;
+}
+
+function renderRecentDashboard() {
+  const products = prProducts();
+  const buyers = prBuyers();
+
+  const recentProducts = prEl("recentProducts");
+  const recentBuyers = prEl("recentBuyers");
+
+  if (recentProducts) {
+    if (!products.length) {
+      recentProducts.innerHTML =
+        '<div class="empty-state">No products added yet.</div>';
+    } else {
+      recentProducts.innerHTML = products
+        .slice()
+        .reverse()
+        .slice(0, 5)
+        .map(product => `
+          <div class="recent-item">
+            <strong>${prEscape(product.name || "Unnamed Product")}</strong>
+            <small>
+              ${prEscape(product.articleNo || product.article || "-")}
+              ${product.category ? " • " + prEscape(product.category) : ""}
+            </small>
+          </div>
+        `)
+        .join("");
+    }
+  }
+
+  if (recentBuyers) {
+    if (!buyers.length) {
+      recentBuyers.innerHTML =
+        '<div class="empty-state">No buyers added yet.</div>';
+    } else {
+      recentBuyers.innerHTML = buyers
+        .slice()
+        .reverse()
+        .slice(0, 5)
+        .map(buyer => `
+          <div class="recent-item">
+            <strong>${prEscape(buyer.name || "Unnamed Buyer")}</strong>
+            <small>
+              ${prEscape(buyer.country || "-")}
+              ${buyer.status ? " • " + prEscape(buyer.status) : ""}
+            </small>
+          </div>
+        `)
+        .join("");
+    }
+  }
+}
+
+function renderDashboard() {
+  updateDashboardStats();
+  renderRecentDashboard();
+}
+
+/* =========================================================
+   PRODUCT MODAL
+   ========================================================= */
+
+function clearProductForm() {
+  const form = prEl("productForm");
+  if (form) form.reset();
+
+  prSetValue("productId", "");
+  prSetValue("productStatus", "Active");
+}
+
+function openProductModal(id = "") {
+  const form = prEl("productForm");
+
+  if (!form) return;
+
+  clearProductForm();
+
+  if (id) {
+    const products = prProducts();
+    const product = products.find(p => p.id === id);
+
+    if (!product) return;
+
+    prSetValue("productId", product.id);
+    prSetValue("productName", product.name);
+    prSetValue("articleNo", product.articleNo);
+    prSetValue("category", product.category);
+    prSetValue("material", product.material);
+    prSetValue("size", product.size);
+    prSetValue("weight", product.weight);
+    prSetValue("color", product.color);
+    prSetValue("availableSizes", product.availableSizes);
+    prSetValue("moq", product.moq);
+    prSetValue("price", product.price);
+    prSetValue("imageUrl", product.imageUrl);
+    prSetValue("specification", product.specification);
+    prSetValue("description", product.description);
+    prSetValue("productStatus", product.status || "Active");
+  }
+
+  prShowModal("productForm");
 }
 
 function closeProductModal() {
-  const modal = getElement("productModal");
-
-  if (modal) {
-    modal.style.display = "none";
-    modal.classList.remove("show");
-  }
-}
-
-/* ============================================================
-   PRODUCT SAVE
-============================================================ */
-
-function saveProduct() {
-  const id = getValue("productId");
-  const name = getValue("productName");
-  const articleNo = getValue("articleNo");
-
-  if (!name || !articleNo) {
-    alert(
-      "Please enter Product Name and Article / Product No."
-    );
-    return;
-  }
-
-  const product = {
-    id: id || generateId(),
-    name: name,
-    articleNo: articleNo,
-    category: getValue("category"),
-    material: getValue("material"),
-    size: getValue("size"),
-    weight: getValue("weight"),
-    color: getValue("color"),
-    availableSizes: getValue("availableSizes"),
-    moq: getValue("moq"),
-    price: getValue("price"),
-    imageUrl: getValue("imageUrl"),
-    specification: getValue("specification"),
-    description: getValue("description"),
-    status:
-      getValue("productStatus") || "Available",
-    updatedAt: new Date().toISOString()
-  };
-
-  if (id) {
-    const index = products.findIndex(function (item) {
-      return String(item.id) === String(id);
-    });
-
-    if (index >= 0) {
-      products[index] = product;
-    } else {
-      products.unshift(product);
-    }
-  } else {
-    products.unshift(product);
-  }
-
-  if (saveData(PR_KEYS.products, products)) {
-    closeProductModal();
-    refreshAll();
-
-    alert("Product saved successfully.");
-  }
+  prHideModal("productForm");
 }
 
 function editProduct(id) {
@@ -522,300 +365,197 @@ function editProduct(id) {
 }
 
 function deleteProduct(id) {
-  const product = products.find(function (item) {
-    return String(item.id) === String(id);
-  });
+  const products = prProducts();
+  const product = products.find(p => p.id === id);
 
   if (!product) return;
 
-  if (!confirm('Delete "' + product.name + '"?')) {
+  if (!confirm(
+    `Delete "${product.name || "this product"}"?\n\nThis action cannot be undone.`
+  )) {
     return;
   }
 
-  products = products.filter(function (item) {
-    return String(item.id) !== String(id);
-  });
+  const updated = products.filter(p => p.id !== id);
 
-  if (saveData(PR_KEYS.products, products)) {
-    refreshAll();
+  if (prWrite(PR_PRODUCTS_KEY, updated)) {
+    renderProducts();
+    updateDashboardStats();
+    renderRecentDashboard();
+    alert("Product deleted.");
   }
 }
 
-/* ============================================================
+/* =========================================================
    PRODUCT RENDER
-============================================================ */
+   ========================================================= */
 
 function renderProducts() {
-  const container = getElement("productList");
-
+  const container = prEl("productList");
   if (!container) return;
 
-  const input = getElement("productSearch");
+  const products = prProducts();
 
-  const search = input
-    ? String(input.value || "").toLowerCase().trim()
-    : "";
+  const search = (
+    prEl("productSearch")?.value ||
+    ""
+  ).toLowerCase().trim();
 
-  const filtered = products.filter(function (product) {
-    return [
+  const filtered = products.filter(product => {
+    const text = [
       product.name,
       product.articleNo,
       product.category,
       product.material,
       product.color,
-      product.availableSizes,
-      product.moq,
-      product.price,
-      product.status
+      product.description
     ]
       .join(" ")
-      .toLowerCase()
-      .includes(search);
+      .toLowerCase();
+
+    return !search || text.includes(search);
   });
 
   if (!filtered.length) {
     container.innerHTML = `
-      <div class="panel">
-        <h3>No Products Found</h3>
+      <div class="empty-state">
+        <strong>No products found.</strong>
         <p>Add your first PRIOR RIDING product.</p>
       </div>
     `;
+    updateDashboardStats();
     return;
   }
 
-  container.innerHTML = filtered.map(function (product) {
-    const image = product.imageUrl
-      ? `
-        <img
-          src="${escapeHtml(product.imageUrl)}"
-          alt="${escapeHtml(product.name)}"
-          loading="lazy"
-          style="width:100%;max-height:220px;object-fit:contain;border-radius:10px;margin-bottom:12px;"
-          onerror="this.style.display='none';"
-        >
-      `
-      : "";
+  container.innerHTML = filtered
+    .map(product => {
+      const image = product.imageUrl
+        ? `<img src="${prEscape(product.imageUrl)}"
+                alt="${prEscape(product.name || "Product")}"
+                loading="lazy"
+                onerror="this.style.display='none'">`
+        : "";
 
-    return `
-      <div class="panel product-card">
+      return `
+        <div class="product-card">
+          ${image ? `<div class="product-image">${image}</div>` : ""}
 
-        ${image}
+          <div class="product-card-body">
+            <div class="product-title">
+              ${prEscape(product.name || "Unnamed Product")}
+            </div>
 
-        <h3>${escapeHtml(product.name)}</h3>
+            <div class="product-meta">
+              ${product.articleNo
+                ? `<span>Article: ${prEscape(product.articleNo)}</span>`
+                : ""}
+              ${product.category
+                ? `<span>${prEscape(product.category)}</span>`
+                : ""}
+            </div>
 
-        <p>
-          <strong>Article:</strong>
-          ${escapeHtml(product.articleNo)}
-        </p>
+            ${
+              product.material
+                ? `<div><strong>Material:</strong> ${prEscape(product.material)}</div>`
+                : ""
+            }
 
-        <p>
-          <strong>Category:</strong>
-          ${escapeHtml(product.category || "-")}
-        </p>
+            ${
+              product.size
+                ? `<div><strong>Size:</strong> ${prEscape(product.size)}</div>`
+                : ""
+            }
 
-        <p>
-          <strong>Material:</strong>
-          ${escapeHtml(product.material || "-")}
-        </p>
+            ${
+              product.color
+                ? `<div><strong>Color:</strong> ${prEscape(product.color)}</div>`
+                : ""
+            }
 
-        <p>
-          <strong>Size:</strong>
-          ${escapeHtml(product.size || "-")}
-        </p>
+            ${
+              product.moq
+                ? `<div><strong>MOQ:</strong> ${prEscape(product.moq)}</div>`
+                : ""
+            }
 
-        <p>
-          <strong>Weight:</strong>
-          ${escapeHtml(product.weight || "-")}
-        </p>
+            ${
+              product.price
+                ? `<div><strong>Price:</strong> ${prEscape(product.price)}</div>`
+                : ""
+            }
 
-        <p>
-          <strong>Color:</strong>
-          ${escapeHtml(product.color || "-")}
-        </p>
+            ${
+              product.specification
+                ? `<div class="product-description">
+                     ${prEscape(product.specification)}
+                   </div>`
+                : ""
+            }
 
-        <p>
-          <strong>Available Sizes:</strong>
-          ${escapeHtml(product.availableSizes || "-")}
-        </p>
+            <div class="product-actions">
+              <button type="button"
+                      onclick="editProduct('${prEscape(product.id)}')">
+                Edit
+              </button>
 
-        <p>
-          <strong>MOQ:</strong>
-          ${escapeHtml(product.moq || "-")}
-        </p>
-
-        <p>
-          <strong>Price:</strong>
-          ${escapeHtml(product.price || "-")}
-        </p>
-
-        <p>
-          <strong>Status:</strong>
-          ${escapeHtml(product.status || "-")}
-        </p>
-
-        ${
-          product.specification
-            ? `
-              <p>
-                <strong>Specification:</strong><br>
-                ${escapeHtml(product.specification)}
-              </p>
-            `
-            : ""
-        }
-
-        ${
-          product.description
-            ? `
-              <p>
-                <strong>Description:</strong><br>
-                ${escapeHtml(product.description)}
-              </p>
-            `
-            : ""
-        }
-
-        <div class="modal-actions">
-
-          <button
-            type="button"
-            class="secondary-btn"
-            onclick='editProduct(${JSON.stringify(String(product.id))})'
-          >
-            Edit
-          </button>
-
-          <button
-            type="button"
-            class="primary-btn"
-            onclick='deleteProduct(${JSON.stringify(String(product.id))})'
-          >
-            Delete
-          </button>
-
+              <button type="button"
+                      onclick="deleteProduct('${prEscape(product.id)}')">
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
+      `;
+    })
+    .join("");
 
-      </div>
-    `;
-  }).join("");
+  updateDashboardStats();
+  populateProductSelects();
 }
 
-/* ============================================================
+/* =========================================================
    BUYER MODAL
-============================================================ */
+   ========================================================= */
 
-function openBuyerModal(id) {
-  const modal = getElement("buyerModal");
-  const form = getElement("buyerForm");
-
-  if (!modal) return;
-
+function clearBuyerForm() {
+  const form = prEl("buyerForm");
   if (form) form.reset();
 
-  setValue("buyerId", "");
-  setValue("buyerStatus", "Active");
+  prSetValue("buyerId", "");
+  prSetValue("buyerStatus", "Potential");
+}
 
-  const title = getElement("buyerModalTitle");
+function openBuyerModal(id = "") {
+  const form = prEl("buyerForm");
+
+  if (!form) return;
+
+  clearBuyerForm();
+  populateProductSelects();
 
   if (id) {
-    const buyer = buyers.find(function (item) {
-      return String(item.id) === String(id);
-    });
+    const buyers = prBuyers();
+    const buyer = buyers.find(b => b.id === id);
 
-    if (!buyer) {
-      alert("Buyer not found.");
-      return;
-    }
+    if (!buyer) return;
 
-    setValue("buyerId", buyer.id);
-    setValue("buyerName", buyer.name);
-    setValue("buyerCountry", buyer.country);
-    setValue("contactPerson", buyer.contactPerson);
-    setValue("buyerEmail", buyer.email);
-    setValue("buyerPhone", buyer.phone);
-    setValue(
-      "interestedProduct",
-      buyer.interestedProduct
-    );
-    setValue("buyerStatus", buyer.status || "Active");
-    setValue("followupDate", buyer.followupDate);
-    setValue("buyerNotes", buyer.notes);
-
-    if (title) {
-      title.textContent = "Edit Buyer";
-    }
-  } else {
-    if (title) {
-      title.textContent = "Add Buyer";
-    }
+    prSetValue("buyerId", buyer.id);
+    prSetValue("buyerName", buyer.name);
+    prSetValue("buyerCountry", buyer.country);
+    prSetValue("contactPerson", buyer.contactPerson);
+    prSetValue("buyerEmail", buyer.email);
+    prSetValue("buyerPhone", buyer.phone);
+    prSetValue("interestedProduct", buyer.interestedProduct);
+    prSetValue("buyerStatus", buyer.status || "Potential");
+    prSetValue("followupDate", buyer.followupDate);
+    prSetValue("buyerNotes", buyer.notes);
   }
 
-  modal.style.display = "flex";
-  modal.classList.add("show");
+  prShowModal("buyerForm");
 }
 
 function closeBuyerModal() {
-  const modal = getElement("buyerModal");
-
-  if (modal) {
-    modal.style.display = "none";
-    modal.classList.remove("show");
-  }
-}
-
-/* ============================================================
-   BUYER SAVE
-============================================================ */
-
-function saveBuyer() {
-  const id = getValue("buyerId");
-  const name = getValue("buyerName");
-  const country = getValue("buyerCountry");
-
-  if (!name || !country) {
-    alert(
-      "Please enter Buyer / Company Name and Country."
-    );
-    return;
-  }
-
-  const buyer = {
-    id: id || generateId(),
-    name: name,
-    country: country,
-    contactPerson: getValue("contactPerson"),
-    email: getValue("buyerEmail"),
-    phone: getValue("buyerPhone"),
-    interestedProduct:
-      getValue("interestedProduct"),
-    status:
-      getValue("buyerStatus") || "Active",
-    followupDate:
-      getValue("followupDate"),
-    notes: getValue("buyerNotes"),
-    updatedAt: new Date().toISOString()
-  };
-
-  if (id) {
-    const index = buyers.findIndex(function (item) {
-      return String(item.id) === String(id);
-    });
-
-    if (index >= 0) {
-      buyers[index] = buyer;
-    } else {
-      buyers.unshift(buyer);
-    }
-  } else {
-    buyers.unshift(buyer);
-  }
-
-  if (saveData(PR_KEYS.buyers, buyers)) {
-    closeBuyerModal();
-    refreshAll();
-
-    alert("Buyer saved successfully.");
-  }
+  prHideModal("buyerForm");
 }
 
 function editBuyer(id) {
@@ -823,42 +563,45 @@ function editBuyer(id) {
 }
 
 function deleteBuyer(id) {
-  const buyer = buyers.find(function (item) {
-    return String(item.id) === String(id);
-  });
+  const buyers = prBuyers();
+  const buyer = buyers.find(b => b.id === id);
 
   if (!buyer) return;
 
-  if (!confirm('Delete "' + buyer.name + '"?')) {
+  if (!confirm(
+    `Delete "${buyer.name || "this buyer"}"?\n\nThis action cannot be undone.`
+  )) {
     return;
   }
 
-  buyers = buyers.filter(function (item) {
-    return String(item.id) !== String(id);
-  });
+  const updated = buyers.filter(b => b.id !== id);
 
-  if (saveData(PR_KEYS.buyers, buyers)) {
-    refreshAll();
+  if (prWrite(PR_BUYERS_KEY, updated)) {
+    renderBuyers();
+    updateDashboardStats();
+    renderRecentDashboard();
+    populateBuyerSelects();
+    alert("Buyer deleted.");
   }
 }
 
-/* ============================================================
+/* =========================================================
    BUYER RENDER
-============================================================ */
+   ========================================================= */
 
 function renderBuyers() {
-  const table = getElement("buyerTable");
-
+  const table = prEl("buyerTable");
   if (!table) return;
 
-  const input = getElement("buyerSearch");
+  const buyers = prBuyers();
 
-  const search = input
-    ? String(input.value || "").toLowerCase().trim()
-    : "";
+  const search = (
+    prEl("buyerSearch")?.value ||
+    ""
+  ).toLowerCase().trim();
 
-  const filtered = buyers.filter(function (buyer) {
-    return [
+  const filtered = buyers.filter(buyer => {
+    const text = [
       buyer.name,
       buyer.country,
       buyer.contactPerson,
@@ -869,1138 +612,1310 @@ function renderBuyers() {
       buyer.notes
     ]
       .join(" ")
-      .toLowerCase()
-      .includes(search);
+      .toLowerCase();
+
+    return !search || text.includes(search);
   });
 
   if (!filtered.length) {
     table.innerHTML = `
       <tr>
-        <td colspan="8">No buyers found.</td>
+        <td colspan="10" style="text-align:center;padding:25px;">
+          No buyers found.
+        </td>
       </tr>
     `;
+    updateDashboardStats();
     return;
   }
 
-  table.innerHTML = filtered.map(function (buyer) {
-    return `
+  table.innerHTML = filtered
+    .map(buyer => `
       <tr>
+        <td>${prEscape(buyer.name)}</td>
+
+        <td>${prEscape(buyer.country)}</td>
+
+        <td>${prEscape(buyer.contactPerson)}</td>
 
         <td>
-          <strong>${escapeHtml(buyer.name)}</strong>
-
           ${
-            buyer.contactPerson
-              ? `
-                <br>
-                <small>
-                  ${escapeHtml(buyer.contactPerson)}
-                </small>
-              `
-              : ""
+            buyer.email
+              ? `<a href="mailto:${prEscape(buyer.email)}">
+                   ${prEscape(buyer.email)}
+                 </a>`
+              : "-"
           }
         </td>
 
-        <td>${escapeHtml(buyer.country)}</td>
+        <td>${prEscape(buyer.phone)}</td>
 
-        <td>${escapeHtml(buyer.email || "-")}</td>
+        <td>${prEscape(buyer.interestedProduct)}</td>
 
-        <td>${escapeHtml(buyer.phone || "-")}</td>
+        <td>${prEscape(buyer.status)}</td>
 
-        <td>
-          ${escapeHtml(
-            buyer.interestedProduct || "-"
-          )}
-        </td>
+        <td>${prFormatDate(buyer.followupDate)}</td>
 
-        <td>${escapeHtml(buyer.status || "-")}</td>
+        <td>${prEscape(buyer.notes)}</td>
 
         <td>
-          ${escapeHtml(buyer.followupDate || "-")}
-        </td>
-
-        <td>
-
-          <button
-            type="button"
-            class="secondary-btn"
-            onclick='editBuyer(${JSON.stringify(String(buyer.id))})'
-          >
+          <button type="button"
+                  onclick="editBuyer('${prEscape(buyer.id)}')">
             Edit
           </button>
 
-          <button
-            type="button"
-            class="primary-btn"
-            onclick='deleteBuyer(${JSON.stringify(String(buyer.id))})'
-          >
+          <button type="button"
+                  onclick="deleteBuyer('${prEscape(buyer.id)}')">
             Delete
           </button>
-
         </td>
-
       </tr>
-    `;
-  }).join("");
+    `)
+    .join("");
+
+  updateDashboardStats();
 }
 
-/* ============================================================
-   RECENT
-============================================================ */
+/* =========================================================
+   SELECT DROPDOWNS
+   ========================================================= */
 
-function renderRecentProducts() {
-  const container = getElement("recentProducts");
+function populateProductSelects() {
+  const products = prProducts();
 
-  if (!container) return;
+  const ids = [
+    "interestedProduct",
+    "proformaProduct"
+  ];
 
-  const recent = products.slice(0, 5);
+  ids.forEach(id => {
+    const select = prEl(id);
+    if (!select) return;
 
-  if (!recent.length) {
-    container.innerHTML =
-      "<p>No products added yet.</p>";
-    return;
-  }
+    const current = select.value;
 
-  container.innerHTML = recent.map(function (product) {
-    return `
-      <div class="panel">
+    const firstText =
+      id === "proformaProduct"
+        ? "Select Product"
+        : "Select Product";
 
-        <strong>
-          ${escapeHtml(product.name)}
-        </strong>
+    select.innerHTML =
+      `<option value="">${firstText}</option>` +
+      products
+        .map(product => `
+          <option value="${prEscape(product.name || product.id)}">
+            ${prEscape(product.name || "Unnamed Product")}
+            ${product.articleNo
+              ? " — " + prEscape(product.articleNo)
+              : ""}
+          </option>
+        `)
+        .join("");
 
-        <p>
-          ${escapeHtml(product.articleNo || "")}
-        </p>
-
-        <small>
-          ${escapeHtml(product.category || "")}
-        </small>
-
-      </div>
-    `;
-  }).join("");
+    if (current) select.value = current;
+  });
 }
-
-function renderRecentBuyers() {
-  const container = getElement("recentBuyers");
-
-  if (!container) return;
-
-  const recent = buyers.slice(0, 5);
-
-  if (!recent.length) {
-    container.innerHTML =
-      "<p>No buyers added yet.</p>";
-    return;
-  }
-
-  container.innerHTML = recent.map(function (buyer) {
-    return `
-      <div class="panel">
-
-        <strong>
-          ${escapeHtml(buyer.name)}
-        </strong>
-
-        <p>
-          ${escapeHtml(buyer.country)}
-        </p>
-
-        <small>
-          ${escapeHtml(buyer.status || "")}
-        </small>
-
-      </div>
-    `;
-  }).join("");
-}
-
-/* ============================================================
-   SELECTS
-============================================================ */
 
 function populateBuyerSelects() {
-  ["paymentBuyer", "proformaBuyer"].forEach(function (id) {
-    const select = getElement(id);
+  const buyers = prBuyers();
 
+  [
+    "paymentBuyer",
+    "proformaBuyer",
+    "letterBuyer"
+  ].forEach(id => {
+    const select = prEl(id);
     if (!select) return;
 
     const current = select.value;
 
     select.innerHTML =
-      '<option value="">Select Buyer</option>';
+      `<option value="">Select Buyer</option>` +
+      buyers
+        .map(buyer => `
+          <option value="${prEscape(buyer.name || buyer.id)}">
+            ${prEscape(buyer.name || "Unnamed Buyer")}
+            ${buyer.country
+              ? " — " + prEscape(buyer.country)
+              : ""}
+          </option>
+        `)
+        .join("");
 
-    buyers.forEach(function (buyer) {
-      const option = document.createElement("option");
-
-      option.value = buyer.id;
-
-      option.textContent =
-        buyer.name +
-        (buyer.country
-          ? " — " + buyer.country
-          : "");
-
-      select.appendChild(option);
-    });
-
-    if (current) {
-      select.value = current;
-    }
+    if (current) select.value = current;
   });
 }
 
-function populateProductSelects() {
-  const select = getElement("proformaProduct");
-
-  if (!select) return;
-
-  const current = select.value;
-
-  select.innerHTML =
-    '<option value="">Select Product</option>';
-
-  products.forEach(function (product) {
-    const option = document.createElement("option");
-
-    option.value = product.id;
-
-    option.textContent =
-      product.name +
-      (product.articleNo
-        ? " — " + product.articleNo
-        : "");
-
-    select.appendChild(option);
-  });
-
-  if (current) {
-    select.value = current;
-  }
-}
-
-/* ============================================================
+/* =========================================================
    PAYMENT
-============================================================ */
+   ========================================================= */
 
-function openPaymentModal() {
-  const modal = getElement("paymentModal");
-  const form = getElement("paymentForm");
+function prOpenPayment() {
+  const form = prEl("paymentForm");
 
-  if (!modal) return;
+  if (!form) return;
 
-  if (form) form.reset();
-
-  setValue("paymentDate", today());
+  form.reset();
 
   populateBuyerSelects();
 
-  modal.style.display = "flex";
-  modal.classList.add("show");
+  prSetValue("paymentDate", prToday());
+
+  prShowModal("paymentForm");
 }
 
 function prClosePayment() {
-  const modal = getElement("paymentModal");
-
-  if (modal) {
-    modal.style.display = "none";
-    modal.classList.remove("show");
-  }
+  prHideModal("paymentForm");
 }
 
-function savePayment() {
-  const buyerId = getValue("paymentBuyer");
-  const amount = getValue("paymentForeignAmount");
+function savePayment(event) {
+  event.preventDefault();
 
-  if (!buyerId) {
-    alert("Please select a buyer.");
-    return;
-  }
-
-  if (!amount) {
-    alert("Please enter payment amount.");
-    return;
-  }
+  const payments = prPayments();
 
   const payment = {
-    id: generateId(),
-    buyerId: buyerId,
-    bankName: getValue("paymentBankName"),
-    proformaNo: getValue("paymentProformaNo"),
-    foreignAmount: amount,
-    currency: getValue("paymentForeignCurrency"),
-    paymentMode: getValue("paymentMode"),
-    pkrAmount: getValue("paymentPkrAmount"),
-    paymentDate:
-      getValue("paymentDate") || today(),
-    reference: getValue("paymentReference"),
-    notes: getValue("paymentNotes"),
+    id: prUid("PAY"),
+    buyer: prGetValue("paymentBuyer"),
+    bankName: prGetValue("paymentBankName"),
+    proformaNo: prGetValue("paymentProformaNo"),
+    foreignAmount: prNumber(prGetValue("paymentForeignAmount")),
+    foreignCurrency: prGetValue("paymentForeignCurrency"),
+    paymentMode: prGetValue("paymentMode"),
+    pkrAmount: prNumber(prGetValue("paymentPkrAmount")),
+    date: prGetValue("paymentDate") || prToday(),
+    reference: prGetValue("paymentReference"),
+    notes: prGetValue("paymentNotes"),
     createdAt: new Date().toISOString()
   };
 
-  payments.unshift(payment);
+  payments.push(payment);
 
-  if (saveData(PR_KEYS.payments, payments)) {
+  if (prWrite(PR_PAYMENTS_KEY, payments)) {
     prClosePayment();
-    refreshAll();
-
+    updateDashboardStats();
+    renderDashboard();
     alert("Payment saved successfully.");
   }
 }
 
-/* ============================================================
+/* =========================================================
    PROFORMA
-============================================================ */
+   ========================================================= */
 
-function openProformaModal() {
-  const modal = getElement("proformaModal");
-  const form = getElement("proformaForm");
+function prOpenProforma() {
+  const form = prEl("proformaForm");
 
-  if (!modal) return;
+  if (!form) return;
 
-  if (form) form.reset();
-
-  setValue("proformaQty", "1");
-  setValue("proformaUnitPrice", "0");
-  setValue("proformaDate", today());
+  form.reset();
 
   populateBuyerSelects();
   populateProductSelects();
 
-  modal.style.display = "flex";
-  modal.classList.add("show");
+  prSetValue("proformaDate", prToday());
+  prSetValue("proformaQty", "1");
+  prSetValue("proformaUnitPrice", "0");
+
+  prShowModal("proformaForm");
 }
 
 function prCloseProforma() {
-  const modal = getElement("proformaModal");
-
-  if (modal) {
-    modal.style.display = "none";
-    modal.classList.remove("show");
-  }
+  prHideModal("proformaForm");
 }
 
-function generateProformaNumber() {
-  const year = new Date().getFullYear();
-  let highest = 0;
+function createProforma(event) {
+  event.preventDefault();
 
-  proformas.forEach(function (item) {
-    const match = String(item.number || "")
-      .match(/PI-(\d+)/);
+  const buyers = prBuyers();
+  const products = prProducts();
 
-    if (match) {
-      highest = Math.max(
-        highest,
-        Number(match[1])
-      );
-    }
-  });
+  const buyerName = prGetValue("proformaBuyer");
+  const productName = prGetValue("proformaProduct");
 
-  return "PI-" +
-    String(highest + 1).padStart(3, "0") +
-    "-" +
-    year;
-}
+  const buyer = buyers.find(
+    b => b.name === buyerName || b.id === buyerName
+  );
 
-function createProforma() {
-  const buyerId = getValue("proformaBuyer");
-  const productId = getValue("proformaProduct");
+  const product = products.find(
+    p => p.name === productName || p.id === productName
+  );
 
-  const qty =
-    Number(getValue("proformaQty")) || 0;
-
-  const unitPrice =
-    Number(getValue("proformaUnitPrice")) || 0;
-
-  const date =
-    getValue("proformaDate") || today();
-
-  if (!buyerId || !productId) {
-    alert("Please select Buyer and Product.");
-    return;
-  }
-
-  if (qty <= 0) {
-    alert("Please enter a valid quantity.");
-    return;
-  }
-
-  const buyer = buyers.find(function (item) {
-    return String(item.id) === String(buyerId);
-  });
-
-  const product = products.find(function (item) {
-    return String(item.id) === String(productId);
-  });
-
-  if (!buyer || !product) {
-    alert("Buyer or Product not found.");
-    return;
-  }
+  const qty = prNumber(prGetValue("proformaQty"));
+  const unitPrice = prNumber(prGetValue("proformaUnitPrice"));
 
   const proforma = {
-    id: generateId(),
-    number: generateProformaNumber(),
-    buyerId: buyerId,
-    productId: productId,
-    buyerName: buyer.name,
-    buyerCountry: buyer.country,
-    productName: product.name,
-    articleNo: product.articleNo,
+    id: prUid("PI"),
+    number: "PR-" + new Date().getFullYear() + "-" +
+      String(Date.now()).slice(-6),
+    buyer: buyerName,
+    buyerCountry: buyer?.country || "",
+    buyerEmail: buyer?.email || "",
+    product: productName,
+    articleNo: product?.articleNo || "",
     quantity: qty,
     unitPrice: unitPrice,
     total: qty * unitPrice,
-    date: date,
-    currency: "USD",
+    date: prGetValue("proformaDate") || prToday(),
     createdAt: new Date().toISOString()
   };
 
-  proformas.unshift(proforma);
+  const proformas = prProformas();
+  proformas.push(proforma);
 
-  if (!saveData(PR_KEYS.proformas, proformas)) {
-    return;
-  }
-
-  prCloseProforma();
-  refreshAll();
-
-  printProforma(proforma);
-}
-
-/* ============================================================
-   PROFORMA LETTER
-============================================================ */
-
-function openProformaLetterModal() {
-  const modal = getElement("letterModal");
-  const form = getElement("letterForm");
-
-  if (!modal) return;
-
-  if (form) form.reset();
-
-  setValue("letterDate", today());
-  setValue("letterSubject", "Proforma Invoice");
-
-  modal.style.display = "flex";
-  modal.classList.add("show");
-}
-
-function prCloseLetter() {
-  const modal = getElement("letterModal");
-
-  if (modal) {
-    modal.style.display = "none";
-    modal.classList.remove("show");
+  if (prWrite(PR_PROFORMAS_KEY, proformas)) {
+    prCloseProforma();
+    printProforma(proforma);
   }
 }
 
-function createProformaLetter() {
-  const buyer =
-    getValue("letterBuyer");
+/* =========================================================
+   PROFORMA PRINT
+   ========================================================= */
 
-  const date =
-    getValue("letterDate") || today();
-
-  const subject =
-    getValue("letterSubject") ||
-    "Proforma Invoice";
-
-  const message =
-    getValue("letterMessage");
-
-  if (!buyer || !message) {
-    alert(
-      "Please enter Buyer / Company and Message."
-    );
-    return;
-  }
-
-  const letter = {
-    id: generateId(),
-    buyer: buyer,
-    date: date,
-    subject: subject,
-    message: message,
-    createdAt: new Date().toISOString()
-  };
-
-  letters.unshift(letter);
-
-  if (saveData(PR_KEYS.letters, letters)) {
-    prCloseLetter();
-    refreshAll();
-
-    printLetter(letter);
-  }
+function printProforma(proforma) {
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>PRIOR RIDING - Proforma Invoice</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 35px;
+  color: #222;
 }
-
-/* ============================================================
-   DASHBOARD TOOLS
-============================================================ */
-
-function openDashboardTool(type) {
-  const panel =
-    getElement("dashboardToolPanel");
-
-  const title =
-    getElement("dashboardToolTitle");
-
-  const body =
-    getElement("dashboardToolBody");
-
-  if (!panel || !title || !body) {
-    alert("Dashboard tool is unavailable.");
-    return;
-  }
-
-  panel.style.display = "block";
-
-  if (type === "performance") {
-    title.textContent = "Performance Wise";
-
-    body.innerHTML = `
-      <div class="panel">
-
-        <h3>Business Performance</h3>
-
-        <p>
-          Total Products:
-          <strong>${products.length}</strong>
-        </p>
-
-        <p>
-          Total Buyers:
-          <strong>${buyers.length}</strong>
-        </p>
-
-        <p>
-          Active Buyers:
-          <strong>
-            ${
-              buyers.filter(function (b) {
-                return String(b.status || "")
-                  .toLowerCase() === "active";
-              }).length
-            }
-          </strong>
-        </p>
-
-        <p>
-          Follow-ups:
-          <strong>
-            ${
-              buyers.filter(function (b) {
-                return Boolean(b.followupDate);
-              }).length
-            }
-          </strong>
-        </p>
-
-        <p>
-          Payments Recorded:
-          <strong>${payments.length}</strong>
-        </p>
-
-        <p>
-          Proformas:
-          <strong>${proformas.length}</strong>
-        </p>
-
-      </div>
-    `;
-
-    return;
-  }
-
-  if (type === "calc") {
-    title.textContent = "Calc Breakdown";
-
-    const totalPayments =
-      payments.reduce(function (sum, payment) {
-        return sum +
-          (Number(payment.pkrAmount) || 0);
-      }, 0);
-
-    const totalProformas =
-      proformas.reduce(function (sum, item) {
-        return sum +
-          (Number(item.total) || 0);
-      }, 0);
-
-    body.innerHTML = `
-      <div class="panel">
-
-        <h3>Calculation Breakdown</h3>
-
-        <p>
-          Total PKR Payments:
-          <strong>${money(totalPayments)}</strong>
-        </p>
-
-        <p>
-          Total Proforma Value:
-          <strong>${money(totalProformas)}</strong>
-        </p>
-
-        <p>
-          Products:
-          <strong>${products.length}</strong>
-        </p>
-
-        <p>
-          Buyers:
-          <strong>${buyers.length}</strong>
-        </p>
-
-      </div>
-    `;
-
-    return;
-  }
-
-  if (type === "paymentMode") {
-    title.textContent = "Payment Mode";
-
-    const modes = {};
-
-    payments.forEach(function (payment) {
-      const mode =
-        payment.paymentMode || "Other";
-
-      modes[mode] =
-        (modes[mode] || 0) + 1;
-    });
-
-    let html = `
-      <div class="panel">
-        <h3>Payment Mode Summary</h3>
-    `;
-
-    const keys = Object.keys(modes);
-
-    if (!keys.length) {
-      html += "<p>No payments recorded yet.</p>";
-    } else {
-      keys.forEach(function (mode) {
-        html += `
-          <p>
-            ${escapeHtml(mode)}:
-            <strong>${modes[mode]}</strong>
-          </p>
-        `;
-      });
-    }
-
-    html += "</div>";
-
-    body.innerHTML = html;
-
-    return;
-  }
-
-  if (type === "payment") {
-    closeDashboardTool();
-    openPaymentModal();
-    return;
-  }
-
-  if (type === "proforma") {
-    closeDashboardTool();
-    openProformaModal();
-    return;
-  }
-
-  if (type === "proformaLetter") {
-    closeDashboardTool();
-    openProformaLetterModal();
-    return;
-  }
-
-  if (type === "catalogue") {
-    title.textContent = "Catalogue";
-
-    if (!products.length) {
-      body.innerHTML = `
-        <div class="panel">
-          <h3>No Products</h3>
-          <p>Please add products first.</p>
-        </div>
-      `;
-      return;
-    }
-
-    body.innerHTML = `
-      <div class="panel">
-
-        <h3>PRIOR RIDING Product Catalogue</h3>
-
-        ${products.map(function (product) {
-          return `
-            <div class="panel">
-
-              <strong>
-                ${escapeHtml(product.name)}
-              </strong>
-
-              <p>
-                Article:
-                ${escapeHtml(product.articleNo || "-")}
-              </p>
-
-              <p>
-                Category:
-                ${escapeHtml(product.category || "-")}
-              </p>
-
-              <p>
-                Price:
-                ${escapeHtml(product.price || "-")}
-              </p>
-
-            </div>
-          `;
-        }).join("")}
-
-      </div>
-    `;
-
-    return;
-  }
-
-  body.innerHTML = `
-    <div class="panel">
-      <p>Dashboard tool ready.</p>
-    </div>
-  `;
+.header {
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  border-bottom:3px solid #18864b;
+  padding-bottom:15px;
 }
-
-function closeDashboardTool() {
-  const panel =
-    getElement("dashboardToolPanel");
-
-  if (panel) {
-    panel.style.display = "none";
-  }
+.brand {
+  font-size:28px;
+  font-weight:800;
+  color:#c62828;
 }
+.brand span {
+  color:#18864b;
+}
+h1 {
+  text-align:center;
+  margin:30px 0;
+}
+.info {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+  margin-bottom:25px;
+}
+.box {
+  border:1px solid #ccc;
+  padding:14px;
+}
+table {
+  width:100%;
+  border-collapse:collapse;
+}
+th,td {
+  border:1px solid #bbb;
+  padding:10px;
+  text-align:left;
+}
+th {
+  background:#f3f3f3;
+}
+.total {
+  margin-top:20px;
+  text-align:right;
+  font-size:20px;
+  font-weight:bold;
+}
+.footer {
+  margin-top:60px;
+  border-top:1px solid #ccc;
+  padding-top:15px;
+}
+@media print {
+  button { display:none; }
+}
+</style>
+</head>
+<body>
 
-/* ============================================================
-   PRINT / PDF
-============================================================ */
+<div class="header">
+  <div class="brand">PRIOR <span>RIDING</span></div>
+  <div>
+    <strong>PROFORMA INVOICE</strong><br>
+    ${prEscape(proforma.number)}
+  </div>
+</div>
 
-function printToPdf() {
+<h1>PROFORMA INVOICE</h1>
+
+<div class="info">
+  <div class="box">
+    <strong>Buyer</strong><br><br>
+    ${prEscape(proforma.buyer)}<br>
+    ${prEscape(proforma.buyerCountry)}<br>
+    ${prEscape(proforma.buyerEmail)}
+  </div>
+
+  <div class="box">
+    <strong>Invoice Details</strong><br><br>
+    No: ${prEscape(proforma.number)}<br>
+    Date: ${prFormatDate(proforma.date)}
+  </div>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>Product</th>
+<th>Article No.</th>
+<th>Qty</th>
+<th>Unit Price</th>
+<th>Total</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>${prEscape(proforma.product)}</td>
+<td>${prEscape(proforma.articleNo)}</td>
+<td>${proforma.quantity}</td>
+<td>${prMoney(proforma.unitPrice)}</td>
+<td>${prMoney(proforma.total)}</td>
+</tr>
+</tbody>
+</table>
+
+<div class="total">
+Total: ${prMoney(proforma.total)}
+</div>
+
+<div class="footer">
+<strong>PRIOR RIDING</strong><br>
+International Gloves Manufacturer & Exporter
+</div>
+
+<script>
+window.onload = function() {
   window.print();
-}
+};
+</script>
 
-function printProforma(item) {
-  const buyer = escapeHtml(item.buyerName);
-  const country = escapeHtml(item.buyerCountry);
-  const product = escapeHtml(item.productName);
-  const article = escapeHtml(item.articleNo);
-  const number = escapeHtml(item.number);
+</body>
+</html>
+`;
 
-  const html = `
-    <html>
-    <head>
-      <title>${number} - PRIOR RIDING</title>
-
-      <style>
-        body {
-          font-family: Arial, sans-serif;
-          padding: 40px;
-        }
-
-        h1 {
-          color: #b00020;
-        }
-
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-top: 25px;
-        }
-
-        th, td {
-          border: 1px solid #ccc;
-          padding: 10px;
-          text-align: left;
-        }
-      </style>
-    </head>
-
-    <body>
-
-      <h1>PRIOR RIDING</h1>
-
-      <h2>PROFORMA INVOICE</h2>
-
-      <p>
-        <strong>PI No:</strong> ${number}
-      </p>
-
-      <p>
-        <strong>Date:</strong> ${escapeHtml(item.date)}
-      </p>
-
-      <p>
-        <strong>Buyer:</strong> ${buyer}
-      </p>
-
-      <p>
-        <strong>Country:</strong> ${country}
-      </p>
-
-      <table>
-
-        <tr>
-          <th>Product</th>
-          <th>Article</th>
-          <th>Quantity</th>
-          <th>Unit Price</th>
-          <th>Total</th>
-        </tr>
-
-        <tr>
-          <td>${product}</td>
-          <td>${article}</td>
-          <td>${item.quantity}</td>
-          <td>${money(item.unitPrice)} USD</td>
-          <td>${money(item.total)} USD</td>
-        </tr>
-
-      </table>
-
-      <h3>
-        Total:
-        ${money(item.total)} USD
-      </h3>
-
-      <p>
-        PRIOR RIDING — International Buyer CRM
-      </p>
-
-    </body>
-    </html>
-  `;
-
-  openPrintWindow(html);
-}
-
-function printLetter(letter) {
-  const html = `
-    <html>
-    <head>
-      <title>PRIOR RIDING Letter</title>
-
-      <style>
-        body {
-          font-family: Arial, sans-serif;
-          padding: 50px;
-          line-height: 1.7;
-        }
-
-        h1 {
-          color: #b00020;
-        }
-      </style>
-    </head>
-
-    <body>
-
-      <h1>PRIOR RIDING</h1>
-
-      <p>
-        <strong>Date:</strong>
-        ${escapeHtml(letter.date)}
-      </p>
-
-      <p>
-        <strong>To:</strong>
-        ${escapeHtml(letter.buyer)}
-      </p>
-
-      <h2>
-        ${escapeHtml(letter.subject)}
-      </h2>
-
-      <p>
-        ${escapeHtml(letter.message)
-          .replace(/\n/g, "<br>")}
-      </p>
-
-      <br>
-
-      <p>
-        Best Regards,<br>
-        <strong>PRIOR RIDING</strong>
-      </p>
-
-    </body>
-    </html>
-  `;
-
-  openPrintWindow(html);
-}
-
-function openPrintWindow(html) {
-  const win = window.open(
-    "",
-    "_blank",
-    "width=900,height=700"
-  );
+  const win = window.open("", "_blank");
 
   if (!win) {
-    alert(
-      "Please allow pop-ups to print the document."
-    );
+    alert("Please allow pop-ups to print the Proforma Invoice.");
     return;
   }
 
   win.document.open();
   win.document.write(html);
   win.document.close();
-
-  setTimeout(function () {
-    win.focus();
-    win.print();
-  }, 400);
 }
 
-/* ============================================================
-   STORAGE / BACKUP
-============================================================ */
+/* =========================================================
+   PROFORMA LETTER
+   ========================================================= */
+
+function prOpenLetter() {
+  const form = prEl("letterForm");
+
+  if (!form) return;
+
+  form.reset();
+
+  populateBuyerSelects();
+
+  prSetValue("letterDate", prToday());
+  prSetValue("letterSubject", "Proforma Invoice");
+
+  prShowModal("letterForm");
+}
+
+function prCloseLetter() {
+  prHideModal("letterForm");
+}
+
+function createLetter(event) {
+  event.preventDefault();
+
+  const letter = {
+    id: prUid("LTR"),
+    buyer: prGetValue("letterBuyer"),
+    date: prGetValue("letterDate") || prToday(),
+    subject: prGetValue("letterSubject") || "Proforma Invoice",
+    message: prGetValue("letterMessage"),
+    createdAt: new Date().toISOString()
+  };
+
+  const letters = prLetters();
+  letters.push(letter);
+
+  if (prWrite(PR_LETTERS_KEY, letters)) {
+    prCloseLetter();
+    printLetter(letter);
+  }
+}
+
+function printLetter(letter) {
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>PRIOR RIDING - Letter</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin:50px;
+  color:#222;
+}
+.header {
+  border-bottom:3px solid #18864b;
+  padding-bottom:15px;
+}
+.brand {
+  font-size:30px;
+  font-weight:800;
+  color:#c62828;
+}
+.brand span {
+  color:#18864b;
+}
+.date {
+  margin-top:35px;
+}
+.subject {
+  font-size:20px;
+  font-weight:bold;
+  margin:30px 0;
+}
+.message {
+  white-space:pre-wrap;
+  line-height:1.8;
+}
+.footer {
+  margin-top:80px;
+}
+@media print {
+  button { display:none; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">PRIOR <span>RIDING</span></div>
+  <div>International Gloves Manufacturer & Exporter</div>
+</div>
+
+<div class="date">
+${prFormatDate(letter.date)}
+</div>
+
+<p>
+<strong>To:</strong> ${prEscape(letter.buyer)}
+</p>
+
+<div class="subject">
+${prEscape(letter.subject)}
+</div>
+
+<div class="message">
+${prEscape(letter.message)}
+</div>
+
+<div class="footer">
+Regards,<br><br>
+<strong>PRIOR RIDING</strong><br>
+International Gloves Manufacturer & Exporter
+</div>
+
+<script>
+window.onload = function() {
+  window.print();
+};
+</script>
+
+</body>
+</html>
+`;
+
+  const win = window.open("", "_blank");
+
+  if (!win) {
+    alert("Please allow pop-ups to print the letter.");
+    return;
+  }
+
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+}
+
+/* =========================================================
+   DASHBOARD TOOLS
+   ========================================================= */
+
+function openDashboardTool(type) {
+  const panel = prEl("dashboardToolPanel");
+  const title = prEl("dashboardToolTitle");
+  const body = prEl("dashboardToolBody");
+
+  if (!panel || !title || !body) {
+    if (type === "payment") prOpenPayment();
+    if (type === "proforma") prOpenProforma();
+    if (type === "proformaLetter") prOpenLetter();
+    return;
+  }
+
+  if (type === "payment") {
+    prOpenPayment();
+    return;
+  }
+
+  if (type === "proforma") {
+    prOpenProforma();
+    return;
+  }
+
+  if (type === "proformaLetter") {
+    prOpenLetter();
+    return;
+  }
+
+  if (type === "catalogue") {
+    showSection("products");
+    return;
+  }
+
+  title.textContent = "Dashboard Tool";
+
+  if (type === "performance") {
+    title.textContent = "PERFORMANCE WISE";
+
+    const products = prProducts();
+    const buyers = prBuyers();
+    const payments = prPayments();
+
+    const active = buyers.filter(
+      b => String(b.status).toLowerCase() === "active"
+    ).length;
+
+    const potential = buyers.filter(
+      b => String(b.status).toLowerCase() === "potential"
+    ).length;
+
+    const followup = buyers.filter(
+      b => String(b.status).toLowerCase().includes("follow")
+    ).length;
+
+    const totalPKR = payments.reduce(
+      (sum, p) => sum + prNumber(p.pkrAmount),
+      0
+    );
+
+    body.innerHTML = `
+      <div class="report-grid">
+
+        <div class="report-card">
+          <strong>${products.length}</strong>
+          <span>Total Products</span>
+        </div>
+
+        <div class="report-card">
+          <strong>${buyers.length}</strong>
+          <span>Total Buyers</span>
+        </div>
+
+        <div class="report-card">
+          <strong>${active}</strong>
+          <span>Active Buyers</span>
+        </div>
+
+        <div class="report-card">
+          <strong>${potential}</strong>
+          <span>Potential Buyers</span>
+        </div>
+
+        <div class="report-card">
+          <strong>${followup}</strong>
+          <span>Follow-ups</span>
+        </div>
+
+        <div class="report-card">
+          <strong>PKR ${totalPKR.toLocaleString()}</strong>
+          <span>Total Payments</span>
+        </div>
+
+      </div>
+    `;
+
+    panel.style.display = "block";
+    return;
+  }
+
+  if (type === "calc") {
+    title.textContent = "CALC BREAKDOWN";
+
+    body.innerHTML = `
+      <div class="calc-box">
+
+        <label>
+          Quantity
+          <input id="prCalcQty"
+                 type="number"
+                 min="0"
+                 step="1"
+                 value="1">
+        </label>
+
+        <label>
+          Unit Price
+          <input id="prCalcPrice"
+                 type="number"
+                 min="0"
+                 step="0.01"
+                 value="0">
+        </label>
+
+        <label>
+          Discount %
+          <input id="prCalcDiscount"
+                 type="number"
+                 min="0"
+                 max="100"
+                 step="0.01"
+                 value="0">
+        </label>
+
+        <button type="button" id="prCalcButton">
+          Calculate
+        </button>
+
+        <div id="prCalcResult">
+          Total: 0.00
+        </div>
+
+      </div>
+    `;
+
+    const calcButton = prEl("prCalcButton");
+
+    if (calcButton) {
+      calcButton.addEventListener("click", calculateDashboard);
+    }
+
+    panel.style.display = "block";
+    return;
+  }
+
+  if (type === "paymentMode") {
+    title.textContent = "PAYMENT MODE";
+
+    const payments = prPayments();
+
+    const modes = {};
+
+    payments.forEach(payment => {
+      const mode = payment.paymentMode || "Other";
+
+      if (!modes[mode]) {
+        modes[mode] = {
+          count: 0,
+          pkr: 0
+        };
+      }
+
+      modes[mode].count++;
+      modes[mode].pkr += prNumber(payment.pkrAmount);
+    });
+
+    const rows = Object.entries(modes);
+
+    body.innerHTML = rows.length
+      ? `
+        <div class="report-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Payment Mode</th>
+                <th>Transactions</th>
+                <th>PKR Amount</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              ${rows.map(([mode, data]) => `
+                <tr>
+                  <td>${prEscape(mode)}</td>
+                  <td>${data.count}</td>
+                  <td>PKR ${data.pkr.toLocaleString()}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `
+      : `<div class="empty-state">No payments recorded yet.</div>`;
+
+    panel.style.display = "block";
+    return;
+  }
+
+  panel.style.display = "block";
+}
+
+function closeDashboardTool() {
+  const panel = prEl("dashboardToolPanel");
+
+  if (panel) {
+    panel.style.display = "none";
+  }
+}
+
+function calculateDashboard() {
+  const qty = prNumber(prGetValue("prCalcQty"));
+  const price = prNumber(prGetValue("prCalcPrice"));
+  const discount = Math.min(
+    100,
+    Math.max(0, prNumber(prGetValue("prCalcDiscount")))
+  );
+
+  const gross = qty * price;
+  const discountAmount = gross * (discount / 100);
+  const net = gross - discountAmount;
+
+  const result = prEl("prCalcResult");
+
+  if (result) {
+    result.innerHTML = `
+      <div>Gross: <strong>${gross.toFixed(2)}</strong></div>
+      <div>Discount: <strong>${discountAmount.toFixed(2)}</strong></div>
+      <div>Net Total: <strong>${net.toFixed(2)}</strong></div>
+    `;
+  }
+}
+
+/* =========================================================
+   PRINT / PDF
+   ========================================================= */
+
+function printToPdf() {
+  window.print();
+}
+
+/* =========================================================
+   SETTINGS MENU
+   ========================================================= */
 
 function toggleSettingsMenu() {
-  const menu = getElement("settingsMenu");
+  const menu =
+    prEl("settingsMenu") ||
+    prEl("storageMenu") ||
+    document.querySelector(".settings-menu");
 
   if (!menu) return;
 
-  menu.style.display =
-    menu.style.display === "none"
-      ? "block"
-      : "none";
+  const isHidden =
+    menu.style.display === "none" ||
+    getComputedStyle(menu).display === "none";
+
+  menu.style.display = isHidden ? "block" : "none";
 }
 
 function openStoragePanel() {
-  toggleSettingsMenu();
+  updateStorageStats();
 
-  const modal =
-    getElement("storageModal");
+  const panel =
+    prEl("storagePanel") ||
+    document.querySelector("#storageModal");
 
-  if (!modal) return;
-
-  updateStorageCounts();
-
-  modal.style.display = "flex";
-  modal.classList.add("show");
+  if (panel) {
+    panel.style.display = "flex";
+    panel.classList.add("show");
+  }
 }
 
 function closeStoragePanel() {
-  const modal =
-    getElement("storageModal");
+  const panel =
+    prEl("storagePanel") ||
+    document.querySelector("#storageModal");
 
-  if (modal) {
-    modal.style.display = "none";
-    modal.classList.remove("show");
+  if (panel) {
+    panel.style.display = "none";
+    panel.classList.remove("show");
   }
 }
 
-function showAppInfo() {
-  toggleSettingsMenu();
+function updateStorageStats() {
+  const products = prProducts();
+  const buyers = prBuyers();
+  const payments = prPayments();
+  const proformas = prProformas();
 
-  const modal =
-    getElement("appInfoModal");
+  const productCount = prEl("storageProductCount");
+  const buyerCount = prEl("storageBuyerCount");
+  const paymentCount = prEl("storagePaymentCount");
+  const proformaCount = prEl("storageProformaCount");
 
-  if (!modal) return;
-
-  modal.style.display = "flex";
-  modal.classList.add("show");
+  if (productCount) productCount.textContent = products.length;
+  if (buyerCount) buyerCount.textContent = buyers.length;
+  if (paymentCount) paymentCount.textContent = payments.length;
+  if (proformaCount) proformaCount.textContent = proformas.length;
 }
 
-function closeAppInfo() {
-  const modal =
-    getElement("appInfoModal");
-
-  if (modal) {
-    modal.style.display = "none";
-    modal.classList.remove("show");
-  }
-}
+/* =========================================================
+   EXPORT BACKUP
+   ========================================================= */
 
 function exportAllData() {
-  const data = {
-    app:
-      "PRIOR RIDING — International Buyer CRM",
+  const backup = {
+    app: "PRIOR RIDING",
+    version: "2026-10-05",
+    exportedAt: new Date().toISOString(),
 
-    version: "1.0",
-
-    exportedAt:
-      new Date().toISOString(),
-
-    products: products,
-    buyers: buyers,
-    payments: payments,
-    proformas: proformas,
-    letters: letters
+    products: prProducts(),
+    buyers: prBuyers(),
+    payments: prPayments(),
+    proformas: prProformas(),
+    letters: prLetters()
   };
 
-  const blob = new Blob(
-    [
-      JSON.stringify(data, null, 2)
-    ],
-    {
-      type: "application/json"
-    }
-  );
+  const json = JSON.stringify(backup, null, 2);
 
-  const url =
-    URL.createObjectURL(blob);
+  const blob = new Blob([json], {
+    type: "application/json"
+  });
 
-  const link =
-    document.createElement("a");
+  const url = URL.createObjectURL(blob);
 
-  link.href = url;
+  const a = document.createElement("a");
 
-  link.download =
-    "prior-riding-backup-" +
-    today() +
+  a.href = url;
+
+  a.download =
+    "PRIOR-RIDING-CRM-BACKUP-" +
+    prToday() +
     ".json";
 
-  document.body.appendChild(link);
+  document.body.appendChild(a);
 
-  link.click();
+  a.click();
 
-  link.remove();
+  a.remove();
 
-  URL.revokeObjectURL(url);
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 1000);
 }
 
-function restoreAllData(event) {
-  const file =
-    event.target.files &&
-    event.target.files[0];
+/* =========================================================
+   RESTORE BACKUP
+   ========================================================= */
 
-  if (!file) return;
+function restoreAllData(eventOrInput) {
+  const input =
+    eventOrInput?.target?.files
+      ? eventOrInput.target
+      : prEl("restoreFile");
+
+  if (!input || !input.files || !input.files.length) {
+    return;
+  }
+
+  const file = input.files[0];
 
   const reader = new FileReader();
 
-  reader.onload = function (e) {
+  reader.onload = function () {
     try {
-      const data =
-        JSON.parse(e.target.result);
+      const backup = JSON.parse(reader.result);
 
-      if (Array.isArray(data.products)) {
-        localStorage.setItem(
-          PR_KEYS.products,
-          JSON.stringify(data.products)
-        );
+      if (!backup || typeof backup !== "object") {
+        throw new Error("Invalid backup");
       }
 
-      if (Array.isArray(data.buyers)) {
-        localStorage.setItem(
-          PR_KEYS.buyers,
-          JSON.stringify(data.buyers)
-        );
+      if (!confirm(
+        "Restore PRIOR RIDING backup?\n\n" +
+        "Current local data will be replaced by this backup."
+      )) {
+        input.value = "";
+        return;
       }
 
-      if (Array.isArray(data.payments)) {
-        localStorage.setItem(
-          PR_KEYS.payments,
-          JSON.stringify(data.payments)
-        );
+      if (Array.isArray(backup.products)) {
+        prWrite(PR_PRODUCTS_KEY, backup.products);
       }
 
-      if (Array.isArray(data.proformas)) {
-        localStorage.setItem(
-          PR_KEYS.proformas,
-          JSON.stringify(data.proformas)
-        );
+      if (Array.isArray(backup.buyers)) {
+        prWrite(PR_BUYERS_KEY, backup.buyers);
       }
 
-      if (Array.isArray(data.letters)) {
-        localStorage.setItem(
-          PR_KEYS.letters,
-          JSON.stringify(data.letters)
-        );
+      if (Array.isArray(backup.payments)) {
+        prWrite(PR_PAYMENTS_KEY, backup.payments);
       }
 
-      alert(
-        "PRIOR RIDING backup restored successfully."
-      );
+      if (Array.isArray(backup.proformas)) {
+        prWrite(PR_PROFORMAS_KEY, backup.proformas);
+      }
+
+      if (Array.isArray(backup.letters)) {
+        prWrite(PR_LETTERS_KEY, backup.letters);
+      }
+
+      alert("Backup restored successfully.");
 
       location.reload();
 
     } catch (error) {
       console.error(error);
-
       alert(
-        "Invalid PRIOR RIDING backup file."
+        "Backup restore failed.\n\n" +
+        "Please select a valid PRIOR RIDING JSON backup file."
       );
     }
   };
 
   reader.readAsText(file);
-
-  event.target.value = "";
 }
 
-/* ============================================================
-   GLOBAL SAFETY
-============================================================ */
+/* =========================================================
+   APP INFORMATION
+   ========================================================= */
 
-window.showSection = showSection;
+function showAppInfo() {
+  const modal =
+    prEl("appInfoModal") ||
+    prEl("appInformationModal");
 
-window.openProductModal = openProductModal;
-window.closeProductModal = closeProductModal;
-window.editProduct = editProduct;
-window.deleteProduct = deleteProduct;
+  if (modal) {
+    modal.style.display = "flex";
+    modal.classList.add("show");
+    return;
+  }
 
-window.openBuyerModal = openBuyerModal;
-window.closeBuyerModal = closeBuyerModal;
-window.editBuyer = editBuyer;
-window.deleteBuyer = deleteBuyer;
+  alert(
+    "PRIOR RIDING\n\n" +
+    "International Buyer CRM & Product Catalogue\n\n" +
+    "Manufacturer & Exporter\n" +
+    "Version: 2026"
+  );
+}
 
-window.openPaymentModal = openPaymentModal;
-window.prClosePayment = prClosePayment;
+function closeAppInfo() {
+  const modal =
+    prEl("appInfoModal") ||
+    prEl("appInformationModal");
 
-window.openProformaModal = openProformaModal;
-window.prCloseProforma = prCloseProforma;
+  if (modal) {
+    modal.style.display = "none";
+    modal.classList.remove("show");
+  }
+}
 
-window.openProformaLetterModal =
-  openProformaLetterModal;
+/* =========================================================
+   FORM SUBMISSION — PRODUCT
+   ========================================================= */
 
-window.prCloseLetter = prCloseLetter;
+function saveProduct(event) {
+  event.preventDefault();
 
-window.openDashboardTool =
-  openDashboardTool;
+  const products = prProducts();
 
-window.closeDashboardTool =
-  closeDashboardTool;
+  const id = prGetValue("productId");
 
-window.printToPdf = printToPdf;
+  const product = {
+    id: id || prUid("PROD"),
 
-window.toggleSettingsMenu =
-  toggleSettingsMenu;
+    name: prGetValue("productName"),
 
-window.openStoragePanel =
-  openStoragePanel;
+    articleNo: prGetValue("articleNo"),
 
-window.closeStoragePanel =
-  closeStoragePanel;
+    category: prGetValue("category"),
 
-window.showAppInfo =
-  showAppInfo;
+    material: prGetValue("material"),
 
-window.closeAppInfo =
-  closeAppInfo;
+    size: prGetValue("size"),
 
-window.exportAllData =
-  exportAllData;
+    weight: prGetValue("weight"),
 
-window.restoreAllData =
-  restoreAllData;
+    color: prGetValue("color"),
 
-/* ============================================================
-   END
-============================================================ */
+    availableSizes: prGetValue("availableSizes"),
+
+    moq: prGetValue("moq"),
+
+    price: prGetValue("price"),
+
+    imageUrl: prGetValue("imageUrl"),
+
+    specification: prGetValue("specification"),
+
+    description: prGetValue("description"),
+
+    status: prGetValue("productStatus") || "Active",
+
+    updatedAt: new Date().toISOString()
+  };
+
+  if (!product.name) {
+    alert("Please enter Product Name.");
+    return;
+  }
+
+  const existingIndex = products.findIndex(
+    p => p.id === product.id
+  );
+
+  if (existingIndex >= 0) {
+    product.createdAt =
+      products[existingIndex].createdAt ||
+      new Date().toISOString();
+
+    products[existingIndex] = product;
+  } else {
+    product.createdAt = new Date().toISOString();
+    products.push(product);
+  }
+
+  if (prWrite(PR_PRODUCTS_KEY, products)) {
+    closeProductModal();
+    renderProducts();
+    renderDashboard();
+    populateProductSelects();
+
+    alert(
+      existingIndex >= 0
+        ? "Product updated successfully."
+        : "Product saved successfully."
+    );
+  }
+}
+
+/* =========================================================
+   FORM SUBMISSION — BUYER
+   ========================================================= */
+
+function saveBuyer(event) {
+  event.preventDefault();
+
+  const buyers = prBuyers();
+
+  const id = prGetValue("buyerId");
+
+  const buyer = {
+    id: id || prUid("BUYER"),
+
+    name: prGetValue("buyerName"),
+
+    country: prGetValue("buyerCountry"),
+
+    contactPerson: prGetValue("contactPerson"),
+
+    email: prGetValue("buyerEmail"),
+
+    phone: prGetValue("buyerPhone"),
+
+    interestedProduct: prGetValue("interestedProduct"),
+
+    status: prGetValue("buyerStatus") || "Potential",
+
+    followupDate: prGetValue("followupDate"),
+
+    notes: prGetValue("buyerNotes"),
+
+    updatedAt: new Date().toISOString()
+  };
+
+  if (!buyer.name) {
+    alert("Please enter Buyer Name.");
+    return;
+  }
+
+  const existingIndex = buyers.findIndex(
+    b => b.id === buyer.id
+  );
+
+  if (existingIndex >= 0) {
+    buyer.createdAt =
+      buyers[existingIndex].createdAt ||
+      new Date().toISOString();
+
+    buyers[existingIndex] = buyer;
+  } else {
+    buyer.createdAt = new Date().toISOString();
+    buyers.push(buyer);
+  }
+
+  if (prWrite(PR_BUYERS_KEY, buyers)) {
+    closeBuyerModal();
+    renderBuyers();
+    renderDashboard();
+    populateBuyerSelects();
+
+    alert(
+      existingIndex >= 0
+        ? "Buyer updated successfully."
+        : "Buyer saved successfully."
+    );
+  }
+}
+
+/* =========================================================
+   EVENT LISTENERS
+   ========================================================= */
+
+function setupFormListeners() {
+  const productForm = prEl("productForm");
+
+  if (productForm && !productForm.dataset.prBound) {
+    productForm.addEventListener("submit", saveProduct);
+    productForm.dataset.prBound = "1";
+  }
+
+  const buyerForm = prEl("buyerForm");
+
+  if (buyerForm && !buyerForm.dataset.prBound) {
+    buyerForm.addEventListener("submit", saveBuyer);
+    buyerForm.dataset.prBound = "1";
+  }
+
+  const paymentForm = prEl("paymentForm");
+
+  if (paymentForm && !paymentForm.dataset.prBound) {
+    paymentForm.addEventListener("submit", savePayment);
+    paymentForm.dataset.prBound = "1";
+  }
+
+  const proformaForm = prEl("proformaForm");
+
+  if (proformaForm && !proformaForm.dataset.prBound) {
+    proformaForm.addEventListener("submit", createProforma);
+    proformaForm.dataset.prBound = "1";
+  }
+
+  const letterForm = prEl("letterForm");
+
+  if (letterForm && !letterForm.dataset.prBound) {
+    letterForm.addEventListener("submit", createLetter);
+    letterForm.dataset.prBound = "1";
+  }
+
+  const restoreFile = prEl("restoreFile");
+
+  if (restoreFile && !restoreFile.dataset.prBound) {
+    restoreFile.addEventListener("change", restoreAllData);
+    restoreFile.dataset.prBound = "1";
+  }
+}
+
+/* =========================================================
+   CLOSE MODALS WHEN CLICKING OUTSIDE
+   ========================================================= */
+
+function setupOutsideModalClose() {
+  document.addEventListener("click", function (event) {
+    const target = event.target;
+
+    if (!target.classList) return;
+
+    if (
+      target.classList.contains("modal") ||
+      target.classList.contains("modal-overlay")
+    ) {
+      target.style.display = "none";
+      target.classList.remove("show");
+    }
+  });
+}
+
+/* =========================================================
+   ESCAPE KEY
+   ========================================================= */
+
+function setupEscapeKey() {
+  document.addEventListener("keydown", function (event) {
+    if (event.key !== "Escape") return;
+
+    document.querySelectorAll(
+      ".modal.show, .modal-overlay.show"
+    ).forEach(modal => {
+      modal.style.display = "none";
+      modal.classList.remove("show");
+    });
+
+    closeDashboardTool();
+  });
+}
+
+/* =========================================================
+   STORAGE CHANGE REFRESH
+   ========================================================= */
+
+window.addEventListener("storage", function () {
+  renderDashboard();
+  renderProducts();
+  renderBuyers();
+  populateProductSelects();
+  populateBuyerSelects();
+  updateStorageStats();
+});
+
+/* =========================================================
+   INITIALIZE
+   ========================================================= */
+
+function initPriorRidingApp() {
+  setupFormListeners();
+
+  setupOutsideModalClose();
+
+  setupEscapeKey();
+
+  populateProductSelects();
+
+  populateBuyerSelects();
+
+  renderDashboard();
+
+  renderProducts();
+
+  renderBuyers();
+
+  updateStorageStats();
+
+  /* Default dashboard */
+  const dashboard = prEl("dashboard");
+
+  if (dashboard) {
+    showSection("dashboard");
+  }
+
+  console.log(
+    "PRIOR RIDING CRM initialized successfully."
+  );
+}
+
+/* =========================================================
+   START
+   ========================================================= */
+
+if (document.readyState === "loading") {
+  document.addEventListener(
+    "DOMContentLoaded",
+    initPriorRidingApp,
+    { once: true }
+  );
+} else {
+  initPriorRidingApp();
+}
