@@ -2224,7 +2224,20 @@ if ("serviceWorker" in navigator) {
 
 }
 </script>
-  toggleSettingsMenu();
+<script>
+function toggleSettingsMenu() {
+
+  const menu =
+    document.getElementById("settingsMenu");
+
+  if (!menu) return;
+
+  menu.style.display =
+    menu.style.display === "none"
+      ? "block"
+      : "none";
+}
+</script>
 
   const modal =
     document.getElementById("storageModal");
