@@ -1,3 +1,80 @@
+name: Build PRIOR RIDING APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Prepare web assets
+        run: |
+          rm -rf www
+          mkdir -p www
+
+          cp index.html www/
+          cp app.js www/
+          cp style.css www/
+          cp manifest.json www/
+          cp app-config.json www/
+          cp pwabuilder-sw.js www/
+          cp pwabuilder-sw-v4.js www/
+          cp prior-riding-logo.jpg www/
+
+          cp icon-192.png www/
+          cp icon-512.png www/
+
+      - name: Create Android project
+        run: |
+          npx cap init "PRIOR RIDING CRM" "com.priorriding.crm" --web-dir=www
+          npx cap add android
+          npx cap copy android
+
+      - name: Configure Android app
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          gradle = Path("android/app/build.gradle")
+          text = gradle.read_text()
+
+          text = re.sub(
+              r'versionCode\s+\d+',
+              'versionCode 31',
+              text
+          )
+
+          text = re.sub(
+              r'versionName\s+"[^"]+"',
+              'versionName "3.1.0"',
+              text
+          )
+
+          gradle.write_text(text)
+          PY
+
       - name: Create launcher icon resources
         run: |
           mkdir -p android/app/src/main/res/mipmap-mdpi
@@ -39,20 +116,6 @@
               <foreground android:drawable="@drawable/ic_launcher_foreground"/>
           </adaptive-icon>
           EOF
-
-          python3 - <<'PY'
-          from pathlib import Path
-
-          manifest = Path("android/app/src/main/AndroidManifest.xml")
-          text = manifest.read_text()
-
-          text = text.replace(
-              'android:icon="@mipmap/ic_launcher"',
-              'android:icon="@mipmap/ic_launcher"'
-          )
-
-          manifest.write_text(text)
-          PY
 
       - name: Restore stable Android debug signing key
         uses: actions/cache@v4
