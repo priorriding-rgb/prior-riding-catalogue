@@ -2180,12 +2180,10 @@
 <script
   src="app.js?v=20261004-01"
   defer
-></script>
-
-
 <!-- =====================================================
      SERVICE WORKER
 ===================================================== -->
+
 <script>
 if ("serviceWorker" in navigator) {
 
@@ -2224,6 +2222,8 @@ if ("serviceWorker" in navigator) {
 
 }
 </script>
+
+
 <script>
 function toggleSettingsMenu() {
 
@@ -2237,8 +2237,8 @@ function toggleSettingsMenu() {
       ? "block"
       : "none";
 }
-</script>
-<script>
+
+
 function openStoragePanel() {
 
   const modal =
@@ -2257,61 +2257,6 @@ function openStoragePanel() {
 
   const proformaCount =
     document.getElementById("storageProformaCount");
-
-  try {
-
-    const products =
-      JSON.parse(
-        localStorage.getItem("prior_riding_products") || "[]"
-      );
-
-    const buyers =
-      JSON.parse(
-        localStorage.getItem("prior_riding_buyers") || "[]"
-      );
-
-    const payments =
-      JSON.parse(
-        localStorage.getItem("prior_riding_payments") || "[]"
-      );
-
-    const proformas =
-      JSON.parse(
-        localStorage.getItem("prior_riding_proformas") || "[]"
-      );
-
-    if (productCount)
-      productCount.textContent = products.length;
-
-    if (buyerCount)
-      buyerCount.textContent = buyers.length;
-
-    if (paymentCount)
-      paymentCount.textContent = payments.length;
-
-    if (proformaCount)
-      proformaCount.textContent = proformas.length;
-
-  } catch (error) {
-
-    console.error("Storage error:", error);
-
-  }
-
-  modal.classList.add("show");
-  modal.style.display = "flex";
-}
-</script>
-  const paymentCount =
-    document.getElementById(
-      "storagePaymentCount"
-    );
-
-  const proformaCount =
-    document.getElementById(
-      "storageProformaCount"
-    );
-
 
   try {
 
@@ -2343,30 +2288,37 @@ function openStoragePanel() {
         ) || "[]"
       );
 
+    if (productCount) {
+      productCount.textContent =
+        products.length;
+    }
 
-    if (productCount)
-      productCount.textContent = products.length;
+    if (buyerCount) {
+      buyerCount.textContent =
+        buyers.length;
+    }
 
-    if (buyerCount)
-      buyerCount.textContent = buyers.length;
+    if (paymentCount) {
+      paymentCount.textContent =
+        payments.length;
+    }
 
-    if (paymentCount)
-      paymentCount.textContent = payments.length;
-
-    if (proformaCount)
-      proformaCount.textContent = proformas.length;
+    if (proformaCount) {
+      proformaCount.textContent =
+        proformas.length;
+    }
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "Storage error:",
+      error
+    );
 
   }
 
-
   modal.classList.add("show");
-
   modal.style.display = "flex";
-
 }
 
 
@@ -2378,7 +2330,6 @@ function closeStoragePanel() {
   if (modal) {
 
     modal.classList.remove("show");
-
     modal.style.display = "none";
 
   }
@@ -2396,13 +2347,12 @@ function showAppInfo() {
   if (!modal) return;
 
   modal.classList.add("show");
-
   modal.style.display = "flex";
 
 }
 
 
-. closeAppInfo() {
+function closeAppInfo() {
 
   const modal =
     document.getElementById("appInfoModal");
@@ -2410,7 +2360,6 @@ function showAppInfo() {
   if (modal) {
 
     modal.classList.remove("show");
-
     modal.style.display = "none";
 
   }
@@ -2626,10 +2575,8 @@ function restoreAllData(event) {
   event.target.value = "";
 
 }
-
 </script>
 
 
 </body>
-
 </html>
