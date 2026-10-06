@@ -47,7 +47,7 @@ jobs:
 
       - name: Create Android project
         run: |
-          npx cap init "PRIOR RIDING CRM" "com.priorriding.crm" --web-dir=www
+          npx cap init "PRIOR RIDING" "com.priorriding.crm" --web-dir=www
           npx cap add android
           npx cap copy android
 
@@ -62,13 +62,13 @@ jobs:
 
           text = re.sub(
               r'versionCode\s+\d+',
-              'versionCode 31',
+              'versionCode 32',
               text
           )
 
           text = re.sub(
               r'versionName\s+"[^"]+"',
-              'versionName "3.1.0"',
+              'versionName "3.2.0"',
               text
           )
 
@@ -77,13 +77,16 @@ jobs:
 
       - name: Create launcher icon resources
         run: |
+          rm -rf android/app/src/main/res/mipmap-anydpi-v26
+          rm -rf android/app/src/main/res/drawable/ic_launcher_foreground.png
+          rm -rf android/app/src/main/res/drawable/ic_launcher_foreground.xml
+          rm -rf android/app/src/main/res/drawable/ic_launcher_background.xml
+
           mkdir -p android/app/src/main/res/mipmap-mdpi
           mkdir -p android/app/src/main/res/mipmap-hdpi
           mkdir -p android/app/src/main/res/mipmap-xhdpi
           mkdir -p android/app/src/main/res/mipmap-xxhdpi
           mkdir -p android/app/src/main/res/mipmap-xxxhdpi
-          mkdir -p android/app/src/main/res/mipmap-anydpi-v26
-          mkdir -p android/app/src/main/res/drawable
 
           cp icon-512.png android/app/src/main/res/mipmap-mdpi/ic_launcher.png
           cp icon-512.png android/app/src/main/res/mipmap-hdpi/ic_launcher.png
@@ -91,37 +94,703 @@ jobs:
           cp icon-512.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
           cp icon-512.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
 
-          cp icon-512.png android/app/src/main/res/drawable/ic_launcher_foreground.png
+          cp icon-512.png android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
+          cp icon-512.png android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png
+          cp icon-512.png android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
+          cp icon-512.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
+          cp icon-512.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
 
-          cat > android/app/src/main/res/drawable/ic_launcher_background.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <shape xmlns:android="http://schemas.android.com/apk/res/android"
-              android:shape="rectangle">
-              <solid android:color="#FFFFFF"/>
-          </shape>
+      - name: Configure Android manifest
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          manifest = Path(
+              "android/app/src/main/AndroidManifest.xml"
+          )
+
+          text = manifest.read_text()
+
+          permissions = """
+          <uses-permission android:name="android.permission.BLUETOOTH" />
+          <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+          <uses-permission
+              android:name="android.permission.BLUETOOTH_SCAN"
+              android:usesPermissionFlags="neverForLocation" />
+          <uses-permission
+              android:name="android.permission.BLUETOOTH_CONNECT" />
+          <uses-permission
+              android:name="android.permission.ACCESS_FINE_LOCATION"
+              android:maxSdkVersion="30" />
+          <uses-feature
+              android:name="android.hardware.bluetooth"
+              android:required="false" />
+          <uses-feature
+              android:name="android.hardware.usb.host"
+              android:required="false" />
+          """
+
+          marker = '<application'
+          if permissions.strip() not in text:
+              text = text.replace(
+                  marker,
+                  permissions + "\n    " + marker,
+                  1
+              )
+
+          text = re.sub(
+              r'<application\b',
+              '<application android:label="PRIOR RIDING" '
+              'android:icon="@mipmap/ic_launcher" '
+              'android:roundIcon="@mipmap/ic_launcher_round"',
+              text,
+              count=1
+          )
+
+          manifest.write_text(text)
+          PY
+
+      - name: Create native PRIOR RIDING plugin
+        run: |
+          mkdir -p android/app/src/main/java/com/priorriding/crm
+
+          cat > android/app/src/main/java/com/priorriding/crm/PriorNativePlugin.java <<'EOF'
+          package com.priorriding.crm;
+
+          import android.Manifest;
+          import android.app.Activity;
+          import android.content.BroadcastReceiver;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.content.IntentFilter;
+          import android.content.pm.PackageManager;
+          import android.net.Uri;
+          import android.os.Build;
+          import android.print.PrintAttributes;
+          import android.print.PrintDocumentAdapter;
+          import android.print.PrintManager;
+          import android.webkit.WebView;
+
+          import androidx.core.app.ActivityCompat;
+
+          import com.getcapacitor.JSArray;
+          import com.getcapacitor.JSObject;
+          import com.getcapacitor.Plugin;
+          import com.getcapacitor.PluginCall;
+          import com.getcapacitor.PluginMethod;
+          import com.getcapacitor.annotation.CapacitorPlugin;
+
+          import android.bluetooth.BluetoothAdapter;
+          import android.bluetooth.BluetoothDevice;
+          import android.bluetooth.BluetoothSocket;
+
+          import java.io.InputStream;
+          import java.io.OutputStream;
+          import java.util.Set;
+          import java.util.UUID;
+
+          @CapacitorPlugin(name = "PriorNative")
+          public class PriorNativePlugin extends Plugin {
+
+              private static final int REQUEST_BT = 7001;
+
+              private BluetoothAdapter bluetoothAdapter;
+              private BluetoothSocket sppSocket;
+              private InputStream sppInput;
+              private OutputStream sppOutput;
+              private Thread readThread;
+
+              private final UUID SPP_UUID =
+                  UUID.fromString(
+                      "00001101-0000-1000-8000-00805F9B34FB"
+                  );
+
+              private final BroadcastReceiver discoveryReceiver =
+                  new BroadcastReceiver() {
+                      @Override
+                      public void onReceive(
+                          Context context,
+                          Intent intent
+                      ) {
+                          String action = intent.getAction();
+
+                          if (
+                              BluetoothDevice.ACTION_FOUND.equals(action)
+                          ) {
+                              BluetoothDevice device =
+                                  intent.getParcelableExtra(
+                                      BluetoothDevice.EXTRA_DEVICE
+                                  );
+
+                              if (device == null) {
+                                  return;
+                              }
+
+                              try {
+                                  JSObject data = new JSObject();
+
+                                  if (
+                                      Build.VERSION.SDK_INT >= 31 &&
+                                      ActivityCompat.checkSelfPermission(
+                                          getActivity(),
+                                          Manifest.permission.BLUETOOTH_CONNECT
+                                      ) != PackageManager.PERMISSION_GRANTED
+                                  ) {
+                                      return;
+                                  }
+
+                                  String name = device.getName();
+
+                                  data.put(
+                                      "name",
+                                      name == null
+                                          ? "Unknown Scanner"
+                                          : name
+                                  );
+
+                                  data.put(
+                                      "address",
+                                      device.getAddress()
+                                  );
+
+                                  notifyListeners(
+                                      "scannerDeviceFound",
+                                      data
+                                  );
+
+                              } catch (Exception ignored) {
+                              }
+                          }
+                      }
+                  };
+
+              @Override
+              public void load() {
+                  super.load();
+
+                  bluetoothAdapter =
+                      BluetoothAdapter.getDefaultAdapter();
+
+                  IntentFilter filter =
+                      new IntentFilter(
+                          BluetoothDevice.ACTION_FOUND
+                      );
+
+                  try {
+                      if (Build.VERSION.SDK_INT >= 33) {
+                          getActivity().registerReceiver(
+                              discoveryReceiver,
+                              filter,
+                              Context.RECEIVER_NOT_EXPORTED
+                          );
+                      } else {
+                          getActivity().registerReceiver(
+                              discoveryReceiver,
+                              filter
+                          );
+                      }
+                  } catch (Exception ignored) {
+                  }
+              }
+
+              @Override
+              protected void handleOnDestroy() {
+                  stopDiscoveryInternal();
+                  disconnectInternal();
+
+                  try {
+                      getActivity().unregisterReceiver(
+                          discoveryReceiver
+                      );
+                  } catch (Exception ignored) {
+                  }
+
+                  super.handleOnDestroy();
+              }
+
+              @PluginMethod
+              public void requestBluetoothPermissions(
+                  PluginCall call
+              ) {
+                  if (Build.VERSION.SDK_INT >= 31) {
+                      if (
+                          ActivityCompat.checkSelfPermission(
+                              getActivity(),
+                              Manifest.permission.BLUETOOTH_SCAN
+                          ) != PackageManager.PERMISSION_GRANTED ||
+                          ActivityCompat.checkSelfPermission(
+                              getActivity(),
+                              Manifest.permission.BLUETOOTH_CONNECT
+                          ) != PackageManager.PERMISSION_GRANTED
+                      ) {
+                          ActivityCompat.requestPermissions(
+                              getActivity(),
+                              new String[] {
+                                  Manifest.permission.BLUETOOTH_SCAN,
+                                  Manifest.permission.BLUETOOTH_CONNECT
+                              },
+                              REQUEST_BT
+                          );
+                      }
+                  }
+
+                  call.resolve();
+              }
+
+              @PluginMethod
+              public void getPairedDevices(
+                  PluginCall call
+              ) {
+                  try {
+                      if (bluetoothAdapter == null) {
+                          call.reject(
+                              "Bluetooth is not available"
+                          );
+                          return;
+                      }
+
+                      if (
+                          Build.VERSION.SDK_INT >= 31 &&
+                          ActivityCompat.checkSelfPermission(
+                              getActivity(),
+                              Manifest.permission.BLUETOOTH_CONNECT
+                          ) != PackageManager.PERMISSION_GRANTED
+                      ) {
+                          call.reject(
+                              "Bluetooth permission required"
+                          );
+                          return;
+                      }
+
+                      Set<BluetoothDevice> devices =
+                          bluetoothAdapter.getBondedDevices();
+
+                      JSArray result = new JSArray();
+
+                      for (BluetoothDevice device : devices) {
+                          JSObject item = new JSObject();
+
+                          String name = device.getName();
+
+                          item.put(
+                              "name",
+                              name == null
+                                  ? "Unknown Device"
+                                  : name
+                          );
+
+                          item.put(
+                              "address",
+                              device.getAddress()
+                          );
+
+                          result.put(item);
+                      }
+
+                      JSObject response = new JSObject();
+                      response.put("devices", result);
+
+                      call.resolve(response);
+
+                  } catch (Exception e) {
+                      call.reject(
+                          "Unable to read paired Bluetooth devices",
+                          e
+                      );
+                  }
+              }
+
+              @PluginMethod
+              public void startBluetoothDiscovery(
+                  PluginCall call
+              ) {
+                  try {
+                      if (bluetoothAdapter == null) {
+                          call.reject(
+                              "Bluetooth is not available"
+                          );
+                          return;
+                      }
+
+                      if (
+                          Build.VERSION.SDK_INT >= 31 &&
+                          ActivityCompat.checkSelfPermission(
+                              getActivity(),
+                              Manifest.permission.BLUETOOTH_SCAN
+                          ) != PackageManager.PERMISSION_GRANTED
+                      ) {
+                          call.reject(
+                              "Bluetooth scan permission required"
+                          );
+                          return;
+                      }
+
+                      stopDiscoveryInternal();
+
+                      bluetoothAdapter.startDiscovery();
+
+                      JSObject result = new JSObject();
+                      result.put("started", true);
+
+                      call.resolve(result);
+
+                  } catch (Exception e) {
+                      call.reject(
+                          "Bluetooth discovery failed",
+                          e
+                      );
+                  }
+              }
+
+              @PluginMethod
+              public void stopBluetoothDiscovery(
+                  PluginCall call
+              ) {
+                  stopDiscoveryInternal();
+                  call.resolve();
+              }
+
+              private void stopDiscoveryInternal() {
+                  try {
+                      if (
+                          bluetoothAdapter != null &&
+                          bluetoothAdapter.isDiscovering()
+                      ) {
+                          if (
+                              Build.VERSION.SDK_INT < 31 ||
+                              ActivityCompat.checkSelfPermission(
+                                  getActivity(),
+                                  Manifest.permission.BLUETOOTH_SCAN
+                              ) == PackageManager.PERMISSION_GRANTED
+                          ) {
+                              bluetoothAdapter.cancelDiscovery();
+                          }
+                      }
+                  } catch (Exception ignored) {
+                  }
+              }
+
+              @PluginMethod
+              public void connectScanner(
+                  PluginCall call
+              ) {
+                  String address =
+                      call.getString("address");
+
+                  if (
+                      address == null ||
+                      address.trim().isEmpty()
+                  ) {
+                      call.reject(
+                          "Scanner Bluetooth address is required"
+                      );
+                      return;
+                  }
+
+                  new Thread(() -> {
+                      try {
+                          disconnectInternal();
+
+                          if (bluetoothAdapter == null) {
+                              call.reject(
+                                  "Bluetooth unavailable"
+                              );
+                              return;
+                          }
+
+                          if (
+                              Build.VERSION.SDK_INT >= 31 &&
+                              ActivityCompat.checkSelfPermission(
+                                  getActivity(),
+                                  Manifest.permission.BLUETOOTH_CONNECT
+                              ) != PackageManager.PERMISSION_GRANTED
+                          ) {
+                              call.reject(
+                                  "Bluetooth connect permission required"
+                              );
+                              return;
+                          }
+
+                          BluetoothDevice device =
+                              bluetoothAdapter.getRemoteDevice(
+                                  address.trim()
+                              );
+
+                          stopDiscoveryInternal();
+
+                          sppSocket =
+                              device.createRfcommSocketToServiceRecord(
+                                  SPP_UUID
+                              );
+
+                          sppSocket.connect();
+
+                          sppInput =
+                              sppSocket.getInputStream();
+
+                          sppOutput =
+                              sppSocket.getOutputStream();
+
+                          startScannerReadThread();
+
+                          JSObject result = new JSObject();
+
+                          result.put(
+                              "connected",
+                              true
+                          );
+
+                          result.put(
+                              "name",
+                              device.getName()
+                          );
+
+                          result.put(
+                              "address",
+                              device.getAddress()
+                          );
+
+                          call.resolve(result);
+
+                      } catch (Exception e) {
+                          disconnectInternal();
+
+                          call.reject(
+                              "Scanner connection failed. This device may use HID/BLE or a manufacturer-specific protocol.",
+                              e
+                          );
+                      }
+                  }).start();
+              }
+
+              private void startScannerReadThread() {
+                  readThread =
+                      new Thread(() -> {
+                          byte[] buffer = new byte[4096];
+
+                          try {
+                              while (
+                                  sppSocket != null &&
+                                  sppSocket.isConnected() &&
+                                  sppInput != null
+                              ) {
+                                  int count =
+                                      sppInput.read(buffer);
+
+                                  if (count <= 0) {
+                                      continue;
+                                  }
+
+                                  String value =
+                                      new String(
+                                          buffer,
+                                          0,
+                                          count
+                                      );
+
+                                  JSObject data =
+                                      new JSObject();
+
+                                  data.put(
+                                      "value",
+                                      value
+                                  );
+
+                                  notifyListeners(
+                                      "scannerData",
+                                      data
+                                  );
+                              }
+
+                          } catch (Exception ignored) {
+                          }
+                      });
+
+                  readThread.start();
+              }
+
+              @PluginMethod
+              public void disconnectScanner(
+                  PluginCall call
+              ) {
+                  disconnectInternal();
+                  call.resolve();
+              }
+
+              private void disconnectInternal() {
+                  try {
+                      if (sppInput != null) {
+                          sppInput.close();
+                      }
+                  } catch (Exception ignored) {
+                  }
+
+                  try {
+                      if (sppOutput != null) {
+                          sppOutput.close();
+                      }
+                  } catch (Exception ignored) {
+                  }
+
+                  try {
+                      if (sppSocket != null) {
+                          sppSocket.close();
+                      }
+                  } catch (Exception ignored) {
+                  }
+
+                  sppInput = null;
+                  sppOutput = null;
+                  sppSocket = null;
+                  readThread = null;
+              }
+
+              @PluginMethod
+              public void openBluetoothSettings(
+                  PluginCall call
+              ) {
+                  try {
+                      Intent intent =
+                          new Intent(
+                              android.provider.Settings
+                                  .ACTION_BLUETOOTH_SETTINGS
+                          );
+
+                      getActivity().startActivity(intent);
+                      call.resolve();
+
+                  } catch (Exception e) {
+                      call.reject(
+                          "Unable to open Bluetooth settings",
+                          e
+                      );
+                  }
+              }
+
+              @PluginMethod
+              public void searchScannerOnline(
+                  PluginCall call
+              ) {
+                  String query =
+                      call.getString("query");
+
+                  if (
+                      query == null ||
+                      query.trim().isEmpty()
+                  ) {
+                      call.reject(
+                          "Scanner model or code required"
+                      );
+                      return;
+                  }
+
+                  try {
+                      String url =
+                          "https://www.google.com/search?q=" +
+                          Uri.encode(
+                              "barcode scanner " +
+                              query.trim()
+                          );
+
+                      Intent intent =
+                          new Intent(
+                              Intent.ACTION_VIEW,
+                              Uri.parse(url)
+                          );
+
+                      getActivity().startActivity(intent);
+
+                      call.resolve();
+
+                  } catch (Exception e) {
+                      call.reject(
+                          "Online search could not be opened",
+                          e
+                      );
+                  }
+              }
+
+              @PluginMethod
+              public void printWebView(
+                  PluginCall call
+              ) {
+                  Activity activity = getActivity();
+
+                  activity.runOnUiThread(() -> {
+                      try {
+                          WebView webView =
+                              getBridge().getWebView();
+
+                          PrintManager printManager =
+                              (PrintManager)
+                                  activity.getSystemService(
+                                      Context.PRINT_SERVICE
+                                  );
+
+                          if (
+                              printManager == null ||
+                              webView == null
+                          ) {
+                              call.reject(
+                                  "Android print service unavailable"
+                              );
+                              return;
+                          }
+
+                          String jobName =
+                              call.getString(
+                                  "name",
+                                  "PRIOR RIDING Document"
+                              );
+
+                          PrintDocumentAdapter
+                              printAdapter =
+                                  webView.createPrintDocumentAdapter(
+                                      jobName
+                                  );
+
+                          printManager.print(
+                              jobName,
+                              printAdapter,
+                              new PrintAttributes.Builder()
+                                  .setMediaSize(
+                                      PrintAttributes.MediaSize.ISO_A4
+                                  )
+                                  .build()
+                          );
+
+                          call.resolve();
+
+                      } catch (Exception e) {
+                          call.reject(
+                              "Print/PDF could not be opened",
+                              e
+                          );
+                      }
+                  });
+              }
+          }
           EOF
 
-          cat > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-              <background android:drawable="@drawable/ic_launcher_background"/>
-              <foreground android:drawable="@drawable/ic_launcher_foreground"/>
-          </adaptive-icon>
-          EOF
+      - name: Register native plugin
+        run: |
+          cat > android/app/src/main/java/com/priorriding/crm/MainActivity.java <<'EOF'
+          package com.priorriding.crm;
 
-          cat > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-              <background android:drawable="@drawable/ic_launcher_background"/>
-              <foreground android:drawable="@drawable/ic_launcher_foreground"/>
-          </adaptive-icon>
-          EOF
+          import android.os.Bundle;
 
-      - name: Restore stable Android debug signing key
-        uses: actions/cache@v4
-        with:
-          path: ~/.android
-          key: prior-riding-debug-keystore-v1
+          import com.getcapacitor.BridgeActivity;
+
+          public class MainActivity extends BridgeActivity {
+
+              @Override
+              public void onCreate(Bundle savedInstanceState) {
+                  registerPlugin(PriorNativePlugin.class);
+                  super.onCreate(savedInstanceState);
+              }
+          }
+          EOF
 
       - name: Build debug APK
         working-directory: android
@@ -133,9 +802,15 @@ jobs:
           ls -lh android/app/build/outputs/apk/debug/app-debug.apk
           sha256sum android/app/build/outputs/apk/debug/app-debug.apk
 
+      - name: Restore stable Android debug signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android
+          key: prior-riding-debug-keystore-v1
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: prior-riding-crm-apk
+          name: prior-riding-crm-apk-v32
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
