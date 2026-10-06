@@ -298,10 +298,12 @@ function showSection(sectionId) {
 /* =========================================================
    DASHBOARD
    ========================================================= */
-
 function updateDashboardStats() {
   const products = prProducts();
   const buyers = prBuyers();
+  const payments = prPayments();
+  const proformas = prProformas();
+  const letters = prLetters();
 
   const activeBuyers =
     buyers.filter(
@@ -314,82 +316,69 @@ function updateDashboardStats() {
   const followups =
     buyers.filter(
       b =>
-        String(
-          b.status || ""
-        ).toLowerCase() === "follow-up" ||
-        String(
-          b.status || ""
-        ).toLowerCase() === "followup" ||
-        b.followupDate
-    );
-
-  const productCount =
-    prEl("productCount");
-const buyerCount =
-  prEl("storageBuyerCount") ||
-  prEl("buyerCount");
-
-const activeBuyerCount =
-  prEl("storageActiveBuyerCount") ||
-  prEl("activeBuyerCount");
-
-const followupCount =
-  prEl("storageFollowupCount") ||
-  prEl("followupCount");
-
-const paymentCount =
-  prEl("storagePaymentCount");
-
-const proformaCount =
-  prEl("storageProformaCount");
-
-const letterCount =
-  prEl("storageLetterCount");
-
-if (productCount) {
-  productCount.textContent =
-    products.length;
-}
-
-if (buyerCount) {
-  buyerCount.textContent =
-    buyers.length;
-}
-
-if (activeBuyerCount) {
-  activeBuyerCount.textContent =
-    buyers.filter(
-      b =>
-        String(
-          b.status || ""
-        ).toLowerCase() === "active"
-    ).length;
-}
-
-if (followupCount) {
-  followupCount.textContent =
-    buyers.filter(
-      b =>
         b.followupDate ||
         String(
           b.status || ""
         ).toLowerCase().includes("follow")
-    ).length;
-}
+    );
 
-if (paymentCount) {
-  paymentCount.textContent =
-    payments.length;
-}
+  const productCount =
+    prEl("productCount") ||
+    prEl("storageProductCount");
 
-if (proformaCount) {
-  proformaCount.textContent =
-    proformas.length;
-}
+  const buyerCount =
+    prEl("buyerCount") ||
+    prEl("storageBuyerCount");
 
-if (letterCount) {
-  letterCount.textContent =
-    prLetters().length;
-}
+  const activeBuyerCount =
+    prEl("activeBuyerCount") ||
+    prEl("storageActiveBuyerCount");
 
+  const followupCount =
+    prEl("followupCount") ||
+    prEl("storageFollowupCount");
+
+  const paymentCount =
+    prEl("storagePaymentCount");
+
+  const proformaCount =
+    prEl("storageProformaCount");
+
+  const letterCount =
+    prEl("storageLetterCount");
+
+  if (productCount) {
+    productCount.textContent =
+      products.length;
+  }
+
+  if (buyerCount) {
+    buyerCount.textContent =
+      buyers.length;
+  }
+
+  if (activeBuyerCount) {
+    activeBuyerCount.textContent =
+      activeBuyers.length;
+  }
+
+  if (followupCount) {
+    followupCount.textContent =
+      followups.length;
+  }
+
+  if (paymentCount) {
+    paymentCount.textContent =
+      payments.length;
+  }
+
+  if (proformaCount) {
+    proformaCount.textContent =
+      proformas.length;
+  }
+
+  if (letterCount) {
+    letterCount.textContent =
+      letters.length;
+  }
 }
