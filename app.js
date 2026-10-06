@@ -679,15 +679,83 @@ function renderBuyers() {
 /* =========================================================
    SELECT DROPDOWNS
    ========================================================= */
-
 function populateProductSelects() {
   const products = prProducts();
+
+  const productCategories = [
+    "Goalkeeper Gloves",
+    "Football / Soccer Gloves",
+    "Boxing Gloves",
+    "MMA Gloves",
+    "Riding Gloves",
+    "Horse Riding Gloves",
+    "Hard Riding Gloves",
+    "Cycling Gloves",
+    "Motorcycle Gloves",
+    "Sports Gloves",
+    "Fitness / Gym Gloves",
+    "Work Gloves",
+    "Chin Pads / Protective Pads",
+    "Sports Bags",
+    "Hand Wraps",
+    "Other Sports Goods"
+  ];
 
   const ids = [
     "interestedProduct",
     "proformaProduct"
   ];
 
+  ids.forEach(id => {
+    const select = prEl(id);
+    if (!select) return;
+
+    const current = select.value;
+
+    const categoryOptions = productCategories
+      .map(category => `
+        <option value="${prEscape(category)}">
+          ${prEscape(category)}
+        </option>
+      `)
+      .join("");
+
+    const savedProductOptions = products
+      .map(product => `
+        <option value="${prEscape(product.name || product.id)}">
+          ${prEscape(product.name || "Unnamed Product")}
+          ${
+            product.articleNo
+              ? " — " + prEscape(product.articleNo)
+              : ""
+          }
+        </option>
+      `)
+      .join("");
+
+    select.innerHTML = `
+      <option value="">Select Product / Category</option>
+
+      <optgroup label="PRIOR RIDING Product Categories">
+        ${categoryOptions}
+      </optgroup>
+
+      ${
+        products.length
+          ? `
+            <optgroup label="Saved Products">
+              ${savedProductOptions}
+            </optgroup>
+          `
+          : ""
+      }
+    `;
+
+    if (current) {
+      select.value = current;
+    }
+  });
+}
   ids.forEach(id => {
     const select = prEl(id);
     if (!select) return;
