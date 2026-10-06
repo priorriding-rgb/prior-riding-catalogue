@@ -100,7 +100,7 @@ jobs:
           cp icon-512.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
           cp icon-512.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
 
-      - name: Configure Android manifest
+        - name: Configure Android manifest
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -131,21 +131,53 @@ jobs:
               android:required="false" />
           """
 
-          marker = '<application'
-          if permissions.strip() not in text:
+          if "android.permission.BLUETOOTH_SCAN" not in text:
               text = text.replace(
-                  marker,
-                  permissions + "\n    " + marker,
+                  "<application",
+                  permissions + "\n    <application",
                   1
               )
 
-          text = re.sub(
-              r'<application\b',
-              '<application android:label="PRIOR RIDING" '
-              'android:icon="@mipmap/ic_launcher" '
-              'android:roundIcon="@mipmap/ic_launcher_round"',
+          app_match = re.search(
+              r"<application\b[^>]*>",
               text,
-              count=1
+              re.DOTALL
+          )
+
+          if not app_match:
+              raise RuntimeError("Android application tag not found")
+
+          app_tag = app_match.group(0)
+
+          app_tag = re.sub(
+              r'\s+android:label="[^"]*"',
+              '',
+              app_tag
+          )
+
+          app_tag = re.sub(
+              r'\s+android:icon="[^"]*"',
+              '',
+              app_tag
+          )
+
+          app_tag = re.sub(
+              r'\s+android:roundIcon="[^"]*"',
+              '',
+              app_tag
+          )
+
+          app_tag = app_tag[:-1]
+          app_tag += (
+              ' android:label="PRIOR RIDING"'
+              ' android:icon="@mipmap/ic_launcher"'
+              ' android:roundIcon="@mipmap/ic_launcher_round">'
+          )
+
+          text = (
+              text[:app_match.start()]
+              + app_tag
+              + text[app_match.end():]
           )
 
           manifest.write_text(text)
