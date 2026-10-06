@@ -833,13 +833,11 @@ jobs:
           test -s android/app/build/outputs/apk/debug/app-debug.apk
           ls -lh android/app/build/outputs/apk/debug/app-debug.apk
           sha256sum android/app/build/outputs/apk/debug/app-debug.apk
-
       - name: Restore stable Android debug signing key
         uses: actions/cache@v4
         with:
           path: ~/.android
           key: prior-riding-debug-keystore-v1
-
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
