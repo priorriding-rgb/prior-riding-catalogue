@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -40,6 +41,7 @@
 
 
 <body>
+
 <!-- ============================================================
      PRIOR RIDING — FIREBASE LOGIN
 ============================================================ -->
@@ -172,7 +174,8 @@
   import {
     getAuth,
     onAuthStateChanged,
-    signInWithEmailAndPassword
+    signInWithEmailAndPassword,
+    signOut
   } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 
 
@@ -307,6 +310,50 @@
   );
 
 
+  /*
+   * ==========================================================
+   * PRIOR RIDING — FIREBASE LOGOUT
+   * ==========================================================
+   *
+   * This function is exposed on window so the Logout button
+   * in the normal HTML section can call it.
+   *
+   * Firebase signOut() signs out the currently authenticated
+   * Firebase user. It does NOT delete local CRM data.
+   */
+
+  window.prFirebaseLogout = async function () {
+
+    const confirmed =
+      window.confirm(
+        "کیا آپ PRIOR RIDING سے Logout کرنا چاہتے ہیں؟"
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    try {
+
+      await signOut(auth);
+
+    } catch (error) {
+
+      console.error(
+        "PRIOR RIDING Logout Error:",
+        error
+      );
+
+      alert(
+        "Logout نہیں ہو سکا۔ دوبارہ کوشش کریں۔"
+      );
+
+    }
+
+  };
+
+
   onAuthStateChanged(
     auth,
     function (user) {
@@ -325,6 +372,8 @@
   );
 
 </script>
+
+
 <!-- =====================================================
      TOP BAR
 ===================================================== -->
@@ -428,6 +477,28 @@
     onclick="showAppInfo()"
   >
     ℹ️ App Information
+  </button>
+
+
+  <!-- ===================================================
+       FIREBASE LOGOUT
+  ==================================================== -->
+
+  <button
+    type="button"
+    onclick="
+      if (typeof window.prFirebaseLogout === 'function') {
+        window.prFirebaseLogout();
+      } else {
+        alert('Logout system ابھی load نہیں ہوا۔');
+      }
+    "
+    style="
+      color:#c62828;
+      font-weight:bold;
+    "
+  >
+    🔴 Logout
   </button>
 
 </div>
@@ -1321,23 +1392,74 @@
 
           <select id="interestedProduct">
 
-         <option value="">Select Product / Category</option>
-<option value="Goalkeeper Gloves">Goalkeeper Gloves</option>
-<option value="Football / Soccer Gloves">Football / Soccer Gloves</option>
-<option value="Boxing Gloves">Boxing Gloves</option>
-<option value="MMA Gloves">MMA Gloves</option>
-<option value="Riding Gloves">Riding Gloves</option>
-<option value="Horse Riding Gloves">Horse Riding Gloves</option>
-<option value="Hard Riding Gloves">Hard Riding Gloves</option>
-<option value="Cycling Gloves">Cycling Gloves</option>
-<option value="Motorcycle Gloves">Motorcycle Gloves</option>
-<option value="Sports Gloves">Sports Gloves</option>
-<option value="Fitness / Gym Gloves">Fitness / Gym Gloves</option>
-<option value="Work Gloves">Work Gloves</option>
-<option value="Chin Pads / Protective Pads">Chin Pads / Protective Pads</option>
-<option value="Sports Bags">Sports Bags</option>
-<option value="Hand Wraps">Hand Wraps</option>
-<option value="Other Sports Goods">Other Sports Goods</option>
+            <option value="">
+              Select Product / Category
+            </option>
+
+            <option value="Goalkeeper Gloves">
+              Goalkeeper Gloves
+            </option>
+
+            <option value="Football / Soccer Gloves">
+              Football / Soccer Gloves
+            </option>
+
+            <option value="Boxing Gloves">
+              Boxing Gloves
+            </option>
+
+            <option value="MMA Gloves">
+              MMA Gloves
+            </option>
+
+            <option value="Riding Gloves">
+              Riding Gloves
+            </option>
+
+            <option value="Horse Riding Gloves">
+              Horse Riding Gloves
+            </option>
+
+            <option value="Hard Riding Gloves">
+              Hard Riding Gloves
+            </option>
+
+            <option value="Cycling Gloves">
+              Cycling Gloves
+            </option>
+
+            <option value="Motorcycle Gloves">
+              Motorcycle Gloves
+            </option>
+
+            <option value="Sports Gloves">
+              Sports Gloves
+            </option>
+
+            <option value="Fitness / Gym Gloves">
+              Fitness / Gym Gloves
+            </option>
+
+            <option value="Work Gloves">
+              Work Gloves
+            </option>
+
+            <option value="Chin Pads / Protective Pads">
+              Chin Pads / Protective Pads
+            </option>
+
+            <option value="Sports Bags">
+              Sports Bags
+            </option>
+
+            <option value="Hand Wraps">
+              Hand Wraps
+            </option>
+
+            <option value="Other Sports Goods">
+              Other Sports Goods
+            </option>
+
           </select>
 
         </div>
@@ -2189,15 +2311,19 @@
 <!-- =====================================================
      APP JAVASCRIPT
 ===================================================== -->
+
 <script
   src="app.js?v=20261005-02"
   defer
 ></script>
+
+
 <!-- =====================================================
      SERVICE WORKER
 ===================================================== -->
 
 <script>
+
 if ("serviceWorker" in navigator) {
 
   window.addEventListener("load", async function () {
@@ -2212,15 +2338,19 @@ if ("serviceWorker" in navigator) {
           }
         );
 
+
       console.log(
         "PRIOR RIDING Service Worker registered."
       );
 
+
       await registration.update();
+
 
       console.log(
         "PRIOR RIDING Service Worker update checked."
       );
+
 
     } catch (error) {
 
@@ -2234,10 +2364,16 @@ if ("serviceWorker" in navigator) {
   });
 
 }
+
 </script>
 
 
+<!-- =====================================================
+     SETTINGS / STORAGE FUNCTIONS
+===================================================== -->
+
 <script>
+
 function toggleSettingsMenu() {
 
   const menu =
@@ -2254,10 +2390,13 @@ function toggleSettingsMenu() {
 
 function openStoragePanel() {
 
+  toggleSettingsMenu();
+
   const modal =
     document.getElementById("storageModal");
 
   if (!modal) return;
+
 
   const productCount =
     document.getElementById("storageProductCount");
@@ -2271,6 +2410,7 @@ function openStoragePanel() {
   const proformaCount =
     document.getElementById("storageProformaCount");
 
+
   try {
 
     const products =
@@ -2280,12 +2420,14 @@ function openStoragePanel() {
         ) || "[]"
       );
 
+
     const buyers =
       JSON.parse(
         localStorage.getItem(
           "prior_riding_buyers"
         ) || "[]"
       );
+
 
     const payments =
       JSON.parse(
@@ -2294,6 +2436,7 @@ function openStoragePanel() {
         ) || "[]"
       );
 
+
     const proformas =
       JSON.parse(
         localStorage.getItem(
@@ -2301,25 +2444,30 @@ function openStoragePanel() {
         ) || "[]"
       );
 
+
     if (productCount) {
       productCount.textContent =
         products.length;
     }
+
 
     if (buyerCount) {
       buyerCount.textContent =
         buyers.length;
     }
 
+
     if (paymentCount) {
       paymentCount.textContent =
         payments.length;
     }
 
+
     if (proformaCount) {
       proformaCount.textContent =
         proformas.length;
     }
+
 
   } catch (error) {
 
@@ -2330,8 +2478,10 @@ function openStoragePanel() {
 
   }
 
+
   modal.classList.add("show");
   modal.style.display = "flex";
+
 }
 
 
@@ -2354,10 +2504,12 @@ function showAppInfo() {
 
   toggleSettingsMenu();
 
+
   const modal =
     document.getElementById("appInfoModal");
 
   if (!modal) return;
+
 
   modal.classList.add("show");
   modal.style.display = "flex";
@@ -2455,7 +2607,8 @@ function exportAllData() {
     document.createElement("a");
 
 
-  link.href = url;
+  link.href =
+    url;
 
 
   link.download =
@@ -2482,6 +2635,7 @@ function restoreAllData(event) {
   const file =
     event.target.files &&
     event.target.files[0];
+
 
   if (!file) return;
 
@@ -2570,6 +2724,7 @@ function restoreAllData(event) {
 
       }
 
+
       catch (error) {
 
         console.error(error);
@@ -2588,6 +2743,7 @@ function restoreAllData(event) {
   event.target.value = "";
 
 }
+
 </script>
 
 
