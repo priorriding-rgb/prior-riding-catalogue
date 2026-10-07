@@ -2709,85 +2709,147 @@ function calculateDashboard() {
   }
 }
 
-/ =========================================================
+/* =========================================================
    PRINT / PDF
    ========================================================= */
 function printToPdf() {
   try {
-    const printArea =
-      document.querySelector("main");
+    const printWindow = window.open("", "_blank");
 
-    if (!printArea) {
-      alert("Print/PDF کے لیے content نہیں ملا۔");
+    if (!printWindow) {
+      alert("Print window نہیں کھل سکی۔ براہِ کرم دوبارہ کوشش کریں۔");
       return;
     }
 
-    const printStyle =
-      document.createElement("style");
+    const pageTitle =
+      "PRIOR RIDING — International Buyer CRM";
 
-    printStyle.id =
-      "prior-riding-print-style";
+    const pageContent =
+      document.querySelector("main")?.innerHTML || "";
 
-    printStyle.textContent = `
-      @media print {
-        body * {
-          visibility: hidden !important;
-        }
+    printWindow.document.open();
 
-        main,
-        main * {
-          visibility: visible !important;
-        }
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0"
+        >
 
-        main {
-          position: absolute !important;
-          left: 0 !important;
-          top: 0 !important;
-          width: 100% !important;
-          background: #fff !important;
-        }
+        <title>${pageTitle}</title>
 
-        button,
-        input,
-        select,
-        textarea,
-        .quick-actions,
-        .nav,
-        .topbar,
-        .settings-menu,
-        .modal,
-        .menu-btn {
-          display: none !important;
-        }
+        <style>
+          @page {
+            size: A4;
+            margin: 12mm;
+          }
 
-        @page {
-          size: A4;
-          margin: 12mm;
-        }
-      }
-    `;
+          * {
+            box-sizing: border-box;
+          }
 
-    document.head.appendChild(printStyle);
+          body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            color: #111;
+            background: #fff;
+          }
+
+          h1,
+          h2,
+          h3 {
+            color: #16833b;
+          }
+
+          button,
+          input,
+          select,
+          textarea,
+          .quick-actions,
+          .nav,
+          .topbar,
+          .settings-menu,
+          .modal,
+          .menu-btn {
+            display: none !important;
+          }
+
+          .section {
+            display: block !important;
+          }
+
+          .panel,
+          .stat-card,
+          .product-card,
+          .dashboard-tool-panel {
+            break-inside: avoid;
+          }
+
+          table {
+            width: 100%;
+            border-collapse: collapse;
+          }
+
+          th,
+          td {
+            border: 1px solid #ccc;
+            padding: 7px;
+            text-align: left;
+            font-size: 12px;
+          }
+
+          th {
+            background: #f1f1f1;
+          }
+
+          img {
+            max-width: 100%;
+          }
+
+          .print-header {
+            display: block !important;
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #16833b;
+            padding-bottom: 10px;
+          }
+
+          .print-header h1 {
+            margin: 0;
+            font-size: 24px;
+          }
+
+          .print-header p {
+            margin: 5px 0 0;
+            color: #555;
+          }
+        </style>
+      </head>
+
+      <body>
+
+        <div class="print-header">
+          <h1>PRIOR RIDING</h1>
+          <p>International Buyer CRM & Product Catalogue</p>
+        </div>
+
+        ${pageContent}
+
+      </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+
+    printWindow.focus();
 
     setTimeout(function () {
-      try {
-        window.print();
-      } catch (error) {
-        console.error(
-          "PRIOR RIDING Print Error:",
-          error
-        );
-
-        alert(
-          "Print/PDF شروع نہیں ہو سکا۔"
-        );
-      }
-
-      setTimeout(function () {
-        printStyle.remove();
-      }, 1000);
-
-    }, 200);
+      printWindow.print();
+    }, 500);
 
   } catch (error) {
     console.error(
@@ -2800,6 +2862,7 @@ function printToPdf() {
     );
   }
 }
+
 /* =========================================================
    SETTINGS MENU
    ========================================================= */
@@ -3877,249 +3940,233 @@ function handleScannedCode(value) {
     cleanValue
   );
 }
-/* =========================================================
-   PRIOR RIDING — NATIVE SCANNER
-   ========================================================= */
+/* PRIOR RIDING — Minimal Repair Patch
+   Payment Mode + PRINT + PDF
+   Add this file at the END of the existing app.js.
+*/
+(function () {
+  'use strict';
 
-let priorScannerPlugin = null;
-let priorScannerListener = null;
+  // Payment methods: keep existing methods and add international methods.
+  window.PR_INTERNATIONAL_PAYMENT_MODES = [
+    'Western Union', 'Wise', 'MoneyGram', 'Payoneer', 'Remitly', 'Skrill'
+  ];
 
-async function openScanner() {
-  try {
-    priorScannerPlugin =
-      window.Capacitor?.Plugins?.PriorNative;
-
-    if (!priorScannerPlugin) {
-      alert(
-        "Scanner native service دستیاب نہیں ہے۔"
-      );
-      return;
-    }
-
-    if (
-      typeof priorScannerPlugin.requestBluetoothPermissions ===
-      "function"
-    ) {
-      await priorScannerPlugin.requestBluetoothPermissions();
-    }
-
-    if (
-      !priorScannerListener &&
-      typeof priorScannerPlugin.addListener ===
-      "function"
-    ) {
-      priorScannerListener =
-        await priorScannerPlugin.addListener(
-          "scannerData",
-          function (data) {
-            const value =
-              String(data?.value || "")
-                .replace(/[\r\n]+/g, "")
-                .trim();
-
-            if (!value) return;
-
-            handleScannedCode(value);
-          }
-        );
-    }
-
-    if (
-      typeof priorScannerPlugin.startBluetoothDiscovery ===
-      "function"
-    ) {
-      await priorScannerPlugin.startBluetoothDiscovery();
-
-      alert(
-        "Bluetooth Scanner کی تلاش شروع ہو گئی ہے۔\n\n" +
-        "اپنا Scanner آن کریں۔"
-      );
-
-      return;
-    }
-
-    if (
-      typeof priorScannerPlugin.startScannerDiscovery ===
-      "function"
-    ) {
-      await priorScannerPlugin.startScannerDiscovery();
-
-      alert(
-        "Scanner کی تلاش شروع ہو گئی ہے۔"
-      );
-
-      return;
-    }
-
-    if (
-      typeof priorScannerPlugin.openBluetoothSettings ===
-      "function"
-    ) {
-      await priorScannerPlugin.openBluetoothSettings();
-
-      return;
-    }
-
-    alert(
-      "Scanner service دستیاب نہیں ہے۔"
-    );
-
-  } catch (error) {
-    console.error(
-      "PRIOR RIDING Scanner Error:",
-      error
-    );
-
-    alert(
-      "Scanner شروع نہیں ہو سکا۔\n\n" +
-      "Bluetooth اور Nearby Devices کی اجازت چیک کریں۔"
-    );
+  function patchPaymentModes() {
+    const additions = window.PR_INTERNATIONAL_PAYMENT_MODES;
+    document.querySelectorAll('select').forEach(function (select) {
+      const text = ((select.id || '') + ' ' + (select.name || '') + ' ' + (select.getAttribute('aria-label') || '')).toLowerCase();
+      if (!/(payment|mode)/.test(text)) return;
+      additions.forEach(function (mode) {
+        if (![...select.options].some(o => o.value === mode || o.textContent.trim() === mode)) {
+          const o = document.createElement('option'); o.value = mode; o.textContent = mode; select.appendChild(o);
+        }
+      });
+    });
   }
-}
 
+  function buildReport() {
+    const products = Array.isArray(window.products) ? window.products : (typeof products !== 'undefined' && Array.isArray(products) ? products : []);
+    const buyers = Array.isArray(window.buyers) ? window.buyers : (typeof buyers !== 'undefined' && Array.isArray(buyers) ? buyers : []);
+    const payments = Array.isArray(window.prPayments) ? window.prPayments : (typeof prPayments !== 'undefined' && Array.isArray(prPayments) ? prPayments : []);
+    const esc = v => String(v ?? '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    return '<!doctype html><html><head><meta charset="utf-8"><title>PRIOR RIDING Report</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#111}h1{margin-bottom:4px}h2{margin-top:24px}table{border-collapse:collapse;width:100%;margin-top:8px}th,td{border:1px solid #bbb;padding:7px;text-align:left}th{background:#eee}.meta{color:#555}</style></head><body>' +
+      '<h1>PRIOR RIDING</h1><div class="meta">International Buyer CRM Report — ' + new Date().toLocaleString() + '</div>' +
+      '<h2>Products (' + products.length + ')</h2><table><tr><th>Product</th><th>Article</th><th>Price</th></tr>' + products.map(p => '<tr><td>'+esc(p.name || p.productName)+'</td><td>'+esc(p.article || p.articleNo || p.code)+'</td><td>'+esc(p.price || p.unitPrice)+'</td></tr>').join('') + '</table>' +
+      '<h2>Buyers (' + buyers.length + ')</h2><table><tr><th>Name</th><th>Company</th><th>Country</th><th>Email</th></tr>' + buyers.map(b => '<tr><td>'+esc(b.name)+'</td><td>'+esc(b.company)+'</td><td>'+esc(b.country)+'</td><td>'+esc(b.email)+'</td></tr>').join('') + '</table>' +
+      '<h2>Payments (' + payments.length + ')</h2><table><tr><th>Date</th><th>Buyer</th><th>Mode</th><th>Amount</th></tr>' + payments.map(p => '<tr><td>'+esc(p.date)+'</td><td>'+esc(p.buyerName || p.buyer)+'</td><td>'+esc(p.mode || p.paymentMode)+'</td><td>'+esc(p.amount || p.foreignAmount || p.pkrAmount)+'</td></tr>').join('') + '</table></body></html>';
+  }
 
+  function printReport() {
+    const w = window.open('', '_blank');
+    if (!w) { alert('براہِ کرم browser میں pop-up/print کی اجازت دیں۔'); return; }
+    w.document.open(); w.document.write(buildReport()); w.document.close();
+    w.onload = function () { w.focus(); setTimeout(function(){ w.print(); }, 250); };
+  }
+
+  function bindPrintButtons() {
+    document.querySelectorAll('button,[role="button"],a').forEach(function (el) {
+      const label = (el.textContent || el.getAttribute('aria-label') || '').trim().toLowerCase();
+      if (!label) return;
+      if (label === 'print' || label.includes('print')) el.addEventListener('click', function(e){ e.preventDefault(); printReport(); });
+      if (label === 'pdf' || label.includes('pdf')) el.addEventListener('click', function(e){ e.preventDefault(); printReport(); });
+    });
+  }
+
+  function repair() { patchPaymentModes(); bindPrintButtons(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', repair); else repair();
+  new MutationObserver(repair).observe(document.documentElement, {childList:true, subtree:true});
+})();
 /* =========================================================
-   SCANNED CODE HANDLER
+   PRIOR RIDING — PRINT + PDF ONLY REPAIR
+   Version: 2026-10-07
+   IMPORTANT: Add this patch at the VERY END of existing app.js
+   Do not remove existing app code.
    ========================================================= */
-/* =========================================================
-   PRIOR RIDING — CLEAN NATIVE SCANNER
-   ========================================================= */
+(function () {
+  'use strict';
 
-let priorScannerPlugin = null;
-let priorScannerListener = null;
+  function esc(v) {
+    return String(v == null ? '' : v)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
 
-async function openScanner() {
-  try {
-    if (!window.Capacitor || !window.Capacitor.Plugins) {
-      alert("Scanner is available in the Android app only.");
-      return;
-    }
-
-    priorScannerPlugin =
-      window.Capacitor.Plugins.PriorNative ||
-      window.Capacitor.Plugins.PriorScanner ||
-      null;
-
-    if (!priorScannerPlugin) {
-      alert("Scanner plugin is not available.");
-      return;
-    }
-
-    if (
-      priorScannerListener &&
-      typeof priorScannerListener.remove === "function"
-    ) {
+  function readArray(keys) {
+    for (var i = 0; i < keys.length; i++) {
       try {
-        await priorScannerListener.remove();
+        var raw = localStorage.getItem(keys[i]);
+        if (!raw) continue;
+        var data = JSON.parse(raw);
+        if (Array.isArray(data)) return data;
       } catch (e) {}
-
-      priorScannerListener = null;
     }
-
-    if (typeof priorScannerPlugin.addListener === "function") {
-      try {
-        priorScannerListener =
-          await priorScannerPlugin.addListener(
-            "scannedCode",
-            function (event) {
-              if (event && event.code) {
-                handleScannedCode(event.code);
-              }
-            }
-          );
-      } catch (e) {
-        console.warn("Scanner listener error:", e);
-      }
-    }
-
-    if (
-      typeof priorScannerPlugin.requestBluetoothPermissions ===
-      "function"
-    ) {
-      try {
-        await priorScannerPlugin.requestBluetoothPermissions();
-      } catch (e) {
-        console.warn("Bluetooth permission:", e);
-      }
-    }
-
-    if (
-      typeof priorScannerPlugin.startBluetoothDiscovery ===
-      "function"
-    ) {
-      await priorScannerPlugin.startBluetoothDiscovery();
-      alert("Scanner started.");
-      return;
-    }
-
-    if (
-      typeof priorScannerPlugin.startScannerDiscovery ===
-      "function"
-    ) {
-      await priorScannerPlugin.startScannerDiscovery();
-      alert("Scanner started.");
-      return;
-    }
-
-    if (
-      typeof priorScannerPlugin.openBluetoothSettings ===
-      "function"
-    ) {
-      await priorScannerPlugin.openBluetoothSettings();
-      return;
-    }
-
-    alert("Scanner function is not available in this APK.");
-
-  } catch (error) {
-    console.error("Scanner error:", error);
-
-    alert(
-      "Scanner error:\n\n" +
-      (error && error.message
-        ? error.message
-        : String(error))
-    );
-  }
-}
-
-
-/* =========================================================
-   SCANNED CODE HANDLER
-   ========================================================= */
-
-function handleScannedCode(value) {
-  const cleanValue =
-    String(value || "")
-      .replace(/[\r\n]+/g, "")
-      .trim();
-
-  if (!cleanValue) return;
-
-  console.log(
-    "PRIOR RIDING Scanned Code:",
-    cleanValue
-  );
-
-  const input =
-    document.getElementById("barcode") ||
-    document.getElementById("productBarcode") ||
-    document.getElementById("scanCode");
-
-  if (input) {
-    input.value = cleanValue;
-
-    input.dispatchEvent(
-      new Event("input", { bubbles: true })
-    );
-
-    input.dispatchEvent(
-      new Event("change", { bubbles: true })
-    );
+    return [];
   }
 
-  alert(
-    "Scanner نے Code پڑھ لیا:\n\n" +
-    cleanValue
-  );
-}
+  function reportHTML() {
+    var products = readArray(['prior_riding_products', 'products']);
+    var buyers = readArray(['prior_riding_buyers', 'buyers']);
+    var payments = readArray(['prior_riding_payments', 'prPayments', 'payments']);
+
+    var pRows = products.map(function (p) {
+      return '<tr><td>' + esc(p.name || p.productName || p.title) + '</td><td>' +
+        esc(p.article || p.articleNo || p.code || p.productNo) + '</td><td>' +
+        esc(p.price || p.unitPrice || '') + '</td></tr>';
+    }).join('');
+
+    var bRows = buyers.map(function (b) {
+      return '<tr><td>' + esc(b.name || b.buyerName) + '</td><td>' +
+        esc(b.company || b.companyName) + '</td><td>' + esc(b.country) + '</td><td>' +
+        esc(b.email) + '</td></tr>';
+    }).join('');
+
+    var payRows = payments.map(function (p) {
+      return '<tr><td>' + esc(p.date || p.paymentDate) + '</td><td>' +
+        esc(p.buyerName || p.buyer || p.customer) + '</td><td>' +
+        esc(p.mode || p.paymentMode) + '</td><td>' +
+        esc(p.amount || p.foreignAmount || p.pkrAmount || '') + '</td></tr>';
+    }).join('');
+
+    return '<div id="pr-print-sheet">' +
+      '<h1>PRIOR RIDING</h1>' +
+      '<div class="pr-print-meta">International Buyer CRM &nbsp; | &nbsp; ' + new Date().toLocaleString() + '</div>' +
+      '<h2>Product Catalogue (' + products.length + ')</h2>' +
+      '<table><thead><tr><th>Product</th><th>Article No.</th><th>Price</th></tr></thead><tbody>' + pRows + '</tbody></table>' +
+      '<h2>Buyer CRM (' + buyers.length + ')</h2>' +
+      '<table><thead><tr><th>Buyer</th><th>Company</th><th>Country</th><th>Email</th></tr></thead><tbody>' + bRows + '</tbody></table>' +
+      '<h2>Payment History (' + payments.length + ')</h2>' +
+      '<table><thead><tr><th>Date</th><th>Buyer</th><th>Payment Mode</th><th>Amount</th></tr></thead><tbody>' + payRows + '</tbody></table>' +
+      '</div>';
+  }
+
+  function runPrint() {
+    if (document.getElementById('pr-print-overlay')) return;
+
+    var overlay = document.createElement('div');
+    overlay.id = 'pr-print-overlay';
+    overlay.innerHTML = reportHTML();
+
+    var style = document.createElement('style');
+    style.id = 'pr-print-style';
+    style.textContent =
+      '#pr-print-overlay{display:none}' +
+      '@media print{' +
+      'body > *:not(#pr-print-overlay){display:none!important}' +
+      '#pr-print-overlay{display:block!important;position:static!important;background:#fff!important;color:#111!important;padding:22px!important;font-family:Arial,sans-serif!important}' +
+      '#pr-print-sheet{display:block!important}' +
+      '#pr-print-sheet h1{font-size:24px;margin:0 0 4px}' +
+      '#pr-print-sheet h2{font-size:17px;margin:22px 0 7px;page-break-after:avoid}' +
+      '.pr-print-meta{font-size:11px;color:#555;margin-bottom:18px}' +
+      '#pr-print-sheet table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:11px}' +
+      '#pr-print-sheet th,#pr-print-sheet td{border:1px solid #999;padding:6px;text-align:left;vertical-align:top}' +
+      '#pr-print-sheet th{font-weight:700;background:#eee}' +
+      '#pr-print-sheet tr{page-break-inside:avoid}' +
+      '}';
+
+    document.head.appendChild(style);
+    document.body.appendChild(overlay);
+
+    var cleaned = false;
+    function cleanup() {
+      if (cleaned) return;
+      cleaned = true;
+      overlay.remove();
+      style.remove();
+      window.removeEventListener('afterprint', cleanup);
+    }
+
+    window.addEventListener('afterprint', cleanup);
+
+    setTimeout(function () {
+      try {
+        window.print();
+      } catch (e) {
+        cleanup();
+        alert('Print/PDF شروع نہیں ہو سکا۔ براہِ کرم دوبارہ کوشش کریں۔');
+      }
+      // Android WebView may not fire afterprint consistently.
+      setTimeout(cleanup, 3000);
+    }, 180);
+  }
+
+  function isPrintButton(el) {
+    var label = ((el.textContent || '') + ' ' + (el.getAttribute('aria-label') || '') + ' ' + (el.id || '')).trim().toLowerCase();
+    return label === 'print' || label === 'pdf' || label.includes('print') || label.includes('pdf');
+  }
+
+  function bind() {
+    document.querySelectorAll('button,a,[role="button"]').forEach(function (el) {
+      if (!isPrintButton(el) || el.dataset.prPrintPdfFixed === '1') return;
+      el.dataset.prPrintPdfFixed = '1';
+      el.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        runPrint();
+      }, true);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bind);
+  } else {
+    bind();
+  }
+
+  new MutationObserver(bind).observe(document.documentElement, { childList: true, subtree: true });
+})();
+/* PRIOR RIDING — PRINT + PDF ONLY REPAIR
+   Add at the very end of existing app.js
+   No new window / no blank page / no other feature changes.
+*/
+(function () {
+  'use strict';
+
+  function isPrintOrPdf(el) {
+    if (!el) return false;
+    var s = ((el.textContent || '') + ' ' +
+      (el.getAttribute && (el.getAttribute('aria-label') || el.getAttribute('title') || '')) + ' ' +
+      (el.id || '') + ' ' + (el.className || '')).toLowerCase();
+    return /(^|\b)(print|pdf)(\b|$)/i.test(s);
+  }
+
+  document.addEventListener('click', function (e) {
+    var el = e.target && e.target.closest ? e.target.closest('button,a,[role="button"]') : e.target;
+    if (!isPrintOrPdf(el)) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+    setTimeout(function () {
+      try {
+        window.focus();
+        window.print();
+      } catch (err) {
+        alert('Print service available نہیں ہے۔ براہِ کرم دوبارہ کوشش کریں۔');
+      }
+    }, 100);
+  }, true);
+})();
