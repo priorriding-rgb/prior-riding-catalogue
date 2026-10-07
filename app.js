@@ -3877,3 +3877,126 @@ function handleScannedCode(value) {
     cleanValue
   );
 }
+/* =========================================================
+   PRIOR RIDING — NATIVE SCANNER
+   ========================================================= */
+
+let priorScannerPlugin = null;
+let priorScannerListener = null;
+
+async function openScanner() {
+  try {
+    priorScannerPlugin =
+      window.Capacitor?.Plugins?.PriorNative;
+
+    if (!priorScannerPlugin) {
+      alert(
+        "Scanner native service دستیاب نہیں ہے۔"
+      );
+      return;
+    }
+
+    if (
+      typeof priorScannerPlugin.requestBluetoothPermissions ===
+      "function"
+    ) {
+      await priorScannerPlugin.requestBluetoothPermissions();
+    }
+
+    if (
+      !priorScannerListener &&
+      typeof priorScannerPlugin.addListener ===
+      "function"
+    ) {
+      priorScannerListener =
+        await priorScannerPlugin.addListener(
+          "scannerData",
+          function (data) {
+            const value =
+              String(data?.value || "")
+                .replace(/[\r\n]+/g, "")
+                .trim();
+
+            if (!value) return;
+
+            handleScannedCode(value);
+          }
+        );
+    }
+
+    if (
+      typeof priorScannerPlugin.startBluetoothDiscovery ===
+      "function"
+    ) {
+      await priorScannerPlugin.startBluetoothDiscovery();
+
+      alert(
+        "Bluetooth Scanner کی تلاش شروع ہو گئی ہے۔\n\n" +
+        "اپنا Scanner آن کریں۔"
+      );
+
+      return;
+    }
+
+    if (
+      typeof priorScannerPlugin.startScannerDiscovery ===
+      "function"
+    ) {
+      await priorScannerPlugin.startScannerDiscovery();
+
+      alert(
+        "Scanner کی تلاش شروع ہو گئی ہے۔"
+      );
+
+      return;
+    }
+
+    if (
+      typeof priorScannerPlugin.openBluetoothSettings ===
+      "function"
+    ) {
+      await priorScannerPlugin.openBluetoothSettings();
+
+      return;
+    }
+
+    alert(
+      "Scanner service دستیاب نہیں ہے۔"
+    );
+
+  } catch (error) {
+    console.error(
+      "PRIOR RIDING Scanner Error:",
+      error
+    );
+
+    alert(
+      "Scanner شروع نہیں ہو سکا۔\n\n" +
+      "Bluetooth اور Nearby Devices کی اجازت چیک کریں۔"
+    );
+  }
+}
+
+
+/* =========================================================
+   SCANNED CODE HANDLER
+   ========================================================= */
+
+function handleScannedCode(value) {
+  const cleanValue =
+    String(value || "")
+      .replace(/[\r\n]+/g, "")
+      .trim();
+
+  if (!cleanValue) return;
+
+  console.log(
+    "PRIOR RIDING Scanned Code:",
+    cleanValue
+  );
+
+  alert(
+    "Scanner نے Code پڑھ لیا:\n\n" +
+    cleanValue
+  );
+}
