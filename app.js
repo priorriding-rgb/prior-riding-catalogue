@@ -2714,121 +2714,80 @@ function calculateDashboard() {
    ========================================================= */
 function printToPdf() {
   try {
-    const printContent =
-      document.querySelector("main")?.innerHTML || "";
+    const printArea =
+      document.querySelector("main");
 
-    const oldBody = document.body.innerHTML;
-
-    document.body.innerHTML = `
-      <div id="prPrintPage">
-        <div class="print-header">
-          <h1>PRIOR RIDING</h1>
-          <p>International Buyer CRM & Product Catalogue</p>
-        </div>
-
-        ${printContent}
-      </div>
-    `;
+    if (!printArea) {
+      alert("Print/PDF کے لیے content نہیں ملا۔");
+      return;
+    }
 
     const printStyle =
       document.createElement("style");
 
     printStyle.id =
-      "prPrintStyle";
+      "prior-riding-print-style";
 
     printStyle.textContent = `
-      @page {
-        size: A4;
-        margin: 12mm;
-      }
+      @media print {
+        body * {
+          visibility: hidden !important;
+        }
 
-      * {
-        box-sizing: border-box;
-      }
+        main,
+        main * {
+          visibility: visible !important;
+        }
 
-      body {
-        margin: 0;
-        padding: 20px;
-        font-family: Arial, sans-serif;
-        color: #111;
-        background: #fff;
-      }
+        main {
+          position: absolute !important;
+          left: 0 !important;
+          top: 0 !important;
+          width: 100% !important;
+          background: #fff !important;
+        }
 
-      button,
-      input,
-      select,
-      textarea,
-      .quick-actions,
-      .nav,
-      .topbar,
-      .settings-menu,
-      .modal,
-      .menu-btn {
-        display: none !important;
-      }
+        button,
+        input,
+        select,
+        textarea,
+        .quick-actions,
+        .nav,
+        .topbar,
+        .settings-menu,
+        .modal,
+        .menu-btn {
+          display: none !important;
+        }
 
-      .print-header {
-        display: block !important;
-        text-align: center;
-        margin-bottom: 20px;
-        border-bottom: 2px solid #16833b;
-        padding-bottom: 10px;
-      }
-
-      .print-header h1 {
-        margin: 0;
-        color: #16833b;
-        font-size: 24px;
-      }
-
-      .print-header p {
-        margin: 5px 0 0;
-        color: #555;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-
-      th,
-      td {
-        border: 1px solid #ccc;
-        padding: 7px;
-        text-align: left;
-        font-size: 12px;
-      }
-
-      th {
-        background: #f1f1f1;
-      }
-
-      img {
-        max-width: 100%;
-      }
-
-      .panel,
-      .stat-card,
-      .product-card,
-      .dashboard-tool-panel {
-        break-inside: avoid;
+        @page {
+          size: A4;
+          margin: 12mm;
+        }
       }
     `;
 
-    document.head.appendChild(
-      printStyle
-    );
+    document.head.appendChild(printStyle);
 
     setTimeout(function () {
-      window.print();
+      try {
+        window.print();
+      } catch (error) {
+        console.error(
+          "PRIOR RIDING Print Error:",
+          error
+        );
+
+        alert(
+          "Print/PDF شروع نہیں ہو سکا۔"
+        );
+      }
 
       setTimeout(function () {
-        document.body.innerHTML =
-          oldBody;
-
         printStyle.remove();
-      }, 1500);
-    }, 300);
+      }, 1000);
+
+    }, 200);
 
   } catch (error) {
     console.error(
