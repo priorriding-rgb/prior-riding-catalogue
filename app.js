@@ -3981,6 +3981,112 @@ async function openScanner() {
 /* =========================================================
    SCANNED CODE HANDLER
    ========================================================= */
+/* =========================================================
+   PRIOR RIDING — CLEAN NATIVE SCANNER
+   ========================================================= */
+
+let priorScannerPlugin = null;
+let priorScannerListener = null;
+
+async function openScanner() {
+  try {
+    if (!window.Capacitor || !window.Capacitor.Plugins) {
+      alert("Scanner is available in the Android app only.");
+      return;
+    }
+
+    priorScannerPlugin =
+      window.Capacitor.Plugins.PriorNative ||
+      window.Capacitor.Plugins.PriorScanner ||
+      null;
+
+    if (!priorScannerPlugin) {
+      alert("Scanner plugin is not available.");
+      return;
+    }
+
+    if (
+      priorScannerListener &&
+      typeof priorScannerListener.remove === "function"
+    ) {
+      try {
+        await priorScannerListener.remove();
+      } catch (e) {}
+
+      priorScannerListener = null;
+    }
+
+    if (typeof priorScannerPlugin.addListener === "function") {
+      try {
+        priorScannerListener =
+          await priorScannerPlugin.addListener(
+            "scannedCode",
+            function (event) {
+              if (event && event.code) {
+                handleScannedCode(event.code);
+              }
+            }
+          );
+      } catch (e) {
+        console.warn("Scanner listener error:", e);
+      }
+    }
+
+    if (
+      typeof priorScannerPlugin.requestBluetoothPermissions ===
+      "function"
+    ) {
+      try {
+        await priorScannerPlugin.requestBluetoothPermissions();
+      } catch (e) {
+        console.warn("Bluetooth permission:", e);
+      }
+    }
+
+    if (
+      typeof priorScannerPlugin.startBluetoothDiscovery ===
+      "function"
+    ) {
+      await priorScannerPlugin.startBluetoothDiscovery();
+      alert("Scanner started.");
+      return;
+    }
+
+    if (
+      typeof priorScannerPlugin.startScannerDiscovery ===
+      "function"
+    ) {
+      await priorScannerPlugin.startScannerDiscovery();
+      alert("Scanner started.");
+      return;
+    }
+
+    if (
+      typeof priorScannerPlugin.openBluetoothSettings ===
+      "function"
+    ) {
+      await priorScannerPlugin.openBluetoothSettings();
+      return;
+    }
+
+    alert("Scanner function is not available in this APK.");
+
+  } catch (error) {
+    console.error("Scanner error:", error);
+
+    alert(
+      "Scanner error:\n\n" +
+      (error && error.message
+        ? error.message
+        : String(error))
+    );
+  }
+}
+
+
+/* =========================================================
+   SCANNED CODE HANDLER
+   ========================================================= */
 
 function handleScannedCode(value) {
   const cleanValue =
@@ -3994,6 +4100,23 @@ function handleScannedCode(value) {
     "PRIOR RIDING Scanned Code:",
     cleanValue
   );
+
+  const input =
+    document.getElementById("barcode") ||
+    document.getElementById("productBarcode") ||
+    document.getElementById("scanCode");
+
+  if (input) {
+    input.value = cleanValue;
+
+    input.dispatchEvent(
+      new Event("input", { bubbles: true })
+    );
+
+    input.dispatchEvent(
+      new Event("change", { bubbles: true })
+    );
+  }
 
   alert(
     "Scanner نے Code پڑھ لیا:\n\n" +
