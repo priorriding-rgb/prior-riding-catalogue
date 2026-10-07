@@ -2709,147 +2709,126 @@ function calculateDashboard() {
   }
 }
 
-/* =========================================================
+/ =========================================================
    PRINT / PDF
    ========================================================= */
 function printToPdf() {
   try {
-    const printWindow = window.open("", "_blank");
-
-    if (!printWindow) {
-      alert("Print window نہیں کھل سکی۔ براہِ کرم دوبارہ کوشش کریں۔");
-      return;
-    }
-
-    const pageTitle =
-      "PRIOR RIDING — International Buyer CRM";
-
-    const pageContent =
+    const printContent =
       document.querySelector("main")?.innerHTML || "";
 
-    printWindow.document.open();
+    const oldBody = document.body.innerHTML;
 
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0"
-        >
-
-        <title>${pageTitle}</title>
-
-        <style>
-          @page {
-            size: A4;
-            margin: 12mm;
-          }
-
-          * {
-            box-sizing: border-box;
-          }
-
-          body {
-            margin: 0;
-            padding: 20px;
-            font-family: Arial, sans-serif;
-            color: #111;
-            background: #fff;
-          }
-
-          h1,
-          h2,
-          h3 {
-            color: #16833b;
-          }
-
-          button,
-          input,
-          select,
-          textarea,
-          .quick-actions,
-          .nav,
-          .topbar,
-          .settings-menu,
-          .modal,
-          .menu-btn {
-            display: none !important;
-          }
-
-          .section {
-            display: block !important;
-          }
-
-          .panel,
-          .stat-card,
-          .product-card,
-          .dashboard-tool-panel {
-            break-inside: avoid;
-          }
-
-          table {
-            width: 100%;
-            border-collapse: collapse;
-          }
-
-          th,
-          td {
-            border: 1px solid #ccc;
-            padding: 7px;
-            text-align: left;
-            font-size: 12px;
-          }
-
-          th {
-            background: #f1f1f1;
-          }
-
-          img {
-            max-width: 100%;
-          }
-
-          .print-header {
-            display: block !important;
-            text-align: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #16833b;
-            padding-bottom: 10px;
-          }
-
-          .print-header h1 {
-            margin: 0;
-            font-size: 24px;
-          }
-
-          .print-header p {
-            margin: 5px 0 0;
-            color: #555;
-          }
-        </style>
-      </head>
-
-      <body>
-
+    document.body.innerHTML = `
+      <div id="prPrintPage">
         <div class="print-header">
           <h1>PRIOR RIDING</h1>
           <p>International Buyer CRM & Product Catalogue</p>
         </div>
 
-        ${pageContent}
+        ${printContent}
+      </div>
+    `;
 
-      </body>
-      </html>
-    `);
+    const printStyle =
+      document.createElement("style");
 
-    printWindow.document.close();
+    printStyle.id =
+      "prPrintStyle";
 
-    printWindow.focus();
+    printStyle.textContent = `
+      @page {
+        size: A4;
+        margin: 12mm;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+        color: #111;
+        background: #fff;
+      }
+
+      button,
+      input,
+      select,
+      textarea,
+      .quick-actions,
+      .nav,
+      .topbar,
+      .settings-menu,
+      .modal,
+      .menu-btn {
+        display: none !important;
+      }
+
+      .print-header {
+        display: block !important;
+        text-align: center;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #16833b;
+        padding-bottom: 10px;
+      }
+
+      .print-header h1 {
+        margin: 0;
+        color: #16833b;
+        font-size: 24px;
+      }
+
+      .print-header p {
+        margin: 5px 0 0;
+        color: #555;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        border: 1px solid #ccc;
+        padding: 7px;
+        text-align: left;
+        font-size: 12px;
+      }
+
+      th {
+        background: #f1f1f1;
+      }
+
+      img {
+        max-width: 100%;
+      }
+
+      .panel,
+      .stat-card,
+      .product-card,
+      .dashboard-tool-panel {
+        break-inside: avoid;
+      }
+    `;
+
+    document.head.appendChild(
+      printStyle
+    );
 
     setTimeout(function () {
-      printWindow.print();
-    }, 500);
+      window.print();
+
+      setTimeout(function () {
+        document.body.innerHTML =
+          oldBody;
+
+        printStyle.remove();
+      }, 1500);
+    }, 300);
 
   } catch (error) {
     console.error(
@@ -2862,7 +2841,6 @@ function printToPdf() {
     );
   }
 }
-
 /* =========================================================
    SETTINGS MENU
    ========================================================= */
