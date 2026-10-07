@@ -3857,23 +3857,50 @@ async function openScanner() {
 }/* =========================================================
    PRIOR RIDING — SCANNER
    ========================================================= */
+/* =========================================================
+   PRIOR RIDING — REAL BLUETOOTH SCANNER
+   ========================================================= */
+
+let priorScannerPlugin = null;
+let priorScannerListener = null;
 
 async function openScanner() {
   try {
-    const nativePlugin =
+    priorScannerPlugin =
       window.Capacitor?.Plugins?.PriorNative;
 
-    if (!nativePlugin) {
+    if (!priorScannerPlugin) {
       alert("Scanner native service دستیاب نہیں ہے۔");
       return;
     }
 
-    await nativePlugin.requestBluetoothPermissions();
+    await priorScannerPlugin.requestBluetoothPermissions();
 
-    await nativePlugin.startBluetoothDiscovery();
+    if (!priorScannerListener) {
+      priorScannerListener =
+        await priorScannerPlugin.addListener(
+          "scannerData",
+          (data) => {
+            const value =
+              String(data?.value || "").trim();
+
+            if (!value) return;
+
+            console.log(
+              "PRIOR RIDING Scanner:",
+              value
+            );
+
+            handleScannedCode(value);
+          }
+        );
+    }
+
+    await priorScannerPlugin.startBluetoothDiscovery();
 
     alert(
-      "Bluetooth Scanner کی تلاش شروع ہو گئی ہے۔"
+      "Bluetooth Scanner تلاش شروع ہو گئی ہے۔\n\n" +
+      "اپنا Scanner آن کریں۔"
     );
 
   } catch (error) {
@@ -3883,7 +3910,33 @@ async function openScanner() {
     );
 
     alert(
-      "Scanner شروع نہیں ہو سکا۔ Bluetooth اجازت چیک کریں۔"
+      "Scanner شروع نہیں ہو سکا۔\n\n" +
+      "Bluetooth اور Nearby Devices کی اجازت چیک کریں۔"
     );
   }
+}
+
+
+/* =========================================================
+   SCANNED BARCODE HANDLER
+   ========================================================= */
+
+function handleScannedCode(value) {
+
+  const cleanValue =
+    String(value || "")
+      .replace(/[\r\n]+/g, "")
+      .trim();
+
+  if (!cleanValue) return;
+
+  console.log(
+    "Scanned Code:",
+    cleanValue
+  );
+
+  alert(
+    "Scanner نے Code پڑھ لیا:\n\n" +
+    cleanValue
+  );
 }
