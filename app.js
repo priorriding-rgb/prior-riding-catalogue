@@ -3997,3 +3997,143 @@ function handleScannedCode(value) {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', repair); else repair();
   new MutationObserver(repair).observe(document.documentElement, {childList:true, subtree:true});
 })();
+/* =========================================================
+   PRIOR RIDING — PRINT + PDF ONLY REPAIR
+   Version: 2026-10-07
+   IMPORTANT: Add this patch at the VERY END of existing app.js
+   Do not remove existing app code.
+   ========================================================= */
+(function () {
+  'use strict';
+
+  function esc(v) {
+    return String(v == null ? '' : v)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function readArray(keys) {
+    for (var i = 0; i < keys.length; i++) {
+      try {
+        var raw = localStorage.getItem(keys[i]);
+        if (!raw) continue;
+        var data = JSON.parse(raw);
+        if (Array.isArray(data)) return data;
+      } catch (e) {}
+    }
+    return [];
+  }
+
+  function reportHTML() {
+    var products = readArray(['prior_riding_products', 'products']);
+    var buyers = readArray(['prior_riding_buyers', 'buyers']);
+    var payments = readArray(['prior_riding_payments', 'prPayments', 'payments']);
+
+    var pRows = products.map(function (p) {
+      return '<tr><td>' + esc(p.name || p.productName || p.title) + '</td><td>' +
+        esc(p.article || p.articleNo || p.code || p.productNo) + '</td><td>' +
+        esc(p.price || p.unitPrice || '') + '</td></tr>';
+    }).join('');
+
+    var bRows = buyers.map(function (b) {
+      return '<tr><td>' + esc(b.name || b.buyerName) + '</td><td>' +
+        esc(b.company || b.companyName) + '</td><td>' + esc(b.country) + '</td><td>' +
+        esc(b.email) + '</td></tr>';
+    }).join('');
+
+    var payRows = payments.map(function (p) {
+      return '<tr><td>' + esc(p.date || p.paymentDate) + '</td><td>' +
+        esc(p.buyerName || p.buyer || p.customer) + '</td><td>' +
+        esc(p.mode || p.paymentMode) + '</td><td>' +
+        esc(p.amount || p.foreignAmount || p.pkrAmount || '') + '</td></tr>';
+    }).join('');
+
+    return '<div id="pr-print-sheet">' +
+      '<h1>PRIOR RIDING</h1>' +
+      '<div class="pr-print-meta">International Buyer CRM &nbsp; | &nbsp; ' + new Date().toLocaleString() + '</div>' +
+      '<h2>Product Catalogue (' + products.length + ')</h2>' +
+      '<table><thead><tr><th>Product</th><th>Article No.</th><th>Price</th></tr></thead><tbody>' + pRows + '</tbody></table>' +
+      '<h2>Buyer CRM (' + buyers.length + ')</h2>' +
+      '<table><thead><tr><th>Buyer</th><th>Company</th><th>Country</th><th>Email</th></tr></thead><tbody>' + bRows + '</tbody></table>' +
+      '<h2>Payment History (' + payments.length + ')</h2>' +
+      '<table><thead><tr><th>Date</th><th>Buyer</th><th>Payment Mode</th><th>Amount</th></tr></thead><tbody>' + payRows + '</tbody></table>' +
+      '</div>';
+  }
+
+  function runPrint() {
+    if (document.getElementById('pr-print-overlay')) return;
+
+    var overlay = document.createElement('div');
+    overlay.id = 'pr-print-overlay';
+    overlay.innerHTML = reportHTML();
+
+    var style = document.createElement('style');
+    style.id = 'pr-print-style';
+    style.textContent =
+      '#pr-print-overlay{display:none}' +
+      '@media print{' +
+      'body > *:not(#pr-print-overlay){display:none!important}' +
+      '#pr-print-overlay{display:block!important;position:static!important;background:#fff!important;color:#111!important;padding:22px!important;font-family:Arial,sans-serif!important}' +
+      '#pr-print-sheet{display:block!important}' +
+      '#pr-print-sheet h1{font-size:24px;margin:0 0 4px}' +
+      '#pr-print-sheet h2{font-size:17px;margin:22px 0 7px;page-break-after:avoid}' +
+      '.pr-print-meta{font-size:11px;color:#555;margin-bottom:18px}' +
+      '#pr-print-sheet table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:11px}' +
+      '#pr-print-sheet th,#pr-print-sheet td{border:1px solid #999;padding:6px;text-align:left;vertical-align:top}' +
+      '#pr-print-sheet th{font-weight:700;background:#eee}' +
+      '#pr-print-sheet tr{page-break-inside:avoid}' +
+      '}';
+
+    document.head.appendChild(style);
+    document.body.appendChild(overlay);
+
+    var cleaned = false;
+    function cleanup() {
+      if (cleaned) return;
+      cleaned = true;
+      overlay.remove();
+      style.remove();
+      window.removeEventListener('afterprint', cleanup);
+    }
+
+    window.addEventListener('afterprint', cleanup);
+
+    setTimeout(function () {
+      try {
+        window.print();
+      } catch (e) {
+        cleanup();
+        alert('Print/PDF شروع نہیں ہو سکا۔ براہِ کرم دوبارہ کوشش کریں۔');
+      }
+      // Android WebView may not fire afterprint consistently.
+      setTimeout(cleanup, 3000);
+    }, 180);
+  }
+
+  function isPrintButton(el) {
+    var label = ((el.textContent || '') + ' ' + (el.getAttribute('aria-label') || '') + ' ' + (el.id || '')).trim().toLowerCase();
+    return label === 'print' || label === 'pdf' || label.includes('print') || label.includes('pdf');
+  }
+
+  function bind() {
+    document.querySelectorAll('button,a,[role="button"]').forEach(function (el) {
+      if (!isPrintButton(el) || el.dataset.prPrintPdfFixed === '1') return;
+      el.dataset.prPrintPdfFixed = '1';
+      el.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        runPrint();
+      }, true);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bind);
+  } else {
+    bind();
+  }
+
+  new MutationObserver(bind).observe(document.documentElement, { childList: true, subtree: true });
+})();
