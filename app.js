@@ -3854,4 +3854,36 @@ async function openScanner() {
       "Scanner شروع نہیں ہو سکا۔ Bluetooth اور Scanner connection چیک کریں۔"
     );
   }
+}/* =========================================================
+   PRIOR RIDING — SCANNER
+   ========================================================= */
+
+async function openScanner() {
+  try {
+    const nativePlugin =
+      window.Capacitor?.Plugins?.PriorNative;
+
+    if (!nativePlugin) {
+      alert("Scanner native service دستیاب نہیں ہے۔");
+      return;
+    }
+
+    await nativePlugin.requestBluetoothPermissions();
+
+    await nativePlugin.startBluetoothDiscovery();
+
+    alert(
+      "Bluetooth Scanner کی تلاش شروع ہو گئی ہے۔"
+    );
+
+  } catch (error) {
+    console.error(
+      "Scanner Error:",
+      error
+    );
+
+    alert(
+      "Scanner شروع نہیں ہو سکا۔ Bluetooth اجازت چیک کریں۔"
+    );
+  }
 }
