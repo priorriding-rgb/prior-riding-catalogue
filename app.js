@@ -4137,3 +4137,36 @@ function handleScannedCode(value) {
 
   new MutationObserver(bind).observe(document.documentElement, { childList: true, subtree: true });
 })();
+/* PRIOR RIDING — PRINT + PDF ONLY REPAIR
+   Add at the very end of existing app.js
+   No new window / no blank page / no other feature changes.
+*/
+(function () {
+  'use strict';
+
+  function isPrintOrPdf(el) {
+    if (!el) return false;
+    var s = ((el.textContent || '') + ' ' +
+      (el.getAttribute && (el.getAttribute('aria-label') || el.getAttribute('title') || '')) + ' ' +
+      (el.id || '') + ' ' + (el.className || '')).toLowerCase();
+    return /(^|\b)(print|pdf)(\b|$)/i.test(s);
+  }
+
+  document.addEventListener('click', function (e) {
+    var el = e.target && e.target.closest ? e.target.closest('button,a,[role="button"]') : e.target;
+    if (!isPrintOrPdf(el)) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+    setTimeout(function () {
+      try {
+        window.focus();
+        window.print();
+      } catch (err) {
+        alert('Print service available نہیں ہے۔ براہِ کرم دوبارہ کوشش کریں۔');
+      }
+    }, 100);
+  }, true);
+})();
