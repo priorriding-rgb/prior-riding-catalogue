@@ -3806,3 +3806,52 @@ if (
 } else {
   initPriorRidingApp();
 }
+/* =========================================================
+   PRIOR RIDING — NATIVE SCANNER
+   ========================================================= */
+
+async function openScanner() {
+  try {
+    const nativePlugin =
+      window.Capacitor &&
+      window.Capacitor.Plugins &&
+      window.Capacitor.Plugins.PriorNative;
+
+    if (!nativePlugin) {
+      alert(
+        "Scanner ابھی اس APK میں دستیاب نہیں ہے۔ تازہ APK Build کریں۔"
+      );
+      return;
+    }
+
+    if (
+      typeof nativePlugin.startScannerDiscovery ===
+      "function"
+    ) {
+      await nativePlugin.startScannerDiscovery();
+      return;
+    }
+
+    if (
+      typeof nativePlugin.openBluetoothSettings ===
+      "function"
+    ) {
+      await nativePlugin.openBluetoothSettings();
+      return;
+    }
+
+    alert(
+      "Scanner service دستیاب نہیں ہے۔"
+    );
+
+  } catch (error) {
+    console.error(
+      "PRIOR RIDING Scanner Error:",
+      error
+    );
+
+    alert(
+      "Scanner شروع نہیں ہو سکا۔ Bluetooth اور Scanner connection چیک کریں۔"
+    );
+  }
+}
