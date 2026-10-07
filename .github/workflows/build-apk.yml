@@ -62,13 +62,13 @@ jobs:
 
           text = re.sub(
               r'versionCode\s+\d+',
-              'versionCode 32',
+              'versionCode 33',
               text
           )
 
           text = re.sub(
               r'versionName\s+"[^"]+"',
-              'versionName "3.2.0"',
+              'versionName "3.3.0"',
               text
           )
 
@@ -100,7 +100,7 @@ jobs:
           cp icon-512.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
           cp icon-512.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
 
-        - name: Configure Android manifest
+      - name: Configure Android manifest
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -168,6 +168,7 @@ jobs:
           )
 
           app_tag = app_tag[:-1]
+
           app_tag += (
               ' android:label="PRIOR RIDING"'
               ' android:icon="@mipmap/ic_launcher"'
@@ -192,6 +193,9 @@ jobs:
 
           import android.Manifest;
           import android.app.Activity;
+          import android.bluetooth.BluetoothAdapter;
+          import android.bluetooth.BluetoothDevice;
+          import android.bluetooth.BluetoothSocket;
           import android.content.BroadcastReceiver;
           import android.content.Context;
           import android.content.Intent;
@@ -212,10 +216,6 @@ jobs:
           import com.getcapacitor.PluginCall;
           import com.getcapacitor.PluginMethod;
           import com.getcapacitor.annotation.CapacitorPlugin;
-
-          import android.bluetooth.BluetoothAdapter;
-          import android.bluetooth.BluetoothDevice;
-          import android.bluetooth.BluetoothSocket;
 
           import java.io.InputStream;
           import java.io.OutputStream;
@@ -260,8 +260,6 @@ jobs:
                               }
 
                               try {
-                                  JSObject data = new JSObject();
-
                                   if (
                                       Build.VERSION.SDK_INT >= 31 &&
                                       ActivityCompat.checkSelfPermission(
@@ -271,6 +269,8 @@ jobs:
                                   ) {
                                       return;
                                   }
+
+                                  JSObject data = new JSObject();
 
                                   String name = device.getName();
 
@@ -460,10 +460,11 @@ jobs:
 
                       stopDiscoveryInternal();
 
-                      bluetoothAdapter.startDiscovery();
+                      boolean started =
+                          bluetoothAdapter.startDiscovery();
 
                       JSObject result = new JSObject();
-                      result.put("started", true);
+                      result.put("started", started);
 
                       call.resolve(result);
 
@@ -824,6 +825,12 @@ jobs:
           }
           EOF
 
+      - name: Restore stable Android debug signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android
+          key: prior-riding-debug-keystore-v1
+
       - name: Build debug APK
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
@@ -833,14 +840,10 @@ jobs:
           test -s android/app/build/outputs/apk/debug/app-debug.apk
           ls -lh android/app/build/outputs/apk/debug/app-debug.apk
           sha256sum android/app/build/outputs/apk/debug/app-debug.apk
-      - name: Restore stable Android debug signing key
-        uses: actions/cache@v4
-        with:
-          path: ~/.android
-          key: prior-riding-debug-keystore-v1
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: prior-riding-crm-apk-v32
+          name: prior-riding-crm-apk-v33
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
