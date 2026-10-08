@@ -2712,157 +2712,196 @@ function calculateDashboard() {
 /* =========================================================
    PRINT / PDF
    ========================================================= */
+
 function printToPdf() {
   try {
-    const printWindow = window.open("", "_blank");
-
-    if (!printWindow) {
-      alert("Print window نہیں کھل سکی۔ براہِ کرم دوبارہ کوشش کریں۔");
-      return;
-    }
-
-    const pageTitle =
+    var pageTitle =
       "PRIOR RIDING — International Buyer CRM";
 
-    const pageContent =
+    var pageContent =
       document.querySelector("main")?.innerHTML || "";
 
-    printWindow.document.open();
+    var oldOverlay =
+      document.getElementById("pr-print-pdf-overlay");
 
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0"
-        >
+    if (oldOverlay) {
+      oldOverlay.remove();
+    }
 
-        <title>${pageTitle}</title>
+    var oldStyle =
+      document.getElementById("pr-print-pdf-style");
 
-        <style>
-          @page {
-            size: A4;
-            margin: 12mm;
-          }
+    if (oldStyle) {
+      oldStyle.remove();
+    }
 
-          * {
-            box-sizing: border-box;
-          }
+    var style =
+      document.createElement("style");
 
-          body {
-            margin: 0;
-            padding: 20px;
-            font-family: Arial, sans-serif;
-            color: #111;
-            background: #fff;
-          }
+    style.id = "pr-print-pdf-style";
 
-          h1,
-          h2,
-          h3 {
-            color: #16833b;
-          }
+    style.textContent = `
+      #pr-print-pdf-overlay {
+        display: none;
+      }
 
-          button,
-          input,
-          select,
-          textarea,
-          .quick-actions,
-          .nav,
-          .topbar,
-          .settings-menu,
-          .modal,
-          .menu-btn {
-            display: none !important;
-          }
+      @media print {
 
-          .section {
-            display: block !important;
-          }
+        body > *:not(#pr-print-pdf-overlay) {
+          display: none !important;
+        }
 
-          .panel,
-          .stat-card,
-          .product-card,
-          .dashboard-tool-panel {
-            break-inside: avoid;
-          }
+        #pr-print-pdf-overlay {
+          display: block !important;
+          position: static !important;
+          width: 100% !important;
+          background: #fff !important;
+          color: #111 !important;
+          padding: 20px !important;
+          font-family: Arial, sans-serif !important;
+        }
 
-          table {
-            width: 100%;
-            border-collapse: collapse;
-          }
+        #pr-print-pdf-overlay button,
+        #pr-print-pdf-overlay input,
+        #pr-print-pdf-overlay select,
+        #pr-print-pdf-overlay textarea,
+        #pr-print-pdf-overlay .quick-actions,
+        #pr-print-pdf-overlay .nav,
+        #pr-print-pdf-overlay .topbar,
+        #pr-print-pdf-overlay .settings-menu,
+        #pr-print-pdf-overlay .modal,
+        #pr-print-pdf-overlay .menu-btn {
+          display: none !important;
+        }
 
-          th,
-          td {
-            border: 1px solid #ccc;
-            padding: 7px;
-            text-align: left;
-            font-size: 12px;
-          }
+        #pr-print-pdf-overlay table {
+          width: 100%;
+          border-collapse: collapse;
+        }
 
-          th {
-            background: #f1f1f1;
-          }
+        #pr-print-pdf-overlay th,
+        #pr-print-pdf-overlay td {
+          border: 1px solid #ccc;
+          padding: 7px;
+          font-size: 12px;
+          text-align: left;
+        }
 
-          img {
-            max-width: 100%;
-          }
+        #pr-print-pdf-overlay th {
+          background: #f1f1f1;
+        }
 
-          .print-header {
-            display: block !important;
-            text-align: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #16833b;
-            padding-bottom: 10px;
-          }
+        #pr-print-pdf-overlay img {
+          max-width: 100%;
+        }
 
-          .print-header h1 {
-            margin: 0;
-            font-size: 24px;
-          }
+        .pr-print-header {
+          display: block !important;
+          text-align: center;
+          margin-bottom: 20px;
+          border-bottom: 2px solid #16833b;
+          padding-bottom: 10px;
+        }
 
-          .print-header p {
-            margin: 5px 0 0;
-            color: #555;
-          }
-        </style>
-      </head>
+        .pr-print-header h1 {
+          margin: 0;
+          font-size: 24px;
+          color: #16833b;
+        }
 
-      <body>
+        .pr-print-header p {
+          margin: 5px 0 0;
+          color: #555;
+        }
+      }
+    `;
 
-        <div class="print-header">
-          <h1>PRIOR RIDING</h1>
-          <p>International Buyer CRM & Product Catalogue</p>
-        </div>
+    document.head.appendChild(style);
 
-        ${pageContent}
+    var overlay =
+      document.createElement("div");
 
-      </body>
-      </html>
-    `);
+    overlay.id = "pr-print-pdf-overlay";
 
-    printWindow.document.close();
+    overlay.innerHTML = `
+      <div class="pr-print-header">
+        <h1>PRIOR RIDING</h1>
+        <p>
+          International Buyer CRM & Product Catalogue
+        </p>
+      </div>
 
-    printWindow.focus();
+      ${pageContent}
+    `;
+
+    document.body.appendChild(overlay);
+
+    var cleaned = false;
+
+    function cleanupPrint() {
+
+      if (cleaned) return;
+
+      cleaned = true;
+
+      if (overlay) {
+        overlay.remove();
+      }
+
+      if (style) {
+        style.remove();
+      }
+
+      window.removeEventListener(
+        "afterprint",
+        cleanupPrint
+      );
+    }
+
+    window.addEventListener(
+      "afterprint",
+      cleanupPrint
+    );
 
     setTimeout(function () {
-      printWindow.print();
-    }, 500);
+
+      try {
+
+        window.print();
+
+      } catch (error) {
+
+        console.error(
+          "PRIOR RIDING Print Error:",
+          error
+        );
+
+        cleanupPrint();
+
+        alert(
+          "Print / PDF شروع نہیں ہو سکا۔"
+        );
+      }
+
+    }, 250);
+
+    setTimeout(
+      cleanupPrint,
+      5000
+    );
 
   } catch (error) {
+
     console.error(
       "PRIOR RIDING Print/PDF Error:",
       error
     );
 
     alert(
-      "Print / PDF میں مسئلہ آیا۔ دوبارہ کوشش کریں۔"
+      "Print / PDF شروع نہیں ہو سکا۔ دوبارہ کوشش کریں۔"
     );
   }
 }
-
 /* =========================================================
    SETTINGS MENU
    ========================================================= */
