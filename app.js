@@ -3860,62 +3860,105 @@ async function openScanner() {
 /* =========================================================
    PRIOR RIDING — REAL BLUETOOTH SCANNER
    ========================================================= */
+/* =========================================================
+   PRIOR RIDING — BLUETOOTH HID / KEYBOARD SCANNER
+   ========================================================= */
 
-let priorScannerPlugin = null;
-let priorScannerListener = null;
+let priorScannerBuffer = "";
+let priorScannerTimer = null;
+let priorScannerLastKeyTime = 0;
 
-async function openScanner() {
-  try {
-    priorScannerPlugin =
-      window.Capacitor?.Plugins?.PriorNative;
+function openScanner() {
 
-    if (!priorScannerPlugin) {
-      alert("Scanner native service دستیاب نہیں ہے۔");
-      return;
+  const input =
+    document.getElementById("barcode") ||
+    document.getElementById("productBarcode") ||
+    document.getElementById("scanCode");
+
+  if (input) {
+    input.focus();
+
+    if (typeof input.select === "function") {
+      input.select();
     }
-
-    await priorScannerPlugin.requestBluetoothPermissions();
-
-    if (!priorScannerListener) {
-      priorScannerListener =
-        await priorScannerPlugin.addListener(
-          "scannerData",
-          (data) => {
-            const value =
-              String(data?.value || "").trim();
-
-            if (!value) return;
-
-            console.log(
-              "PRIOR RIDING Scanner:",
-              value
-            );
-
-            handleScannedCode(value);
-          }
-        );
-    }
-
-    await priorScannerPlugin.startBluetoothDiscovery();
-
-    alert(
-      "Bluetooth Scanner تلاش شروع ہو گئی ہے۔\n\n" +
-      "اپنا Scanner آن کریں۔"
-    );
-
-  } catch (error) {
-    console.error(
-      "Scanner Error:",
-      error
-    );
-
-    alert(
-      "Scanner شروع نہیں ہو سکا۔\n\n" +
-      "Bluetooth اور Nearby Devices کی اجازت چیک کریں۔"
-    );
   }
+
+  alert(
+    "Bluetooth Scanner تیار ہے۔\n\n" +
+    "Scanner کو Bluetooth سے Pair کریں۔\n" +
+    "Scanner کو HID / Keyboard Mode میں رکھیں۔\n\n" +
+    "اب barcode scan کریں۔"
+  );
 }
 
+
+/* =========================================================
+   BLUETOOTH HID SCANNER INPUT
+   Scanner keyboard کی طرح barcode بھیجتا ہے
+   ========================================================= */
+
+document.addEventListener("keydown", function (event) {
+
+  const now = Date.now();
+  const gap = now - priorScannerLastKeyTime;
+
+  priorScannerLastKeyTime = now;
+
+
+  /* Scanner کے characters بہت تیزی سے آتے ہیں */
+  if (
+    gap > 150 &&
+    priorScannerBuffer.length > 0
+  ) {
+    priorScannerBuffer = "";
+  }
+
+
+  /* Barcode کے آخر میں Scanner عموماً ENTER بھیجتا ہے */
+  if (event.key === "Enter") {
+
+    if (priorScannerBuffer.length >= 3) {
+
+      event.preventDefault();
+
+      const scannedCode =
+        priorScannerBuffer.trim();
+
+      priorScannerBuffer = "";
+
+      clearTimeout(priorScannerTimer);
+
+      if (scannedCode) {
+
+        console.log(
+          "PRIOR RIDING Bluetooth Scanner:",
+          scannedCode
+        );
+
+        handleScannedCode(scannedCode);
+      }
+    }
+
+    return;
+  }
+
+
+  /* صرف ایک-character keys کو barcode buffer میں شامل کریں */
+  if (event.key.length === 1) {
+
+    priorScannerBuffer += event.key;
+
+    clearTimeout(priorScannerTimer);
+
+    priorScannerTimer = setTimeout(
+      function () {
+        priorScannerBuffer = "";
+      },
+      200
+    );
+  }
+
+});
 
 /* =========================================================
    SCANNED BARCODE HANDLER
