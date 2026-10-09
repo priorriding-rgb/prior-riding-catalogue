@@ -4279,3 +4279,30 @@ function handleScannedCode(value) {
   );
 })();
 
+
+/* PRIOR RIDING — Native print bridge check */
+(function () {
+  if (window.__priorNativePrintFix) return;
+  window.__priorNativePrintFix = true;
+
+  async function priorRidingNativePrint() {
+    try {
+      var plugin = window.Capacitor &&
+        window.Capacitor.Plugins &&
+        window.Capacitor.Plugins.PriorNative;
+
+      if (!plugin || typeof plugin.printWebView !== "function") {
+        alert("Native Print plugin دستیاب نہیں۔ Android plugin registration درست کرنا ضروری ہے۔");
+        return;
+      }
+
+      await plugin.printWebView({
+        name: "PRIOR RIDING Document"
+      });
+    } catch (e) {
+      alert("Print/PDF error: " + (e && e.message ? e.message : e));
+    }
+  }
+
+  window.priorRidingNativePrint = priorRidingNativePrint;
+})();
