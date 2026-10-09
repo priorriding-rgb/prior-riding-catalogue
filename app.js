@@ -4230,3 +4230,52 @@ function handleScannedCode(value) {
    No new window / no blank page / no other feature changes.
 */
 
+/* PRIOR RIDING PRINT/PDF NATIVE BRIDGE */
+(function () {
+  if (window.__priorPrintNativeBridgeAdded) return;
+  window.__priorPrintNativeBridgeAdded = true;
+
+  function connectPrintButtons() {
+    document.querySelectorAll("button, a, [role='button']").forEach(function (el) {
+      if (el.dataset.priorNativePrintBound) return;
+
+      var label = (
+        (el.innerText || "") + " " +
+        (el.getAttribute("aria-label") || "") + " " +
+        (el.getAttribute("title") || "")
+      ).toLowerCase();
+
+      if (!/\b(print|pdf|پرنٹ)\b/.test(label)) return;
+
+      el.dataset.priorNativePrintBound = "1";
+      el.addEventListener("click", async function (event) {
+        var nativePrint = window.Capacitor &&
+          window.Capacitor.Plugins &&
+          window.Capacitor.Plugins.PriorNative;
+
+        if (!nativePrint || typeof nativePrint.printWebView !== "function") {
+          return;
+        }
+
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        try {
+          await nativePrint.printWebView({
+            name: "PRIOR RIDING Document"
+          });
+        } catch (err) {
+          alert("Print/PDF نہیں چل سکا: " +
+            (err && err.message ? err.message : "Native print error"));
+        }
+      }, true);
+    });
+  }
+
+  connectPrintButtons();
+  new MutationObserver(connectPrintButtons).observe(
+    document.documentElement,
+    { childList: true, subtree: true }
+  );
+})();
+
