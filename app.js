@@ -2861,28 +2861,34 @@ function printToPdf() {
       "afterprint",
       cleanupPrint
     );
+  
+setTimeout(function () {
+  try {
+    var nativePrinter =
+      window.Capacitor?.Plugins?.PriorNative;
 
-    setTimeout(function () {
-
-      try {
-
-        window.print();
-
-      } catch (error) {
-
-        console.error(
-          "PRIOR RIDING Print Error:",
-          error
-        );
-
+    if (
+      nativePrinter &&
+      typeof nativePrinter.printWebView === "function"
+    ) {
+      nativePrinter.printWebView({
+        name: "PRIOR RIDING Document"
+      }).catch(function (error) {
+        console.error("Native Print Error:", error);
         cleanupPrint();
+        alert("Print/PDF نہیں کھل سکا۔");
+      });
+    } else {
+      cleanupPrint();
+      alert("Native Print سروس دستیاب نہیں ہے۔");
+    }
+  } catch (error) {
+    console.error("Native Print Error:", error);
+    cleanupPrint();
+    alert("Print/PDF نہیں کھل سکا۔");
+  }
+}, 250);
 
-        alert(
-          "Print / PDF شروع نہیں ہو سکا۔"
-        );
-      }
-
-    }, 250);
 
     setTimeout(
       cleanupPrint,
